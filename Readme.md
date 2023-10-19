@@ -1,8 +1,10 @@
 ### FastSD CPU
 
 Faster version of stable diffusion running on CPU.
-21 seconds to generate single 512x512 image on Core i7-12700
-Based on Latent Consistency Models
+
+Took 21 seconds to generate single 512x512 image on Core i7-12700
+
+Based on Latent Consistency Models.
 
 ![Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/fastsdcpu-screenshot.png)
 
