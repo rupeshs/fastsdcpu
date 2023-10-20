@@ -11,7 +11,5 @@ dependencies:
   - pip:
       - accelerate==0.23.0
       - diffusers==0.21.4
-      - gradio==3.50.1
-      - streamlit==1.27.2
       - transformers==4.34.0
       - PyQt5==5.15.10
