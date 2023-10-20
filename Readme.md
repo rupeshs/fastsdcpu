@@ -25,10 +25,12 @@ Based on Latent Consistency Models.
 - Clone/download this repo
 - In the terminal enter into fastsdcpu directory
 - Run the following command
+
   `sudo chmod +x install.sh`
 
   `./install.sh`
 - To start fastsdcpu run
+
  `sudo chmod +x start.sh`
- 
+
  `./start.sh`
