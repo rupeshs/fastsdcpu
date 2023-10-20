@@ -31,6 +31,6 @@ Based on Latent Consistency Models.
   `./install.sh`
 - To start fastsdcpu run
 
- `sudo chmod +x start.sh`
+  `sudo chmod +x start.sh`
 
- `./start.sh`
+  `./start.sh`
