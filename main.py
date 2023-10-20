@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setText(
-            """<h1>FastSD CPU v0.1.0 beta</h1> 
+            """<h1>FastSD CPU v1.0.0 beta</h1> 
                <h3>(c)2023 - Rupesh Sreeraman</h3>
                 <h3>Faster stable diffusion on CPU</h3>
                  <h3>Based on Latent Consistency Models</h3>
@@ -239,7 +239,7 @@ class MainWindow(QMainWindow):
             cur_seed = int(self.seed_value.text())
             torch.manual_seed(cur_seed)
 
-        print(f"prompt : {prompt}")
+        print(f"Prompt : {prompt}")
         print(f"Resolution : {img_width} x {img_height}")
         print(f"Guidance Scale : {guidance_scale}")
         print(f"Inference_steps  : {num_inference_steps}")
@@ -263,7 +263,7 @@ class MainWindow(QMainWindow):
             os.mkdir(self.output_path)
 
         images[0].save(os.path.join(self.output_path, f"{image_id}.png"))
-        print(f"Images saved {image_id}.png")
+        print(f"Image {image_id}.png saved")
         im = ImageQt(images[0]).copy()
         pixmap = QPixmap.fromImage(im)
         self.img.setPixmap(pixmap)
