@@ -14,13 +14,18 @@ Based on Latent Consistency Models.
 - Saves images
 - Settings to control,steps,guidance,seed
 
-## To run FastSD CPU on Windows
+## FastSD CPU on Windows
 
-- Clone/download this repo
-- Double click install.bat  (It will take some time to install,depends on your internet speed)
-- To start fastsdcpu double click start.bat
+- Clone/download this repo or download release.
 
-## To run FastSD CPU on Linux
+### To install 
+ - Double click `install.bat`  (It will take some time to install,depends on your internet speed)
+
+### To run
+- To start fastsdcpu double click `start.bat`
+
+## FastSD CPU on Linux
+Ensure that you have Python 3.8 higher installed.
 
 - Clone/download this repo
 - In the terminal enter into fastsdcpu directory
