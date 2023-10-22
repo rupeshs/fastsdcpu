@@ -13,7 +13,7 @@ Based on Latent Consistency Models.
 - Supports Windows and Linux
 - Saves images
 - Settings to control,steps,guidance,seed
-- Added safty checker setting
+- Added safety checker setting
 - Maximum inference steps increased to 25
 - OpenVINO support
 
