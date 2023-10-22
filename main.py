@@ -33,6 +33,10 @@ from PIL.ImageQt import ImageQt
 import traceback, sys
 import os
 from uuid import uuid4
+from openvino.lcm_ov_pipeline import OVLatentConsistencyModelPipeline
+from openvino.lcm_scheduler import LCMScheduler
+import psutil
+
 
 RESULTS_DIRECTORY = "results"
 
@@ -82,7 +86,13 @@ class MainWindow(QMainWindow):
         self.output_path = get_results_path()
         self.device = "cpu"
         self.seed_value.setEnabled(False)
+        self.previous_width = 0
+        self.previous_height = 0
         print(f"Output path : { self.output_path}")
+        self.lcm_model.setEnabled(True)
+        self.use_openvino_check.setChecked(False)
+        self.use_openvino = self.use_openvino_check.isChecked()
+        self.previous_model = ""
 
     def init_ui(self):
         self.create_main_tab()
@@ -131,7 +141,7 @@ class MainWindow(QMainWindow):
 
         self.inference_steps_value = QLabel("Number of inference steps: 4")
         self.inference_steps = QSlider(orientation=Qt.Orientation.Horizontal)
-        self.inference_steps.setMaximum(10)
+        self.inference_steps.setMaximum(25)
         self.inference_steps.setMinimum(1)
         self.inference_steps.setValue(4)
         self.inference_steps.valueChanged.connect(self.update_label)
@@ -165,6 +175,10 @@ class MainWindow(QMainWindow):
 
         self.safety_checker = QCheckBox("Use safety checker")
         self.safety_checker.setChecked(True)
+        self.seed_check = QCheckBox("Use Seed")
+        self.safety_checker.setChecked(True)
+        self.use_openvino_check = QCheckBox("Use OpenVINO")
+        self.use_openvino_check.stateChanged.connect(self.use_openvino_changed)
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.seed_check)
@@ -187,6 +201,7 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.guidance)
         vlayout.addLayout(hlayout)
         vlayout.addWidget(self.safety_checker)
+        vlayout.addWidget(self.use_openvino_check)
         vlayout.addItem(vspacer)
         self.tab_settings.setLayout(vlayout)
 
@@ -194,7 +209,7 @@ class MainWindow(QMainWindow):
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setText(
-            """<h1>FastSD CPU v1.0.0 beta 2</h1> 
+            """<h1>FastSD CPU v1.0.0 beta 3</h1> 
                <h3>(c)2023 - Rupesh Sreeraman</h3>
                 <h3>Faster stable diffusion on CPU</h3>
                  <h3>Based on Latent Consistency Models</h3>
@@ -204,6 +219,14 @@ class MainWindow(QMainWindow):
         vlayout = QVBoxLayout()
         vlayout.addWidget(self.label)
         self.tab_about.setLayout(vlayout)
+
+    def use_openvino_changed(self, state):
+        if state == 2:
+            self.use_openvino = True
+            self.lcm_model.setEnabled(False)
+        else:
+            self.use_openvino = False
+            self.lcm_model.setEnabled(True)
 
     def update_label(self, value):
         self.inference_steps_value.setText(f"Number of inference steps: {value}")
@@ -221,23 +244,42 @@ class MainWindow(QMainWindow):
             self.seed_value.setEnabled(False)
 
     def generate_image(self):
-        if self.pipeline is None:
-            print(f"Using LCM model {self.lcm_model.text()}")
-            self.pipeline = DiffusionPipeline.from_pretrained(
-                self.lcm_model.text(),
-                custom_pipeline="latent_consistency_txt2img",
-                custom_revision="main",
-            )
-            self.pipeline.to(
-                torch_device=self.device,
-                torch_dtype=torch.float32,
-            )
-
         prompt = self.prompt.toPlainText()
         guidance_scale = round(int(self.guidance.value()) / 10, 1)
         img_width = int(self.width.currentText())
         img_height = int(self.height.currentText())
         num_inference_steps = self.inference_steps.value()
+        if self.use_openvino:
+            model_id = "deinferno/LCM_Dreamshaper_v7-openvino"
+        else:
+            model_id = self.lcm_model.text()
+
+        if self.pipeline is None or self.previous_model != model_id:
+            print(f"Using LCM model {model_id}")
+            if self.use_openvino:
+                if self.pipeline:
+                    del self.pipeline
+                scheduler = LCMScheduler.from_pretrained(
+                    model_id,
+                    subfolder="scheduler",
+                )
+                self.pipeline = OVLatentConsistencyModelPipeline.from_pretrained(
+                    "deinferno/LCM_Dreamshaper_v7-openvino",
+                    scheduler=scheduler,
+                    compile=False,
+                )
+            else:
+                if self.pipeline:
+                    del self.pipeline
+                self.pipeline = DiffusionPipeline.from_pretrained(
+                    model_id,
+                    custom_pipeline="latent_consistency_txt2img",
+                    custom_revision="main",
+                )
+                self.pipeline.to(
+                    torch_device=self.device,
+                    torch_dtype=torch.float32,
+                )
 
         if self.use_seed:
             cur_seed = int(self.seed_value.text())
@@ -251,6 +293,24 @@ class MainWindow(QMainWindow):
             print(f"Seed: {cur_seed}")
 
         tick = time()
+
+        if self.use_openvino:
+            print("Using OpenVINO")
+            # Dimension changed so reshape and compile
+            if (
+                self.previous_width != img_width
+                or self.previous_height != img_height
+                or self.previous_model != model_id
+            ):
+                print("Reshape and compile")
+                self.pipeline.reshape(
+                    batch_size=1,
+                    height=img_height,
+                    width=img_width,
+                    num_images_per_prompt=1,
+                )
+                self.pipeline.compile()
+
         if not self.safety_checker.isChecked():
             self.pipeline.safety_checker = None
         images = self.pipeline(
@@ -273,6 +333,9 @@ class MainWindow(QMainWindow):
         im = ImageQt(images[0]).copy()
         pixmap = QPixmap.fromImage(im)
         self.img.setPixmap(pixmap)
+        self.previous_width = img_width
+        self.previous_height = img_height
+        self.previous_model = model_id
 
     def text_to_image(self):
         self.img.setText("Please wait...")
@@ -284,8 +347,6 @@ class MainWindow(QMainWindow):
 
 
 app = QApplication(sys.argv)
-
 window = MainWindow()
 window.show()
-
 app.exec()

@@ -13,6 +13,16 @@ Based on Latent Consistency Models.
 - Supports Windows and Linux
 - Saves images
 - Settings to control,steps,guidance,seed
+- Added safty checker setting
+- Maximum inference steps increased to 25
+- OpenVINO support
+
+## OpenVINO support
+
+Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
+Currently it is tested on Windows only,by default it is disabled.
+We found 50% speed improvement using OpenVINO.
+Took 10 seconds to generate single 512x512 image on Core i7-12700
 
 ## FastSD CPU on Windows
 
