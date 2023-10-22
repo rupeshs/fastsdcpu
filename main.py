@@ -163,6 +163,9 @@ class MainWindow(QMainWindow):
         self.seed_value.setInputMask("9999999999")
         self.seed_value.setText("123123")
 
+        self.safety_checker = QCheckBox("Use safety checker")
+        self.safety_checker.setChecked(True)
+
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.seed_check)
         hlayout.addWidget(self.seed_value)
@@ -183,6 +186,7 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.guidance_value)
         vlayout.addWidget(self.guidance)
         vlayout.addLayout(hlayout)
+        vlayout.addWidget(self.safety_checker)
         vlayout.addItem(vspacer)
         self.tab_settings.setLayout(vlayout)
 
@@ -247,6 +251,8 @@ class MainWindow(QMainWindow):
             print(f"Seed: {cur_seed}")
 
         tick = time()
+        if not self.safety_checker.isChecked():
+            self.pipeline.safety_checker = None
         images = self.pipeline(
             prompt=prompt,
             num_inference_steps=num_inference_steps,
