@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
     QCheckBox,
     QTextEdit,
 )
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QImage
 from PyQt5.QtCore import (
     QSize,
     pyqtSignal,
@@ -29,12 +29,19 @@ from PyQt5.QtCore import (
     QThreadPool,
     Qt,
 )
-from PIL.ImageQt import ImageQt
+from PIL import ImageQt
 import traceback, sys
 import os
 from uuid import uuid4
 
 RESULTS_DIRECTORY = "results"
+
+
+def pil_to_qimage(pil_image):
+    image = pil_image.convert("RGBA")
+    image_data = image.tobytes("raw", "RGBA")
+    q_image = QImage(image_data, image.width, image.height, QImage.Format_ARGB32)
+    return q_image
 
 
 def get_results_path():
@@ -264,7 +271,7 @@ class MainWindow(QMainWindow):
 
         images[0].save(os.path.join(self.output_path, f"{image_id}.png"))
         print(f"Image {image_id}.png saved")
-        im = ImageQt(images[0]).copy()
+        im = pil_to_qimage(images[0].copy())
         pixmap = QPixmap.fromImage(im)
         self.img.setPixmap(pixmap)
 
