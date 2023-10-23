@@ -4,7 +4,7 @@ Faster version of stable diffusion running on CPU.
 
 Took 21 seconds to generate single 512x512 image on Core i7-12700
 
-Based on Latent Consistency Models.
+Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) .
 
 ![Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/fastsdcpu-screenshot.png)
 
