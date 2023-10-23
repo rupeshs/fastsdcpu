@@ -20,6 +20,5 @@ for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
 
 echo Python version: %python_version%
 
-
-set PATH=%PATH%;%~dp0env\envs\fastsd-env\Lib\site-packages\openvino\libs
-%PYTHON_COMMAND% -m venv "%~dp0env"  && python "%~dp0main.py"
+set PATH=%PATH%;%~dp0env\Lib\site-packages\openvino\libs
+call "%~dp0env\Scripts\activate.bat"  && python "%~dp0main.py"
