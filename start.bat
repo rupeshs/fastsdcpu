@@ -1,17 +1,18 @@
-
 @echo off
 setlocal
 echo Starting fastsdcpu...
 
 set "PYTHON_COMMAND=python"
 
-where python >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Error: Python not found, please install Python 3.8 or higher.
-        exit /b 1
-    ) 
-
-echo Found %PYTHON_COMMAND% command
+call python --version > nul 2>&1
+if %errorlevel% equ 0 (
+    echo Python command check :OK
+) else (
+    echo Error: Python command not found, please install Python 3.8 or higher and try again.
+    pause
+    exit /b 1
+    
+)
 
 :check_python_version
 for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
@@ -21,4 +22,4 @@ for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
 echo Python version: %python_version%
 
 set PATH=%PATH%;%~dp0env\Lib\site-packages\openvino\libs
-call "%~dp0env\Scripts\activate.bat"  && python "%~dp0main.py"
+call "%~dp0env\Scripts\activate.bat"  && %PYTHON_COMMAND% "%~dp0main.py"
