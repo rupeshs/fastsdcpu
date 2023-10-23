@@ -34,19 +34,6 @@ $PYTHON_COMMAND -m venv "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
 pip install -r "$BASEDIR/requirements.txt"
-
-if grep -q -F "python3 main.py" "start.sh"; then
-      if [ "$PYTHON_COMMAND" != "python3" ]; then
-          echo "Updating to python in start.sh"
-          sed -i "s/python3/python/g" "start.sh"
-      fi 
-else
-    
-    if [ "$PYTHON_COMMAND" != "python" ]; then
-          echo "Updating to python3 in start.sh"
-          sed -i "s/python/python3/g" "start.sh"
-      fi 
-fi
 chmod +x "start.sh"
 
 read -n1 -r -p "FastSD CPU installation completed,press any key to continue..." key
