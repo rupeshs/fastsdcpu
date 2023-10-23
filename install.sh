@@ -15,16 +15,6 @@ fi
 
 echo "Found $PYTHON_COMMAND command"
 
-check_python_version() {
-    python_version=$($PYTHON_COMMAND --version 2>&1 | awk '{print $2}') 
-
-    if awk -v ver="$python_version" 'BEGIN { if (ver >= 3.8) exit 0; else exit 1; }'; then
-        return 0 
-    else
-        return 1  
-    fi
-}
-
 python_version=$($PYTHON_COMMAND --version 2>&1 | awk '{print $2}')  
 echo "Python version : $python_version"
 
