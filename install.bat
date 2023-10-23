@@ -1,16 +1,19 @@
 
 @echo off
 setlocal
+echo Starting FastSD CPU env installation...
 
 set "PYTHON_COMMAND=python"
 
-where python >nul 2>&1
-    if %errorlevel% neq 0 (
-        echo Error: Python not found, please install Python 3.8 or higher.
-        exit /b 1
-    ) 
-
-echo Found %PYTHON_COMMAND% command
+call python --version > nul 2>&1
+if %errorlevel% equ 0 (
+    echo Python command check :OK
+) else (
+    echo Error: Python command not found, please install Python 3.8 or higher and try again.
+    pause
+    exit /b 1
+    
+)
 
 :check_python_version
 for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
