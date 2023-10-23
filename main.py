@@ -322,8 +322,8 @@ class MainWindow(QMainWindow):
             height=img_height,
             output_type="pil",
         ).images
-        elasped = time() - tick
-        print(f"Elasped time : {elasped:.2f} sec")
+        elapsed = time() - tick
+        print(f"Elapsed time : {elapsed:.2f} sec")
         image_id = uuid4()
         if not os.path.exists(self.output_path):
             os.mkdir(self.output_path)
