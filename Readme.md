@@ -2,7 +2,7 @@
 
 Faster version of stable diffusion running on CPU.
 
-Took 21 seconds to generate single 512x512 image on Core i7-12700
+Took 10 seconds to generate single 512x512 image on Core i7-12700(With OpenVINO).
 
 Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) .
 
