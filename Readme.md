@@ -25,7 +25,9 @@ We found a 50% speed improvement using OpenVINO.It
 Took 10 seconds to generate single 512x512 image on Core i7-12700
 
 ## LCM Models 
-Currently, the LCM model(Dreamshaper_v7) is supported(Diffuser format).
+
+Currently LCM model(Dreamshaper_v7) is supported (Diffuser format).
+
 - https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
 - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
 
@@ -35,13 +37,17 @@ Currently, the LCM model(Dreamshaper_v7) is supported(Diffuser format).
 Clone/download this repo or download release.
 
 ### Installation
- - Double click `install.bat`  (It will take some time to install,depending on your internet speed)
+
+ - Double click `install.bat`  (It will take some time to install,depends on your internet speed.)
+
+
+
 
 ### Run
 - To start fastsdcpu double click `start.bat`
 
 ## FastSD CPU on Linux
-Ensure that you have Python 3.8 higher installed.
+Ensure that you have Python 3.8 or higher installed.
 
 - Clone/download this repo
 - In the terminal enter into fastsdcpu directory
@@ -50,7 +56,7 @@ Ensure that you have Python 3.8 higher installed.
   `chmod +x install.sh`
 
   `./install.sh`
-- To start Fast SD CPU run
+- To start FastSD CPU run
 
   `chmod +x start.sh`
 
