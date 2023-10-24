@@ -47,7 +47,9 @@ Clone/download this repo or download release.
 - To start fastsdcpu double click `start.bat`
 
 ## FastSD CPU on Linux
-Ensure that you have Python 3.8 or higher installed.
+
+Ensure that you have Python 3.8 or higher version installed.
+
 
 - Clone/download this repo
 - In the terminal enter into fastsdcpu directory
