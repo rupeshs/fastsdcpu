@@ -25,7 +25,7 @@ We found 50% speed improvement using OpenVINO.
 Took 10 seconds to generate single 512x512 image on Core i7-12700
 
 ## LCM Models 
-Currently LCM model(Dreamshaper_v7) supported, diffuser model format.
+Currently LCM model(Dreamshaper_v7) is supported(Diffuser format).
 - https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
 - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
 
