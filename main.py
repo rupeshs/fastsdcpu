@@ -33,12 +33,27 @@ from PIL.ImageQt import ImageQt
 import traceback, sys
 import os
 from uuid import uuid4
-from openvino.lcm_ov_pipeline import OVLatentConsistencyModelPipeline
-from openvino.lcm_scheduler import LCMScheduler
+from src.backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
+    OVLatentConsistencyModelPipeline,
+)
+from src.backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import LCMScheduler
 import psutil
 
 
 RESULTS_DIRECTORY = "results"
+
+
+def get_lcm_diffusion_pipeline_path():
+    main_path = os.path.dirname(os.path.abspath(__file__))
+    file_path = os.path.join(
+        main_path,
+        "src",
+        "backend",
+        "lcmdiffusion",
+        "pipelines",
+        "latent_consistency_txt2img.py",
+    )
+    return file_path
 
 
 def get_results_path():
@@ -178,6 +193,11 @@ class MainWindow(QMainWindow):
         self.seed_check = QCheckBox("Use Seed")
         self.safety_checker.setChecked(True)
         self.use_openvino_check = QCheckBox("Use OpenVINO")
+        self.use_local_model_folder = QCheckBox(
+            "Use locally cached model or downloaded model folder(offline)"
+        )
+        self.use_local_model_folder.setChecked(False)
+        self.safety_checker.setChecked(True)
         self.use_openvino_check.stateChanged.connect(self.use_openvino_changed)
 
         hlayout = QHBoxLayout()
@@ -190,6 +210,7 @@ class MainWindow(QMainWindow):
         vspacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         vlayout.addItem(hspacer)
         vlayout.addLayout(model_hlayout)
+        vlayout.addWidget(self.use_local_model_folder)
         vlayout.addItem(slider_hspacer)
         vlayout.addWidget(self.inference_steps_value)
         vlayout.addWidget(self.inference_steps)
@@ -267,14 +288,16 @@ class MainWindow(QMainWindow):
                     "deinferno/LCM_Dreamshaper_v7-openvino",
                     scheduler=scheduler,
                     compile=False,
+                    local_files_only=self.use_local_model_folder.isChecked(),
                 )
             else:
                 if self.pipeline:
                     del self.pipeline
                 self.pipeline = DiffusionPipeline.from_pretrained(
                     model_id,
-                    custom_pipeline="latent_consistency_txt2img",
+                    custom_pipeline=get_lcm_diffusion_pipeline_path(),
                     custom_revision="main",
+                    local_files_only=self.use_local_model_folder.isChecked(),
                 )
                 self.pipeline.to(
                     torch_device=self.device,

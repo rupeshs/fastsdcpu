@@ -23,7 +23,3 @@ echo Python version: %python_version%
 
 set PATH=%PATH%;%~dp0env\Lib\site-packages\openvino\libs
 call "%~dp0env\Scripts\activate.bat"  && %PYTHON_COMMAND% "%~dp0main.py"
-if %errorlevel% neq 0 (
-    echo Error: Failed to start FastSD CPU
-    Pause
-)

@@ -24,6 +24,11 @@ Currently it is tested on Windows only,by default it is disabled.
 We found 50% speed improvement using OpenVINO.
 Took 10 seconds to generate single 512x512 image on Core i7-12700
 
+## LCM Models 
+Currently LCM model(Dreamshaper_v7) supported, diffuser model format.
+- https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
+- https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
+
 ## FastSD CPU on Windows
 :exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
 
