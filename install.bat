@@ -1,6 +1,28 @@
-"%~dp0tools\windows\micromamba.exe" -r "%~dp0env" create -y -f "%~dp0environment.yml"
-cd "%~dp0env\condabin\"
-call activate.bat
-call micromamba activate "%~dp0env\envs\fastsd-env" && pip install -r "%~dp0requirements.txt"
-echo Env installation completed.
+
+@echo off
+setlocal
+echo Starting FastSD CPU env installation...
+
+set "PYTHON_COMMAND=python"
+
+call python --version > nul 2>&1
+if %errorlevel% equ 0 (
+    echo Python command check :OK
+) else (
+    echo "Error: Python command not found,please install Python(Recommended : Python 3.10 or Python 3.11) and try again."
+    pause
+    exit /b 1
+    
+)
+
+:check_python_version
+for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
+    set "python_version=%%I"
+)
+
+echo Python version: %python_version%
+
+%PYTHON_COMMAND% -m venv "%~dp0env" 
+call "%~dp0env\Scripts\activate.bat" && pip install -r "%~dp0requirements.txt"
+echo FastSD CPU env installation completed.
 pause

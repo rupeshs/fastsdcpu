@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
+echo Starting FastSD CPU env installation...
 set -e
 PYTHON_COMMAND="python3"
 
 if ! command -v python3 &>/dev/null; then
     if ! command -v python &>/dev/null; then
-        echo "Error: Python not found, please install python 3.8 or higher"
+        echo "Error: Python not found, please install python 3.8 or higher and try again"
         exit 1
     fi
 fi
