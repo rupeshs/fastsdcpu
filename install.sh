@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+echo Starting FastSD CPU env installation...
 set -e
 PYTHON_COMMAND="python3"
 

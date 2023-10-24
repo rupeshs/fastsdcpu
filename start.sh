@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-echo Starting fastsdcpu please wait...
+echo Starting FastSD CPU please wait...
 set -e
 PYTHON_COMMAND="python3"
 
@@ -20,5 +20,6 @@ python_version=$($PYTHON_COMMAND --version 2>&1 | awk '{print $2}')
 echo "Python version : $python_version"
 
 BASEDIR=$(pwd)
+# shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
 $PYTHON_COMMAND main.py

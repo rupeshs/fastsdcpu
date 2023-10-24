@@ -1,4 +1,4 @@
-### FastSD CPU
+### FastSD CPU :sparkles:
 
 Faster version of stable diffusion running on CPU.
 
@@ -25,13 +25,14 @@ We found 50% speed improvement using OpenVINO.
 Took 10 seconds to generate single 512x512 image on Core i7-12700
 
 ## FastSD CPU on Windows
+:exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
 
-- Clone/download this repo or download release.
+Clone/download this repo or download release.
 
-### To install 
+### Installation
  - Double click `install.bat`  (It will take some time to install,depends on your internet speed)
 
-### To run
+### Run
 - To start fastsdcpu double click `start.bat`
 
 ## FastSD CPU on Linux
@@ -44,7 +45,7 @@ Ensure that you have Python 3.8 higher installed.
   `chmod +x install.sh`
 
   `./install.sh`
-- To start fastsdcpu run
+- To start Fast SD CPU run
 
   `chmod +x start.sh`
 
