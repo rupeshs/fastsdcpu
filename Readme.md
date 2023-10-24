@@ -12,7 +12,7 @@ Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consis
 - Supports 256,512,768 image sizes
 - Supports Windows and Linux
 - Saves images
-- Settings to control,steps,guidance,seed
+- Settings to control,steps,guidance and seed
 - Added safety checker setting
 - Maximum inference steps increased to 25
 - OpenVINO support
@@ -20,12 +20,12 @@ Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consis
 ## OpenVINO support
 
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
-Currently it is tested on Windows only,by default it is disabled.
-We found 50% speed improvement using OpenVINO.
+Currently, it is tested on Windows only,by default it is disabled.
+We found a 50% speed improvement using OpenVINO.It 
 Took 10 seconds to generate single 512x512 image on Core i7-12700
 
 ## LCM Models 
-Currently LCM model(Dreamshaper_v7) is supported(Diffuser format).
+Currently, the LCM model(Dreamshaper_v7) is supported(Diffuser format).
 - https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
 - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
 
@@ -35,7 +35,7 @@ Currently LCM model(Dreamshaper_v7) is supported(Diffuser format).
 Clone/download this repo or download release.
 
 ### Installation
- - Double click `install.bat`  (It will take some time to install,depends on your internet speed)
+ - Double click `install.bat`  (It will take some time to install,depending on your internet speed)
 
 ### Run
 - To start fastsdcpu double click `start.bat`
