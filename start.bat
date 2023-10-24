@@ -8,7 +8,7 @@ call python --version > nul 2>&1
 if %errorlevel% equ 0 (
     echo Python command check :OK
 ) else (
-    echo Error: Python command not found, please install Python (Recommended : Python 3.10 or Python 3.11) and try again
+    echo "Error: Python command not found, please install Python (Recommended : Python 3.10 or Python 3.11) and try again"
     pause
     exit /b 1
     
