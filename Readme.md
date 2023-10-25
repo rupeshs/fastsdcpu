@@ -20,9 +20,9 @@ Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consis
 ## OpenVINO support
 
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
-Currently, it is tested on Windows only,by default it is disabled.
+Currently, it is tested on Windows only, by default it is disabled.
 We found a 50% speed improvement using OpenVINO.It 
-Took 10 seconds to generate single 512x512 image on Core i7-12700
+Took 10 seconds to generate a single 512x512 image on Core i7-12700
 
 ## LCM Models 
 
