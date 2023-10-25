@@ -1,65 +1,56 @@
-### FastSD CPU :sparkles:
+# FastSD CPU: A Quick and Efficient Image Generator! :rocket:
 
-Faster version of stable diffusion running on CPU.
+FastSD CPU is a high-speed image generation tool designed for your Core i7-12700 CPU. It creates stunning 512x512 images swiftly and efficiently, taking just 10 seconds per image (thanks to OpenVINO optimization!). This tool is based on the fantastic work done by the creators of [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model).
 
-Took 10 seconds to generate single 512x512 image on Core i7-12700(With OpenVINO).
+![FastSD CPU Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/fastsdcpu-screenshot.png)
 
-Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) .
+## Key Features :star2:
+- **Various Image Sizes:** FastSD CPU supports image sizes of 256x256, 512x512, and 768x768, allowing you to generate the perfect image for your needs.
+- **Cross-Platform Compatibility:** Whether you're on Windows or Linux, FastSD CPU is here for you.
+- **Save Your Creations:** FastSD CPU enables you to save your generated images for later use or sharing.
+- **Customizable Settings:** You have control over the number of steps, guidance, seed, and safety checks, ensuring you get the output you desire.
+- **Enhanced Performance:** With OpenVINO support, experience a whopping 50% speed boost, making your image generation process even faster and more efficient.
 
-![Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/fastsdcpu-screenshot.png)
+## OpenVINO Optimization :zap:
 
-## Features
-- Supports 256,512,768 image sizes
-- Supports Windows and Linux
-- Saves images
-- Settings to control,steps,guidance and seed
-- Added safety checker setting
-- Maximum inference steps increased to 25
-- OpenVINO support
+We'd like to extend our gratitude to [deinferno](https://github.com/deinferno) for contributing the OpenVINO model. By default, OpenVINO support is disabled, but if you're on Windows, you can enable it for blazing-fast performance. With OpenVINO, generating a single 512x512 image takes just 10 seconds on a Core i7-12700 processor.
 
-## OpenVINO support
+## Supported LCM Models :paintbrush:
+FastSD CPU currently supports the LCM model (Dreamshaper_v7) in Diffuser format. You can find these models at the following locations:
+- [SimianLuo Dreamshaper_v7](https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7)
+- [deinferno Dreamshaper_v7 (OpenVINO optimized)](https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino)
 
-Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
-Currently, it is tested on Windows only,by default it is disabled.
-We found a 50% speed improvement using OpenVINO.It 
-Took 10 seconds to generate single 512x512 image on Core i7-12700
+## Installation Guide :computer:
 
-## LCM Models 
+### For Windows Users:
 
-Currently LCM model(Dreamshaper_v7) is supported (Diffuser format).
+1. **Prerequisites:** Ensure you have a working Python installation (Recommended: Python 3.10 or 3.11).
 
-- https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
-- https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
+2. **Download and Setup:**
+   - Clone/download this repository or grab the latest release.
+   - Double click on `install.bat` and wait for the installation to complete (duration depends on your internet speed).
 
-## FastSD CPU on Windows
-:exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
+3. **Run FastSD CPU:**
+   - Double click `start.bat` to launch FastSD CPU and begin your creative journey!
 
-Clone/download this repo or download release.
+### For Linux Users:
 
-### Installation
+1. **Python Installation:** Make sure you have Python 3.8 or a higher version installed on your system.
 
- - Double click `install.bat`  (It will take some time to install,depends on your internet speed.)
+2. **Download and Setup:**
+   - Clone/download this repository to your local machine.
+   - Navigate to the FastSD CPU directory in your terminal.
+   - Run the following commands:
+     ```
+     chmod +x install.sh
+     ./install.sh
+     ```
 
+3. **Start Generating:**
+   - To start FastSD CPU, use the following commands:
+     ```
+     chmod +x start.sh
+     ./start.sh
+     ```
 
-
-
-### Run
-- To start fastsdcpu double click `start.bat`
-
-## FastSD CPU on Linux
-
-Ensure that you have Python 3.8 or higher version installed.
-
-
-- Clone/download this repo
-- In the terminal enter into fastsdcpu directory
-- Run the following command
-
-  `chmod +x install.sh`
-
-  `./install.sh`
-- To start FastSD CPU run
-
-  `chmod +x start.sh`
-
-  `./start.sh`
+Now you're all set to create amazing images with FastSD CPU! Enjoy the speed and simplicity of your new image generation tool. Happy creating! 🎨✨
