@@ -9,13 +9,18 @@ Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consis
 ![Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/fastsdcpu-screenshot.png)
 
 ## Features
-- Supports 256,512,768 image sizes
-- Supports Windows and Linux
-- Saves images
-- Settings to control,steps,guidance and seed
-- Added safety checker setting
-- Maximum inference steps increased to 25
-- OpenVINO support
+ - Image Sizes: Customize your images with support for 256, 512, and 768 sizes.
+ - Platform Compatibility: Seamlessly run the application on both Windows and Linux.
+ - Save Your Creations: Easily save your edited images with the built-in save feature.
+ - Fine-Tune Settings: Take control of your editing process with adjustable settings for the number of steps, guidance, and seed.
+
+## Safety First:
+ - Enhanced Safety Checker: Ensuring your creations are worry-free.
+
+## Maximum Potential:
+ - Push the Limits: Maximum inference steps extended to 25.
+ - OpenVINO Magic: Exclusive support for OpenVINO - Thanks to deinferno's contribution.
+ - Windows Wonder: Enjoy a 50% speed boost, with a single 512x512 image generated in just 10 seconds on a Core i7-12700.
 
 ## OpenVINO support
 
@@ -24,42 +29,37 @@ Currently, it is tested on Windows only,by default it is disabled.
 We found a 50% speed improvement using OpenVINO.It 
 Took 10 seconds to generate single 512x512 image on Core i7-12700
 
-## LCM Models 
+## Unlock Your Dreams with LCM Models: 
 
-Currently LCM model(Dreamshaper_v7) is supported (Diffuser format).
+Step into Dreamshaper_v7's world, supported in Diffuser format.
 
+- Model URLs for the curious:
 - https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
 - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
 
 ## FastSD CPU on Windows
-:exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
 
-Clone/download this repo or download release.
+ - Windows Wonders:
+   - A smooth Python experience (Recommended: Python 3.10 or 3.11).
+ - Experience the Art:
 
-### Installation
+   - Quick Installation:
+       - Clone or download this repository.
+       - Execute `install.bat` with patience (installation time depends on your internet speed).
 
- - Double click `install.bat`  (It will take some time to install,depends on your internet speed.)
-
-
-
-
-### Run
-- To start fastsdcpu double click `start.bat`
+ -  The Magic Begins:
+       - Start FastSD CPU by simply double-clicking `start.bat.`
 
 ## FastSD CPU on Linux
 
-Ensure that you have Python 3.8 or higher version installed.
+ - Linux Lovers:
+   - Ensure Python 3.8 or higher is on your side.
+ - Your Art Studio:
+   - Installation Ritual:
+       - Clone or download this repository.
+       - Navigate to the "fastsdcpu" directory in your terminal.
+ - The Linux Magic:
+   - Run `install.sh` with `chmod +x install.sh` and `./install.sh.`
+   - Start the enchantment by running `start.sh` with `chmod +x start.sh` and `./start.sh.`
 
-
-- Clone/download this repo
-- In the terminal enter into fastsdcpu directory
-- Run the following command
-
-  `chmod +x install.sh`
-
-  `./install.sh`
-- To start FastSD CPU run
-
-  `chmod +x start.sh`
-
-  `./start.sh`
+## Let Your Imagination Run Wild - Embrace the Magic!
