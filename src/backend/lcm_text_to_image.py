@@ -8,6 +8,7 @@ from os import path
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
+import numpy as np
 
 
 class LCMTextToImage:
@@ -17,6 +18,7 @@ class LCMTextToImage:
         self.pipeline = None
         self.use_openvino = False
         self.device = None
+        self.previous_model_id = None
 
     def _get_lcm_diffusion_pipeline_path(self) -> str:
         script_path = path.dirname(path.abspath(__file__))
@@ -36,32 +38,35 @@ class LCMTextToImage:
         use_local_model: bool = False,
     ) -> None:
         self.use_openvino = use_openvino
-        if self.use_openvino:
-            if self.pipeline:
-                del self.pipeline
-            scheduler = LCMScheduler.from_pretrained(
-                model_id,
-                subfolder="scheduler",
-            )
-            self.pipeline = OVLatentConsistencyModelPipeline.from_pretrained(
-                LCM_DEFAULT_MODEL_OPENVINO,
-                scheduler=scheduler,
-                compile=False,
-                local_files_only=use_local_model,
-            )
-        else:
-            if self.pipeline:
-                del self.pipeline
-            self.pipeline = DiffusionPipeline.from_pretrained(
-                model_id,
-                custom_pipeline=self._get_lcm_diffusion_pipeline_path(),
-                custom_revision="main",
-                local_files_only=use_local_model,
-            )
-            self.pipeline.to(
-                torch_device=self.device,
-                torch_dtype=torch.float32,
-            )
+        if self.pipeline is None or self.previous_model_id != model_id:
+            if self.use_openvino:
+                if self.pipeline:
+                    del self.pipeline
+                scheduler = LCMScheduler.from_pretrained(
+                    model_id,
+                    subfolder="scheduler",
+                )
+                self.pipeline = OVLatentConsistencyModelPipeline.from_pretrained(
+                    model_id,
+                    scheduler=scheduler,
+                    compile=False,
+                    local_files_only=use_local_model,
+                )
+            else:
+                if self.pipeline:
+                    del self.pipeline
+
+                self.pipeline = DiffusionPipeline.from_pretrained(
+                    model_id,
+                    custom_pipeline=self._get_lcm_diffusion_pipeline_path(),
+                    custom_revision="main",
+                    local_files_only=use_local_model,
+                )
+                self.pipeline.to(
+                    torch_device=self.device,
+                    torch_dtype=torch.float32,
+                )
+            self.previous_model_id = model_id
 
     def generate(
         self,
@@ -70,7 +75,11 @@ class LCMTextToImage:
     ) -> Any:
         if lcm_diffusion_setting.use_seed:
             cur_seed = lcm_diffusion_setting.seed
-            torch.manual_seed(cur_seed)
+            if self.use_openvino:
+                np.random.seed(cur_seed)
+            else:
+                torch.manual_seed(cur_seed)
+
         if self.use_openvino:
             print("Using OpenVINO")
             if reshape:

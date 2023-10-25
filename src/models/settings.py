@@ -5,4 +5,4 @@ from paths import FastStableDiffusionPaths
 
 class Settings(BaseModel):
     results_path: str = FastStableDiffusionPaths().get_results_path()
-    lcm_setting: LCMDiffusionSetting = LCMDiffusionSetting().dict()
+    lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting()
