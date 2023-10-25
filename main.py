@@ -227,7 +227,7 @@ class MainWindow(QMainWindow):
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setText(
-            """<h1>FastSD CPU v1.0.0 beta 4</h1> 
+            """<h1>FastSD CPU v1.0.0 beta 6</h1> 
                <h3>(c)2023 - Rupesh Sreeraman</h3>
                 <h3>Faster stable diffusion on CPU</h3>
                  <h3>Based on Latent Consistency Models</h3>
