@@ -37,7 +37,7 @@ from src.backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
     OVLatentConsistencyModelPipeline,
 )
 from src.backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import LCMScheduler
-import psutil
+import numpy as np
 
 
 RESULTS_DIRECTORY = "results"
@@ -190,14 +190,11 @@ class MainWindow(QMainWindow):
 
         self.safety_checker = QCheckBox("Use safety checker")
         self.safety_checker.setChecked(True)
-        self.seed_check = QCheckBox("Use Seed")
-        self.safety_checker.setChecked(True)
         self.use_openvino_check = QCheckBox("Use OpenVINO")
         self.use_local_model_folder = QCheckBox(
             "Use locally cached model or downloaded model folder(offline)"
         )
         self.use_local_model_folder.setChecked(False)
-        self.safety_checker.setChecked(True)
         self.use_openvino_check.stateChanged.connect(self.use_openvino_changed)
 
         hlayout = QHBoxLayout()
@@ -306,7 +303,10 @@ class MainWindow(QMainWindow):
 
         if self.use_seed:
             cur_seed = int(self.seed_value.text())
-            torch.manual_seed(cur_seed)
+            if self.use_openvino:
+                np.random.seed(cur_seed)
+            else:
+                torch.manual_seed(cur_seed)
 
         print(f"Prompt : {prompt}")
         print(f"Resolution : {img_width} x {img_height}")
