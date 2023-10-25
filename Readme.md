@@ -63,3 +63,6 @@ Ensure that you have Python 3.8 or higher version installed.
   `chmod +x start.sh`
 
   `./start.sh`
+### License
+
+The fastsdcpu project is available as open source under the terms of the [MIT license](https://github.com/rupeshs/fastsdcpu/blob/main/LICENSE)
