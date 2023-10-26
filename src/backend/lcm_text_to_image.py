@@ -88,7 +88,7 @@ class LCMTextToImage:
                     batch_size=1,
                     height=lcm_diffusion_setting.image_height,
                     width=lcm_diffusion_setting.image_width,
-                    num_images_per_prompt=1,
+                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                 )
                 self.pipeline.compile()
 
@@ -102,6 +102,7 @@ class LCMTextToImage:
             width=lcm_diffusion_setting.image_width,
             height=lcm_diffusion_setting.image_height,
             output_type="pil",
+            num_images_per_prompt=lcm_diffusion_setting.number_of_images,
         ).images
 
         return result_images

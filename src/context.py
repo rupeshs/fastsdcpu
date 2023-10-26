@@ -4,6 +4,7 @@ from models.interface_types import InterfaceType
 from backend.lcm_text_to_image import LCMTextToImage
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 from time import time
+from backend.image_saver import ImageSaver
 
 
 class Context:
@@ -27,5 +28,10 @@ class Context:
             reshape,
         )
         elapsed = time() - tick
+        ImageSaver.save_images(
+            settings.results_path,
+            images=images,
+            lcm_diffusion_setting=settings.lcm_diffusion_setting,
+        )
         print(f"Elapsed time : {elapsed:.2f} sec")
         return images

@@ -143,6 +143,13 @@ class MainWindow(QMainWindow):
         self.inference_steps.setValue(4)
         self.inference_steps.valueChanged.connect(self.update_steps_label)
 
+        self.num_images_value = QLabel("Number of images: 1")
+        self.num_images = QSlider(orientation=Qt.Orientation.Horizontal)
+        self.num_images.setMaximum(100)
+        self.num_images.setMinimum(1)
+        self.num_images.setValue(1)
+        self.num_images.valueChanged.connect(self.update_num_images_label)
+
         self.guidance_value = QLabel("Guidance scale: 8")
         self.guidance = QSlider(orientation=Qt.Orientation.Horizontal)
         self.guidance.setMaximum(200)
@@ -209,6 +216,8 @@ class MainWindow(QMainWindow):
         vlayout.addItem(slider_hspacer)
         vlayout.addWidget(self.inference_steps_value)
         vlayout.addWidget(self.inference_steps)
+        vlayout.addWidget(self.num_images_value)
+        vlayout.addWidget(self.num_images)
         vlayout.addWidget(self.width_value)
         vlayout.addWidget(self.width)
         vlayout.addWidget(self.height_value)
@@ -292,6 +301,10 @@ class MainWindow(QMainWindow):
         self.inference_steps_value.setText(f"Number of inference steps: {value}")
         self.config.settings.lcm_diffusion_setting.inference_steps = value
 
+    def update_num_images_label(self, value):
+        self.num_images_value.setText(f"Number of images: {value}")
+        self.config.settings.lcm_diffusion_setting.number_of_images = value
+
     def update_guidance_label(self, value):
         val = round(int(value) / 10, 1)
         self.guidance_value.setText(f"Guidance scale: {val}")
@@ -320,13 +333,6 @@ class MainWindow(QMainWindow):
             model_id = self.lcm_model.text()
 
         self.config.settings.lcm_diffusion_setting.model_id = model_id
-        # if self.pipeline is None or self.previous_model != model_id:
-        #     print(f"Using LCM model {model_id}")
-        #     self.context.init(
-        #         model_id=model_id,
-        #         use_openvino=self.config.settings.lcm_diffusion_setting.use_openvino,
-        #         use_local_model=self.config.settings.lcm_diffusion_setting.use_offline_model,
-        #     )
 
         pprint(dict(self.config.settings.lcm_diffusion_setting))
 
@@ -347,14 +353,6 @@ class MainWindow(QMainWindow):
             reshape_required,
         )
 
-        image_id = uuid4()
-        if not os.path.exists(self.config.settings.results_path):
-            os.mkdir(self.config.settings.results_path)
-
-        images[0].save(
-            os.path.join(self.config.settings.results_path, f"{image_id}.png")
-        )
-        print(f"Image {image_id}.png saved")
         im = ImageQt(images[0]).copy()
         pixmap = QPixmap.fromImage(im)
         self.img.setPixmap(pixmap)

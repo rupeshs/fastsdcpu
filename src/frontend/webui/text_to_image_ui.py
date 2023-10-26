@@ -23,6 +23,7 @@ def generate_text_to_image(
     image_width,
     inference_steps,
     guidance_scale,
+    num_images,
     seed,
     use_openvino,
     use_safety_checker,
@@ -41,7 +42,7 @@ def generate_text_to_image(
         image_width=image_width,
         inference_steps=inference_steps,
         guidance_scale=guidance_scale,
-        # number_of_images=num_images,
+        number_of_images=num_images,
         seed=seed,
         use_openvino=use_openvino,
         use_safety_checker=use_safety_checker,
@@ -110,13 +111,13 @@ def get_text_to_image_ui() -> None:
                     guidance_scale = gr.Slider(
                         1.0, 30.0, value=8, step=0.5, label="Guidance Scale"
                     )
-                    # num_images = gr.Slider(
-                    #     1,
-                    #     50,
-                    #     value=1,
-                    #     step=1,
-                    #     label="Number of images to generate",
-                    # )
+                    num_images = gr.Slider(
+                        1,
+                        50,
+                        value=1,
+                        step=1,
+                        label="Number of images to generate",
+                    )
 
                     seed = gr.Number(
                         label="Seed",
@@ -148,7 +149,7 @@ def get_text_to_image_ui() -> None:
                         image_width,
                         num_inference_steps,
                         guidance_scale,
-                        # num_images,
+                        num_images,
                         seed,
                         openvino_checkbox,
                         safety_checker_checkbox,
