@@ -1,65 +1,57 @@
 ### FastSD CPU :sparkles:
 
-Faster version of stable diffusion running on CPU.
+FastSD CPU is a faster version of stable diffusion running on CPU, capable of generating a single 512x512 image in just 10 seconds on a Core i7-12700 (with OpenVINO acceleration).
 
-Took 10 seconds to generate single 512x512 image on Core i7-12700(With OpenVINO).
-
-Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) .
+It is based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model).
 
 ![Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/fastsdcpu-screenshot.png)
 
 ## Features
-- Supports 256,512,768 image sizes
-- Supports Windows and Linux
-- Saves images
-- Settings to control,steps,guidance and seed
-- Added safety checker setting
-- Maximum inference steps increased to 25
-- OpenVINO support
+- Supports 256, 512, and 768 image sizes.
+- Compatible with both Windows and Linux.
+- Ability to save generated images.
+- Adjustable settings for controlling steps, guidance, and seed.
+- Includes a safety checker setting.
+- Maximum inference steps have been increased to 25.
+- OpenVINO support for enhanced performance.
 
-## OpenVINO support
+## OpenVINO Support
 
-Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
-Currently, it is tested on Windows only,by default it is disabled.
-We found a 50% speed improvement using OpenVINO.It 
-Took 10 seconds to generate single 512x512 image on Core i7-12700
+Special thanks to [deinferno](https://github.com/deinferno) for contributing the OpenVINO model. OpenVINO support is currently tested on Windows only and is disabled by default, offering a significant 50% speed improvement. It took only 10 seconds to generate a single 512x512 image on a Core i7-12700.
 
 ## LCM Models 
 
-Currently LCM model(Dreamshaper_v7) is supported (Diffuser format).
+FastSD CPU supports the LCM model (Dreamshaper_v7) in Diffuser format:
 
-- https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
-- https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
+- [SimianLuo/LCM_Dreamshaper_v7](https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7)
+- [deinferno/LCM_Dreamshaper_v7-openvino](https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino)
 
 ## FastSD CPU on Windows
-:exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
+:exclamation: **You must have a working Python installation. (Recommended versions: Python 3.10 or 3.11)**
 
-Clone/download this repo or download release.
+To get started on Windows:
+1. Clone/download this repository or download the release.
+2. Installation
+    - Double-click `install.bat` (Note: Installation time may vary based on your internet speed).
 
-### Installation
-
- - Double click `install.bat`  (It will take some time to install,depends on your internet speed.)
-
-
-
-
-### Run
-- To start fastsdcpu double click `start.bat`
+3. Running
+    - To start FastSD CPU, simply double-click `start.bat`.
 
 ## FastSD CPU on Linux
 
-Ensure that you have Python 3.8 or higher version installed.
+To run FastSD CPU on Linux:
+1. Ensure that you have Python 3.8 or a higher version installed.
 
+2. Clone/download this repository.
 
-- Clone/download this repo
-- In the terminal enter into fastsdcpu directory
-- Run the following command
+3. In the terminal, navigate to the FastSD CPU directory.
 
-  `chmod +x install.sh`
+4. Run the following commands:
+    - `chmod +x install.sh`
+    - `./install.sh`
 
-  `./install.sh`
-- To start FastSD CPU run
+5. To start FastSD CPU, run:
+    - `chmod +x start.sh`
+    - `./start.sh`.
 
-  `chmod +x start.sh`
-
-  `./start.sh`
+Feel free to use this improved version while keeping the original text formats intact.
