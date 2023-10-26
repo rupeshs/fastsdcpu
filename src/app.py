@@ -7,5 +7,5 @@ from frontend.webui.ui import start_webui
 show_system_info()
 app_settings = AppSettings()
 app_settings.load()
-# start_gui([], app_settings)
-start_webui()
+start_gui([], app_settings)
+# start_webui()

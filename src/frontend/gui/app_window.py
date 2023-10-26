@@ -39,6 +39,9 @@ from constants import (
 from frontend.gui.image_generator_worker import ImageGeneratorWorker
 from app_settings import AppSettings
 from paths import FastStableDiffusionPaths
+from frontend.utils import is_reshape_required
+from context import Context
+from models.interface_types import InterfaceType
 
 
 class MainWindow(QMainWindow):
@@ -54,7 +57,7 @@ class MainWindow(QMainWindow):
         self.previous_width = 0
         self.previous_height = 0
         self.previous_model = ""
-        self.lcm_text_to_image = LCMTextToImage()
+        self.context = Context(InterfaceType.GUI)
         self.init_ui_values()
         print(f"Output path : {  self.config.settings.results_path}")
 
@@ -316,35 +319,34 @@ class MainWindow(QMainWindow):
         else:
             model_id = self.lcm_model.text()
 
-        if self.pipeline is None or self.previous_model != model_id:
-            print(f"Using LCM model {model_id}")
-            self.lcm_text_to_image.init(
-                model_id=model_id,
-                use_openvino=self.config.settings.lcm_diffusion_setting.use_openvino,
-                use_local_model=self.config.settings.lcm_diffusion_setting.use_offline_model,
-            )
+        self.config.settings.lcm_diffusion_setting.model_id = model_id
+        # if self.pipeline is None or self.previous_model != model_id:
+        #     print(f"Using LCM model {model_id}")
+        #     self.context.init(
+        #         model_id=model_id,
+        #         use_openvino=self.config.settings.lcm_diffusion_setting.use_openvino,
+        #         use_local_model=self.config.settings.lcm_diffusion_setting.use_offline_model,
+        #     )
 
         pprint(dict(self.config.settings.lcm_diffusion_setting))
-        tick = time()
+
         reshape_required = False
         if self.config.settings.lcm_diffusion_setting.use_openvino:
             # Detect dimension change
-            if (
-                self.previous_width
-                != self.config.settings.lcm_diffusion_setting.image_width
-                or self.previous_height
-                != self.config.settings.lcm_diffusion_setting.image_height
-                or self.previous_model != model_id
-            ):
-                pprint("Reshape and compile")
-                reshape_required = True
+            reshape_required = is_reshape_required(
+                self.previous_width,
+                self.config.settings.lcm_diffusion_setting.image_width,
+                self.previous_height,
+                self.config.settings.lcm_diffusion_setting.image_height,
+                self.previous_model,
+                model_id,
+            )
 
-        images = self.lcm_text_to_image.generate(
-            self.config.settings.lcm_diffusion_setting,
+        images = self.context.generate_text_to_image(
+            self.config.settings,
             reshape_required,
         )
-        elapsed = time() - tick
-        print(f"Elapsed time : {elapsed:.2f} sec")
+
         image_id = uuid4()
         if not os.path.exists(self.config.settings.results_path):
             os.mkdir(self.config.settings.results_path)

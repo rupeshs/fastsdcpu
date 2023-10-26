@@ -1,12 +1,20 @@
 from typing import Any
 import gradio as gr
-from backend.lcm_text_to_image import LCMTextToImage
+
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
-from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 from pprint import pprint
+from context import Context
+from models.interface_types import InterfaceType
+from app_settings import Settings
+from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
+from frontend.utils import is_reshape_required
 
 random_enabled = True
-lcm_text_to_image = LCMTextToImage()
+
+context = Context(InterfaceType.WEBUI)
+previous_width = 0
+previous_height = 0
+previous_model_id = ""
 
 
 def generate_text_to_image(
@@ -19,7 +27,15 @@ def generate_text_to_image(
     use_openvino,
     use_safety_checker,
 ) -> Any:
+    global previous_height, previous_width, previous_model_id
+    model_id = LCM_DEFAULT_MODEL
+    if use_openvino:
+        model_id = LCM_DEFAULT_MODEL_OPENVINO
+
+    use_seed = True if seed != -1 else False
+
     lcm_diffusion_settings = LCMDiffusionSetting(
+        model_id=model_id,
         prompt=prompt,
         image_height=image_height,
         image_width=image_width,
@@ -29,20 +45,32 @@ def generate_text_to_image(
         seed=seed,
         use_openvino=use_openvino,
         use_safety_checker=use_safety_checker,
+        use_seed=use_seed,
     )
-    pprint(lcm_diffusion_settings.model_dump())
+    settings = Settings(
+        lcm_diffusion_setting=lcm_diffusion_settings,
+    )
+    reshape = False
     if use_openvino:
-        lcm_text_to_image.init(
-            LCM_DEFAULT_MODEL_OPENVINO,
-            use_openvino,
-        )
-    else:
-        lcm_text_to_image.init(
-            LCM_DEFAULT_MODEL,
-            use_openvino,
+        reshape = is_reshape_required(
+            previous_width,
+            image_width,
+            previous_height,
+            image_height,
+            previous_model_id,
+            model_id,
         )
 
-    images = lcm_text_to_image.generate(lcm_diffusion_settings)
+    pprint(lcm_diffusion_settings.model_dump())
+
+    images = context.generate_text_to_image(
+        settings,
+        reshape,
+    )
+    previous_width = image_width
+    previous_height = image_height
+    previous_model_id = model_id
+
     return images
 
 
@@ -66,6 +94,7 @@ def get_text_to_image_ui() -> None:
                     lines=3,
                     placeholder="A fantasy landscape",
                 )
+                generate_btn = gr.Button("Generate", elem_id="generate_button")
 
                 with gr.Accordion("Advanced options", open=False):
                     image_height = gr.Slider(
@@ -126,13 +155,13 @@ def get_text_to_image_ui() -> None:
                     ]
 
             with gr.Column():
-                generate_btn = gr.Button("Generate", elem_id="generate_button")
                 output = gr.Gallery(
                     label="Generated images",
                     show_label=True,
                     elem_id="gallery",
                     columns=2,
                 )
+
     seed_checkbox.change(fn=random_seed, outputs=seed)
     generate_btn.click(
         fn=generate_text_to_image,
