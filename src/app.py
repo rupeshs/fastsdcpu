@@ -1,14 +1,11 @@
 from frontend.gui.ui import start_gui
 from app_settings import AppSettings
-import platform
+from utils import show_system_info
+from frontend.webui.ui import start_webui
 
-try:
-    print(f"Running on {platform.system()} platform")
-    print(f"OS: {platform.platform()}")
-    print(f"Processor: {platform.processor()}")
-except Exception as ex:
-    print(f"Error ocurred while getting system information {ex}")
 
+show_system_info()
 app_settings = AppSettings()
 app_settings.load()
-start_gui([], app_settings)
+# start_gui([], app_settings)
+start_webui()

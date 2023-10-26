@@ -34,3 +34,15 @@ class FastStableDiffusionPaths:
     def get_results_path() -> str:
         results_path = join_paths(get_app_path(), constants.RESULTS_DIRECTORY)
         return results_path
+
+    @staticmethod
+    def get_css_path():
+        app_dir = os.path.dirname(__file__)
+        css_path = os.path.join(
+            app_dir,
+            "frontend",
+            "webui",
+            "css",
+            "style.css",
+        )
+        return css_path

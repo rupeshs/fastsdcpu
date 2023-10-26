@@ -1,0 +1,23 @@
+footer {
+    visibility: hidden
+}
+
+#generate_button {
+    color: white;
+    border-color: #007bff;
+    background: #007bff;
+    width: 200px;
+    height: 50px;
+}
+
+#save_button {
+    color: white;
+    border-color: #028b40;
+    background: #01b97c;
+    width: 200px;
+}
+
+#settings_header {
+    background: rgb(245, 105, 105);
+
+}
