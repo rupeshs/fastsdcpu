@@ -5,7 +5,7 @@ from constants import LCM_DEFAULT_MODEL
 
 
 class LCMDiffusionSetting(BaseModel):
-    model_id: str = LCM_DEFAULT_MODEL
+    lcm_model_id: str = LCM_DEFAULT_MODEL
     prompt: str = ""
     image_height: Optional[int] = 512
     image_width: Optional[int] = 512

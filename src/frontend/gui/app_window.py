@@ -332,7 +332,7 @@ class MainWindow(QMainWindow):
         else:
             model_id = self.lcm_model.text()
 
-        self.config.settings.lcm_diffusion_setting.model_id = model_id
+        self.config.settings.lcm_diffusion_setting.lcm_model_id = model_id
 
         pprint(dict(self.config.settings.lcm_diffusion_setting))
 

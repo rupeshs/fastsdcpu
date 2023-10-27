@@ -22,4 +22,4 @@ for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
 echo Python version: %python_version%
 
 set PATH=%PATH%;%~dp0env\Lib\site-packages\openvino\libs
-call "%~dp0env\Scripts\activate.bat"  && %PYTHON_COMMAND% "%~dp0\src\app.py" -g
+call "%~dp0env\Scripts\activate.bat"  && %PYTHON_COMMAND% "%~dp0\src\app.py" -w
