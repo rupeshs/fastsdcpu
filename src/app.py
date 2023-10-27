@@ -1,7 +1,5 @@
-from frontend.gui.ui import start_gui
 from app_settings import AppSettings
 from utils import show_system_info
-from frontend.webui.ui import start_webui
 from constants import APP_VERSION
 from argparse import ArgumentParser
 
@@ -36,9 +34,13 @@ show_system_info()
 app_settings = AppSettings()
 app_settings.load()
 if args.gui:
+    from frontend.gui.ui import start_gui
+
     print("Starting in desktop GUI mode(Qt)")
     start_gui([], app_settings)
 elif args.webui:
+    from frontend.webui.ui import start_webui
+
     print("Starting in Web UI mode")
     if args.share:
         start_webui(True)
