@@ -42,6 +42,6 @@ class AppSettings:
         except Exception as ex:
             print(f"Error in saving settings : {ex}")
 
-    def load_default(self) -> dict:
+    def _load_default(self) -> dict:
         defult_config = Settings()
         return defult_config.dict()
