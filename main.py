@@ -282,10 +282,11 @@ class MainWindow(QMainWindow):
                     subfolder="scheduler",
                 )
                 self.pipeline = OVLatentConsistencyModelPipeline.from_pretrained(
-                    "deinferno/LCM_Dreamshaper_v7-openvino",
+                    model_id,
                     scheduler=scheduler,
                     compile=False,
                     local_files_only=self.use_local_model_folder.isChecked(),
+                    ov_config={"CACHE_DIR":""},
                 )
             else:
                 if self.pipeline:
@@ -340,7 +341,6 @@ class MainWindow(QMainWindow):
             prompt=prompt,
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
-            lcm_origin_steps=50,
             width=img_width,
             height=img_height,
             output_type="pil",

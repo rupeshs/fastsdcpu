@@ -54,3 +54,7 @@ FastSD CPU currently supports the LCM model (Dreamshaper_v7) in Diffuser format.
      ```
 
 Now you're all set to create amazing images with FastSD CPU! Enjoy the speed and simplicity of your new image generation tool. Happy creating! 🎨✨
+
+### License
+
+The fastsdcpu project is available as open source under the terms of the [MIT license](https://github.com/rupeshs/fastsdcpu/blob/main/LICENSE)

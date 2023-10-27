@@ -11,15 +11,18 @@ import openvino
 import torch
 
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
-from optimum.intel.openvino.modeling_diffusion import (
-    OVStableDiffusionPipeline,
-    OVModelUnet,
+from optimum.intel.openvino.modeling_diffusion import OVStableDiffusionPipeline, OVModelUnet, OVModelVaeDecoder, OVModelTextEncoder, OVModelVaeEncoder, VaeImageProcessor
+from optimum.utils import (
+    DIFFUSION_MODEL_TEXT_ENCODER_2_SUBFOLDER,
+    DIFFUSION_MODEL_TEXT_ENCODER_SUBFOLDER,
+    DIFFUSION_MODEL_UNET_SUBFOLDER,
+    DIFFUSION_MODEL_VAE_DECODER_SUBFOLDER,
+    DIFFUSION_MODEL_VAE_ENCODER_SUBFOLDER,
 )
 
+
 from diffusers import logging
-
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
-
 
 class LCMOVModelUnet(OVModelUnet):
     def __call__(
@@ -49,8 +52,8 @@ class LCMOVModelUnet(OVModelUnet):
         outputs = self.request(inputs, shared_memory=True)
         return list(outputs.values())
 
-
 class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
+
     def __init__(
         self,
         vae_decoder: openvino.runtime.Model,
@@ -70,26 +73,56 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         model_save_dir: Optional[Union[str, Path, TemporaryDirectory]] = None,
         **kwargs,
     ):
-        super().__init__(
-            vae_decoder,
-            text_encoder,
-            unet,
-            config,
-            tokenizer,
-            scheduler,
-            feature_extractor,
-            vae_encoder,
-            text_encoder_2,
-            tokenizer_2,
-            device,
-            dynamic_shapes,
-            compile,
-            ov_config,
-            model_save_dir,
-            **kwargs,
+        self._internal_dict = config
+        self._device = device.upper()
+        self.is_dynamic = dynamic_shapes
+        self.ov_config = ov_config if ov_config is not None else {}
+        self._model_save_dir = (
+            Path(model_save_dir.name) if isinstance(model_save_dir, TemporaryDirectory) else model_save_dir
         )
-
+        self.vae_decoder = OVModelVaeDecoder(vae_decoder, self)
         self.unet = LCMOVModelUnet(unet, self)
+        self.text_encoder = OVModelTextEncoder(text_encoder, self) if text_encoder is not None else None
+        self.text_encoder_2 = (
+            OVModelTextEncoder(text_encoder_2, self, model_name=DIFFUSION_MODEL_TEXT_ENCODER_2_SUBFOLDER)
+            if text_encoder_2 is not None
+            else None
+        )
+        self.vae_encoder = OVModelVaeEncoder(vae_encoder, self) if vae_encoder is not None else None
+
+        if "block_out_channels" in self.vae_decoder.config:
+            self.vae_scale_factor = 2 ** (len(self.vae_decoder.config["block_out_channels"]) - 1)
+        else:
+            self.vae_scale_factor = 8
+
+        self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
+
+        self.tokenizer = tokenizer
+        self.tokenizer_2 = tokenizer_2
+        self.scheduler = scheduler
+        self.feature_extractor = feature_extractor
+        self.safety_checker = None
+        self.preprocessors = []
+
+        if self.is_dynamic:
+            self.reshape(batch_size=-1, height=-1, width=-1, num_images_per_prompt=-1)
+
+        if compile:
+            self.compile()
+
+        sub_models = {
+            DIFFUSION_MODEL_TEXT_ENCODER_SUBFOLDER: self.text_encoder,
+            DIFFUSION_MODEL_UNET_SUBFOLDER: self.unet,
+            DIFFUSION_MODEL_VAE_DECODER_SUBFOLDER: self.vae_decoder,
+            DIFFUSION_MODEL_VAE_ENCODER_SUBFOLDER: self.vae_encoder,
+            DIFFUSION_MODEL_TEXT_ENCODER_2_SUBFOLDER: self.text_encoder_2,
+        }
+        for name in sub_models.keys():
+            self._internal_dict[name] = (
+                ("optimum", sub_models[name].__class__.__name__) if sub_models[name] is not None else (None, None)
+            )
+
+        self._internal_dict.pop("vae", None)
 
     def _reshape_unet(
         self,
@@ -99,7 +132,7 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         width: int = -1,
         num_images_per_prompt: int = -1,
         tokenizer_max_length: int = -1,
-    ):
+    ):  
         if batch_size == -1 or num_images_per_prompt == -1:
             batch_size = -1
         else:
@@ -119,17 +152,14 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
                     if in_channels.is_dynamic:
                         logger.warning(
                             "Could not identify `in_channels` from the unet configuration, to statically reshape the unet please provide a configuration."
-                        )
+                        ) 
                         self.is_dynamic = True
-
+    
                 shapes[inputs] = [batch_size, in_channels, height, width]
             elif inputs.get_any_name() == "timestep_cond":
                 shapes[inputs] = [batch_size, inputs.get_partial_shape()[1]]
             elif inputs.get_any_name() == "text_embeds":
-                shapes[inputs] = [
-                    batch_size,
-                    self.text_encoder_2.config["projection_dim"],
-                ]
+                shapes[inputs] = [batch_size, self.text_encoder_2.config["projection_dim"]]
             elif inputs.get_any_name() == "time_ids":
                 shapes[inputs] = [batch_size, inputs.get_partial_shape()[1]]
             else:
@@ -138,68 +168,7 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         model.reshape(shapes)
         return model
 
-    def _encode_prompt(
-        self,
-        prompt: Union[str, List[str]],
-        num_images_per_prompt: Optional[int],
-        prompt_embeds: Optional[np.ndarray] = None,
-    ):
-        r"""
-        Encodes the prompt into text encoder hidden states.
-
-        Args:
-            prompt (`str` or `List[str]`):
-                prompt to be encoded
-            num_images_per_prompt (`int`):
-                number of images that should be generated per prompt
-            prompt_embeds (`np.ndarray`, *optional*):
-                Pre-generated text embeddings. Can be used to easily tweak text inputs, *e.g.* prompt weighting. If not
-                provided, text embeddings will be generated from `prompt` input argument.
-        """
-        if prompt is not None and isinstance(prompt, str):
-            batch_size = 1
-        elif prompt is not None and isinstance(prompt, list):
-            batch_size = len(prompt)
-        else:
-            batch_size = prompt_embeds.shape[0]
-
-        if prompt_embeds is None:
-            # get prompt text embeddings
-            text_inputs = self.tokenizer(
-                prompt,
-                padding="max_length",
-                max_length=self.tokenizer.model_max_length,
-                truncation=True,
-                return_tensors="np",
-            )
-            text_input_ids = text_inputs.input_ids
-            untruncated_ids = self.tokenizer(
-                prompt, padding="max_length", return_tensors="np"
-            ).input_ids
-
-            if not np.array_equal(text_input_ids, untruncated_ids):
-                removed_text = self.tokenizer.batch_decode(
-                    untruncated_ids[:, self.tokenizer.model_max_length - 1 : -1]
-                )
-                logger.warning(
-                    "The following part of your input was truncated because CLIP can only handle sequences up to"
-                    f" {self.tokenizer.model_max_length} tokens: {removed_text}"
-                )
-
-            prompt_embeds = self.text_encoder(
-                input_ids=text_input_ids.astype(np.int32)
-            )[0]
-
-        bs_embed, seq_len, _ = prompt_embeds.shape
-
-        prompt_embeds = np.tile(prompt_embeds, [1, num_images_per_prompt, 1])
-        prompt_embeds = np.reshape(
-            prompt_embeds, [bs_embed * num_images_per_prompt, seq_len, -1]
-        )
-
-        return prompt_embeds
-
-    def get_w_embedding(self, w, embedding_dim=512, dtype=np.float32):
+    def get_guidance_scale_embedding(self, w, embedding_dim=512, dtype=np.float32):
         """
         see https://github.com/google-research/vdm/blob/dc27b98a554f65cdc654b800da5aa1846545d41b/model_vdm.py#L298
         Args:
@@ -211,10 +180,10 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         embedding vectors with shape `(len(timesteps), embedding_dim)`
         """
         assert len(w.shape) == 1
-        w = w * 1000.0
+        w = w * 1000.
 
         half_dim = embedding_dim // 2
-        emb = np.log(np.array(10000.0)) / (half_dim - 1)
+        emb = np.log(np.array(10000.)) / (half_dim - 1)
         emb = np.exp(np.arange(half_dim, dtype=dtype) * -emb)
         emb = w.astype(dtype)[:, None] * emb[None, :]
         emb = np.concatenate([np.sin(emb), np.cos(emb)], axis=1)
@@ -230,7 +199,7 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         height: Optional[int] = None,
         width: Optional[int] = None,
         num_inference_steps: int = 4,
-        lcm_origin_steps: int = 50,
+        original_inference_steps: int = None,
         guidance_scale: float = 7.5,
         num_images_per_prompt: int = 1,
         eta: float = 0.0,
@@ -257,8 +226,11 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
             num_inference_steps (`int`, defaults to 4):
                 The number of denoising steps. More denoising steps usually lead to a higher quality image at the
                 expense of slower inference.
-            lcm_origin_steps (`int`, defaults to 50):
-                The number of LCM Scheduler denoising steps.
+            original_inference_steps (`int`, *optional*):
+                The original number of inference steps use to generate a linearly-spaced timestep schedule, from which
+                we will draw `num_inference_steps` evenly spaced timesteps from as our final timestep schedule,
+                following the Skipping-Step method in the paper (see Section 4.3). If not set this will default to the
+                scheduler's `original_inference_steps` attribute.
             guidance_scale (`float`, defaults to 7.5):
                 Guidance scale as defined in [Classifier-Free Diffusion Guidance](https://arxiv.org/abs/2207.12598).
                 `guidance_scale` is defined as `w` of equation 2. of [Imagen
@@ -304,9 +276,7 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        height = (
-            height or self.unet.config.get("sample_size", 64) * self.vae_scale_factor
-        )
+        height = height or self.unet.config.get("sample_size", 64) * self.vae_scale_factor
         width = width or self.unet.config.get("sample_size", 64) * self.vae_scale_factor
 
         # check inputs. Raise error if not correct
@@ -325,14 +295,25 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         if generator is None:
             generator = np.random
 
+        # Create torch.Generator instance with same state as np.random.RandomState
+        torch_generator = torch.Generator().manual_seed(int(generator.get_state()[1][0]))
+
+        #do_classifier_free_guidance = guidance_scale > 1.0
+
+        # NOTE: when a LCM is distilled from an LDM via latent consistency distillation (Algorithm 1) with guided
+        # distillation, the forward pass of the LCM learns to approximate sampling from the LDM using CFG with the
+        # unconditional prompt "" (the empty string). Due to this, LCMs currently do not support negative prompts.
         prompt_embeds = self._encode_prompt(
             prompt,
             num_images_per_prompt,
+            False,
+            negative_prompt=None,
             prompt_embeds=prompt_embeds,
+            negative_prompt_embeds=None,
         )
 
         # set timesteps
-        self.scheduler.set_timesteps(num_inference_steps, lcm_origin_steps)
+        self.scheduler.set_timesteps(num_inference_steps, "cpu", original_inference_steps=original_inference_steps)
         timesteps = self.scheduler.timesteps
 
         latents = self.prepare_latents(
@@ -345,54 +326,43 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
             latents,
         )
 
-        # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
-        # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
-        # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
-        # and should be between [0, 1]
-        accepts_eta = "eta" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()
-        )
-        extra_step_kwargs = {}
-        if accepts_eta:
-            extra_step_kwargs["eta"] = eta
+        # Get Guidance Scale Embedding
+        w = np.tile(guidance_scale - 1, batch_size * num_images_per_prompt)
+        w_embedding = self.get_guidance_scale_embedding(w, embedding_dim=self.unet.config.get("time_cond_proj_dim", 256))
 
         # Adapted from diffusers to extend it for other runtimes than ORT
         timestep_dtype = self.unet.input_dtype.get("timestep", np.float32)
 
-        # Get Guidance Scale Embedding
-        w = np.tile(guidance_scale, batch_size * num_images_per_prompt)
-        w_embedding = self.get_w_embedding(
-            w, embedding_dim=self.unet.config.get("time_cond_proj_dim", 256)
-        )
+        # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
+        # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
+        # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
+        # and should be between [0, 1]
+        accepts_eta = "eta" in set(inspect.signature(self.scheduler.step).parameters.keys())
+        extra_step_kwargs = {}
+        if accepts_eta:
+            extra_step_kwargs["eta"] = eta
+
+        accepts_generator = "generator" in set(inspect.signature(self.scheduler.step).parameters.keys())
+        if accepts_generator:
+            extra_step_kwargs["generator"] = torch_generator
 
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
         for i, t in enumerate(self.progress_bar(timesteps)):
+
             # predict the noise residual
             timestep = np.array([t], dtype=timestep_dtype)
-
-            noise_pred = self.unet(
-                sample=latents,
-                timestep=timestep,
-                encoder_hidden_states=prompt_embeds,
-                timestep_cond=w_embedding,
-            )[0]
+            
+            noise_pred = self.unet(sample=latents, timestep=timestep, timestep_cond = w_embedding, encoder_hidden_states=prompt_embeds)[0]
 
             # compute the previous noisy sample x_t -> x_t-1
             latents, denoised = self.scheduler.step(
-                torch.from_numpy(noise_pred),
-                i,
-                t,
-                torch.from_numpy(latents),
-                **extra_step_kwargs,
-                return_dict=False,
+                torch.from_numpy(noise_pred), t, torch.from_numpy(latents), **extra_step_kwargs, return_dict = False
             )
 
             latents, denoised = latents.numpy(), denoised.numpy()
 
             # call the callback, if provided
-            if i == len(timesteps) - 1 or (
-                (i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0
-            ):
+            if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0):
                 if callback is not None and i % callback_steps == 0:
                     callback(i, t, latents)
 
@@ -403,10 +373,7 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
             denoised /= self.vae_decoder.config.get("scaling_factor", 0.18215)
             # it seems likes there is a strange result for using half-precision vae decoder if batchsize>1
             image = np.concatenate(
-                [
-                    self.vae_decoder(latent_sample=denoised[i : i + 1])[0]
-                    for i in range(latents.shape[0])
-                ]
+                [self.vae_decoder(latent_sample=denoised[i : i + 1])[0] for i in range(latents.shape[0])]
             )
             image, has_nsfw_concept = self.run_safety_checker(image)
 
@@ -415,13 +382,9 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         else:
             do_denormalize = [not has_nsfw for has_nsfw in has_nsfw_concept]
 
-        image = self.image_processor.postprocess(
-            image, output_type=output_type, do_denormalize=do_denormalize
-        )
+        image = self.image_processor.postprocess(image, output_type=output_type, do_denormalize=do_denormalize)
 
         if not return_dict:
             return (image, has_nsfw_concept)
 
-        return StableDiffusionPipelineOutput(
-            images=image, nsfw_content_detected=has_nsfw_concept
-        )
+        return StableDiffusionPipelineOutput(images=image, nsfw_content_detected=has_nsfw_concept)
