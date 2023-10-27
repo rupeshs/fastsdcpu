@@ -16,6 +16,7 @@ context = Context(InterfaceType.WEBUI)
 previous_width = 0
 previous_height = 0
 previous_model_id = ""
+CURRENT_DEVICE = environ.get("DEVICE", "cpu")
 
 
 def generate_text_to_image(
@@ -68,7 +69,7 @@ def generate_text_to_image(
     images = context.generate_text_to_image(
         settings,
         reshape,
-        environ.get("DEVICE", "cpu"),
+        CURRENT_DEVICE,
     )
     previous_width = image_width
     previous_height = image_height
@@ -97,17 +98,17 @@ def get_text_to_image_ui() -> None:
                     lines=3,
                     placeholder="A fantasy landscape",
                 )
-                generate_btn = gr.Button("Generate", elem_id="generate_button")
 
+                generate_btn = gr.Button("Generate", elem_id="generate_button")
+                num_inference_steps = gr.Slider(
+                    1, 25, value=4, step=1, label="Inference Steps"
+                )
                 with gr.Accordion("Advanced options", open=False):
                     image_height = gr.Slider(
                         256, 768, value=512, step=256, label="Image Height"
                     )
                     image_width = gr.Slider(
                         256, 768, value=512, step=256, label="Image Width"
-                    )
-                    num_inference_steps = gr.Slider(
-                        1, 25, value=4, step=1, label="Inference Steps"
                     )
 
                     guidance_scale = gr.Slider(
@@ -136,12 +137,12 @@ def get_text_to_image_ui() -> None:
                     openvino_checkbox = gr.Checkbox(
                         label="Use OpenVINO",
                         value=False,
-                        interactive=True,
+                        interactive=True if CURRENT_DEVICE == "cpu" else False,
                     )
 
                     safety_checker_checkbox = gr.Checkbox(
                         label="Use Safety Checker",
-                        value=False,
+                        value=True,
                         interactive=True,
                     )
 
