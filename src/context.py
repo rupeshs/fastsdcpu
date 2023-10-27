@@ -19,7 +19,7 @@ class Context:
     ) -> Any:
         tick = time()
         self.lcm_text_to_image.init(
-            settings.lcm_diffusion_setting.model_id,
+            settings.lcm_diffusion_setting.lcm_model_id,
             settings.lcm_diffusion_setting.use_openvino,
             settings.lcm_diffusion_setting.use_offline_model,
         )
