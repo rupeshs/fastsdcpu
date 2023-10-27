@@ -33,6 +33,7 @@ class LCMTextToImage:
         device: str = "cpu",
         use_local_model: bool = False,
     ) -> None:
+        self.device = device
         self.use_openvino = use_openvino
         if self.pipeline is None or self.previous_model_id != model_id:
             if self.use_openvino:

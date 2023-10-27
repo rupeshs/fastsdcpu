@@ -8,6 +8,7 @@ from models.interface_types import InterfaceType
 from app_settings import Settings
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 from frontend.utils import is_reshape_required
+from os import environ
 
 random_enabled = True
 
@@ -67,6 +68,7 @@ def generate_text_to_image(
     images = context.generate_text_to_image(
         settings,
         reshape,
+        environ.get("DEVICE", "cpu"),
     )
     previous_width = image_width
     previous_height = image_height
