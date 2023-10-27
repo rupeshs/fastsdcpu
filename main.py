@@ -286,6 +286,7 @@ class MainWindow(QMainWindow):
                     scheduler=scheduler,
                     compile=False,
                     local_files_only=self.use_local_model_folder.isChecked(),
+                    ov_config={"CACHE_DIR":""},
                 )
             else:
                 if self.pipeline:
