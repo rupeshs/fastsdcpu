@@ -26,7 +26,6 @@ group.add_argument(
 )
 
 args = parser.parse_args()
-print(args.share)
 
 parser.print_help()
 show_system_info()
