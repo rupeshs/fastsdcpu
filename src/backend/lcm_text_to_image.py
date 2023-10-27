@@ -1,9 +1,5 @@
 from typing import Any
 from diffusers import DiffusionPipeline
-from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
-    OVLatentConsistencyModelPipeline,
-)
-from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import LCMScheduler
 from os import path
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 import torch
@@ -40,6 +36,14 @@ class LCMTextToImage:
         self.use_openvino = use_openvino
         if self.pipeline is None or self.previous_model_id != model_id:
             if self.use_openvino:
+                from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
+                    OVLatentConsistencyModelPipeline,
+                )
+
+                from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
+                    LCMScheduler,
+                )
+
                 if self.pipeline:
                     del self.pipeline
                 scheduler = LCMScheduler.from_pretrained(
