@@ -53,7 +53,7 @@ Ensure that you have Python 3.8 or higher version installed.
 
 - Clone/download this repo
 - In the terminal enter into fastsdcpu directory
-- Run the following command
+- Run the following command's
 
   `chmod +x install.sh`
 
