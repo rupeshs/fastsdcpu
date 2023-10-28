@@ -104,6 +104,7 @@ class MainWindow(QMainWindow):
 
         self.prompt = QTextEdit()
         self.prompt.setPlaceholderText("A fantasy landscape")
+        self.prompt.setAcceptRichText(False)
         self.generate = QPushButton("Generate")
         self.generate.clicked.connect(self.text_to_image)
         self.prompt.setFixedHeight(35)
