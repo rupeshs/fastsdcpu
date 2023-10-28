@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
     def __init__(self, config: AppSettings):
         super().__init__()
         self.setWindowTitle(APP_NAME)
-        self.setFixedSize(QSize(530, 600))
+        self.setFixedSize(QSize(600, 620))
         self.init_ui()
         self.pipeline = None
         self.threadpool = QThreadPool()
@@ -57,8 +57,11 @@ class MainWindow(QMainWindow):
         self.previous_width = 0
         self.previous_height = 0
         self.previous_model = ""
+        self.previous_num_of_images = 0
         self.context = Context(InterfaceType.GUI)
         self.init_ui_values()
+        self.gen_images = []
+        self.image_index = 0
         print(f"Output path : {  self.config.settings.results_path}")
 
     def init_ui_values(self):
@@ -90,6 +93,9 @@ class MainWindow(QMainWindow):
             self.config.settings.lcm_diffusion_setting.use_offline_model
         )
         self.results_path.setText(self.config.settings.results_path)
+        self.num_images.setValue(
+            self.config.settings.lcm_diffusion_setting.number_of_images
+        )
 
     def init_ui(self):
         self.create_main_tab()
@@ -112,8 +118,19 @@ class MainWindow(QMainWindow):
         hlayout.addWidget(self.prompt)
         hlayout.addWidget(self.generate)
 
+        self.previous_img_btn = QToolButton()
+        self.previous_img_btn.setText("<")
+        self.previous_img_btn.clicked.connect(self.on_show_previous_image)
+        self.next_img_btn = QToolButton()
+        self.next_img_btn.setText(">")
+        self.next_img_btn.clicked.connect(self.on_show_next_image)
+        hlayout_nav = QHBoxLayout()
+        hlayout_nav.addWidget(self.previous_img_btn)
+        hlayout_nav.addWidget(self.img)
+        hlayout_nav.addWidget(self.next_img_btn)
+
         vlayout = QVBoxLayout()
-        vlayout.addWidget(self.img)
+        vlayout.addLayout(hlayout_nav)
         vlayout.addLayout(hlayout)
 
         self.tab_widget = QTabWidget(self)
@@ -255,6 +272,22 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.label)
         self.tab_about.setLayout(vlayout)
 
+    def on_show_next_image(self):
+        if self.image_index != len(self.gen_images) - 1 and len(self.gen_images) > 0:
+            self.previous_img_btn.setEnabled(True)
+            self.image_index += 1
+            self.img.setPixmap(self.gen_images[self.image_index])
+            if self.image_index == len(self.gen_images) - 1:
+                self.next_img_btn.setEnabled(False)
+
+    def on_show_previous_image(self):
+        if self.image_index != 0:
+            self.next_img_btn.setEnabled(True)
+            self.image_index -= 1
+            self.img.setPixmap(self.gen_images[self.image_index])
+            if self.image_index == 0:
+                self.previous_img_btn.setEnabled(False)
+
     def on_path_changed(self, text):
         self.config.settings.results_path = text
 
@@ -346,20 +379,36 @@ class MainWindow(QMainWindow):
                 self.config.settings.lcm_diffusion_setting.image_height,
                 self.previous_model,
                 model_id,
+                self.previous_num_of_images,
+                self.config.settings.lcm_diffusion_setting.number_of_images,
             )
 
         images = self.context.generate_text_to_image(
             self.config.settings,
             reshape_required,
         )
+        self.image_index = 0
+        self.gen_images = []
+        for img in images:
+            im = ImageQt(img).copy()
+            pixmap = QPixmap.fromImage(im)
+            self.gen_images.append(pixmap)
 
-        im = ImageQt(images[0]).copy()
-        pixmap = QPixmap.fromImage(im)
-        self.img.setPixmap(pixmap)
+        if len(self.gen_images) > 1:
+            self.next_img_btn.setEnabled(True)
+            self.previous_img_btn.setEnabled(False)
+        else:
+            self.next_img_btn.setEnabled(False)
+            self.previous_img_btn.setEnabled(False)
+
+        self.img.setPixmap(self.gen_images[0])
 
         self.previous_width = self.config.settings.lcm_diffusion_setting.image_width
         self.previous_height = self.config.settings.lcm_diffusion_setting.image_height
         self.previous_model = model_id
+        self.previous_num_of_images = (
+            self.config.settings.lcm_diffusion_setting.number_of_images
+        )
 
     def text_to_image(self):
         self.img.setText("Please wait...")
