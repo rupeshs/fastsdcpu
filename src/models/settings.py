@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 from paths import FastStableDiffusionPaths
 

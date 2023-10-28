@@ -2,7 +2,6 @@ from typing import Any
 from app_settings import Settings
 from models.interface_types import InterfaceType
 from backend.lcm_text_to_image import LCMTextToImage
-from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 from time import time
 from backend.image_saver import ImageSaver
 

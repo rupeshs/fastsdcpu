@@ -19,7 +19,7 @@ def get_web_ui(app_settings: AppSettings) -> gr.Blocks:
         css=FastStableDiffusionPaths.get_css_path(),
         title="FastSD CPU",
     ) as fastsd_web_ui:
-        gr.HTML(f"<center><H1>FastSD CPU</H1></center>")
+        gr.HTML("<center><H1>FastSD CPU</H1></center>")
         with gr.Tabs():
             with gr.TabItem("Text to Image"):
                 get_text_to_image_ui(app_settings)

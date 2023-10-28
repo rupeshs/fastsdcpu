@@ -2,7 +2,6 @@ import yaml
 from os import path, makedirs
 from models.settings import Settings
 from paths import FastStableDiffusionPaths
-from pprint import pprint
 
 
 class AppSettings:
