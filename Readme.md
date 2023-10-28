@@ -38,7 +38,7 @@ Clone/download this repo or download release.
 
 ### Installation
 
- - Double click `install.bat`  (It will take some time to install,depends on your internet speed.)
+ - Double click `install.bat`  (It will take some time to install,depending on your internet speed.)
 
 
 
