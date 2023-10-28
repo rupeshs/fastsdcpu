@@ -1,15 +1,25 @@
 from typing import Any
 from diffusers import DiffusionPipeline
 from os import path
-from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 import numpy as np
+from constants import DEVICE
+
+
+if DEVICE == "cpu":
+    from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
+        OVLatentConsistencyModelPipeline,
+    )
+    from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
+        LCMScheduler,
+    )
 
 
 class LCMTextToImage:
     def __init__(
         self,
+        device: str = "cpu",
     ) -> None:
         self.pipeline = None
         self.use_openvino = False
@@ -37,14 +47,6 @@ class LCMTextToImage:
         self.use_openvino = use_openvino
         if self.pipeline is None or self.previous_model_id != model_id:
             if self.use_openvino:
-                from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
-                    OVLatentConsistencyModelPipeline,
-                )
-
-                from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
-                    LCMScheduler,
-                )
-
                 if self.pipeline:
                     del self.pipeline
                 scheduler = LCMScheduler.from_pretrained(

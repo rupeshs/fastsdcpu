@@ -8,9 +8,13 @@ from backend.image_saver import ImageSaver
 
 
 class Context:
-    def __init__(self, interface_type: InterfaceType):
+    def __init__(
+        self,
+        interface_type: InterfaceType,
+        device="cpu",
+    ):
         self.interface_type = interface_type
-        self.lcm_text_to_image = LCMTextToImage()
+        self.lcm_text_to_image = LCMTextToImage(device)
 
     def generate_text_to_image(
         self,

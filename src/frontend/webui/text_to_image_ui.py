@@ -8,7 +8,8 @@ from models.interface_types import InterfaceType
 from app_settings import Settings
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 from frontend.utils import is_reshape_required
-from os import environ
+from app_settings import AppSettings
+from constants import DEVICE
 
 random_enabled = True
 
@@ -16,7 +17,6 @@ context = Context(InterfaceType.WEBUI)
 previous_width = 0
 previous_height = 0
 previous_model_id = ""
-CURRENT_DEVICE = environ.get("DEVICE", "cpu")
 
 
 def generate_text_to_image(
@@ -38,7 +38,7 @@ def generate_text_to_image(
     use_seed = True if seed != -1 else False
 
     lcm_diffusion_settings = LCMDiffusionSetting(
-        model_id=model_id,
+        lcm_model_id=model_id,
         prompt=prompt,
         image_height=image_height,
         image_width=image_width,
@@ -69,7 +69,7 @@ def generate_text_to_image(
     images = context.generate_text_to_image(
         settings,
         reshape,
-        CURRENT_DEVICE,
+        DEVICE,
     )
     previous_width = image_width
     previous_height = image_height
@@ -78,7 +78,7 @@ def generate_text_to_image(
     return images
 
 
-def get_text_to_image_ui() -> None:
+def get_text_to_image_ui(app_settings: AppSettings) -> None:
     with gr.Blocks():
         with gr.Row():
             with gr.Column():
@@ -137,7 +137,7 @@ def get_text_to_image_ui() -> None:
                     openvino_checkbox = gr.Checkbox(
                         label="Use OpenVINO",
                         value=False,
-                        interactive=True if CURRENT_DEVICE == "cpu" else False,
+                        interactive=True if DEVICE == "cpu" else False,
                     )
 
                     safety_checker_checkbox = gr.Checkbox(
