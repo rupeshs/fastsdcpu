@@ -63,6 +63,12 @@ Ensure that you have Python 3.8 or higher version installed.
   `chmod +x start.sh`
 
   `./start.sh`
+
+## Raspberry PI 4 support
+
+Thanks WGNW_MGM for Raspberry PI 4 testing.FastSD CPU worked without problems.
+System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
+
 ### License
 
 The fastsdcpu project is available as open source under the terms of the [MIT license](https://github.com/rupeshs/fastsdcpu/blob/main/LICENSE)
