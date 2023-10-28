@@ -6,8 +6,9 @@ footer {
     color: white;
     border-color: #007bff;
     background: #007bff;
-    width: 200px;
-    height: 50px;
+    width: 150px;
+    margin-top: 38px;
+    height: 80px;
 }
 
 #save_button {

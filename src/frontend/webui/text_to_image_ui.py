@@ -17,6 +17,7 @@ context = Context(InterfaceType.WEBUI)
 previous_width = 0
 previous_height = 0
 previous_model_id = ""
+previous_num_of_images = 0
 
 
 def generate_text_to_image(
@@ -30,7 +31,7 @@ def generate_text_to_image(
     use_openvino,
     use_safety_checker,
 ) -> Any:
-    global previous_height, previous_width, previous_model_id
+    global previous_height, previous_width, previous_model_id, previous_num_of_images
     model_id = LCM_DEFAULT_MODEL
     if use_openvino:
         model_id = LCM_DEFAULT_MODEL_OPENVINO
@@ -62,6 +63,8 @@ def generate_text_to_image(
             image_height,
             previous_model_id,
             model_id,
+            previous_num_of_images,
+            num_images,
         )
 
     pprint(lcm_diffusion_settings.model_dump())
@@ -74,6 +77,7 @@ def generate_text_to_image(
     previous_width = image_width
     previous_height = image_height
     previous_model_id = model_id
+    previous_num_of_images = num_images
 
     return images
 
@@ -93,33 +97,37 @@ def get_text_to_image_ui(app_settings: AppSettings) -> None:
                         interactive=not random_enabled, value=seed_val
                     )
 
-                prompt = gr.Textbox(
-                    label="Describe the image you'd like to see",
-                    lines=3,
-                    placeholder="A fantasy landscape",
-                )
+                with gr.Row():
+                    prompt = gr.Textbox(
+                        label="Describe the image you'd like to see",
+                        lines=3,
+                        placeholder="A fantasy landscape",
+                    )
 
-                generate_btn = gr.Button("Generate", elem_id="generate_button")
+                    generate_btn = gr.Button(
+                        "Generate",
+                        elem_id="generate_button",
+                        scale=0,
+                    )
                 num_inference_steps = gr.Slider(
                     1, 25, value=4, step=1, label="Inference Steps"
                 )
+                image_height = gr.Slider(
+                    256, 768, value=512, step=256, label="Image Height"
+                )
+                image_width = gr.Slider(
+                    256, 768, value=512, step=256, label="Image Width"
+                )
+                num_images = gr.Slider(
+                    1,
+                    50,
+                    value=1,
+                    step=1,
+                    label="Number of images to generate",
+                )
                 with gr.Accordion("Advanced options", open=False):
-                    image_height = gr.Slider(
-                        256, 768, value=512, step=256, label="Image Height"
-                    )
-                    image_width = gr.Slider(
-                        256, 768, value=512, step=256, label="Image Width"
-                    )
-
                     guidance_scale = gr.Slider(
                         1.0, 30.0, value=8, step=0.5, label="Guidance Scale"
-                    )
-                    num_images = gr.Slider(
-                        1,
-                        50,
-                        value=1,
-                        step=1,
-                        label="Number of images to generate",
                     )
 
                     seed = gr.Number(
