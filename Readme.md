@@ -20,25 +20,25 @@ Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consis
 ## OpenVINO support
 
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
-Currently, it is tested on Windows only,by default it is disabled.
+Currently, it is tested on Windows only, by default it is disabled.
 We found a 50% speed improvement using OpenVINO.It 
-Took 10 seconds to generate single 512x512 image on Core i7-12700
+took 10 seconds to generate a single 512x512 image on Core i7-12700
 
 ## LCM Models 
 
-Currently LCM model(Dreamshaper_v7) is supported (Diffuser format).
+Currently, LCM model(Dreamshaper_v7) is supported (Diffuser format).
 
 - https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
 - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
 
 ## FastSD CPU on Windows
-:exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
+:exclamation:**You must have a working Python installation. (Recommended : Python 3.10 or 3.11 )**
 
-Clone/download this repo or download release.
+Clone/download this repo or download the release.
 
 ### Installation
 
- - Double click `install.bat`  (It will take some time to install,depends on your internet speed.)
+ - Double click `install.bat`  (It will take some time to install, depending on your internet speed.)
 
 
 
