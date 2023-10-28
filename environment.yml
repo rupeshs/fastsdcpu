@@ -1,7 +1,0 @@
-name: fastsd-env
-channels:
-  - conda-forge
-  - defaults
-dependencies:
-  - python=3.8.5
-  - pip=23.3

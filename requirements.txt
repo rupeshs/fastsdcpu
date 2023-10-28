@@ -10,3 +10,5 @@ openvino==2023.1.0
 optimum-intel==1.11.0
 onnx==1.14.1
 onnxruntime==1.16.1
+pydantic==2.4.2
+pyyaml

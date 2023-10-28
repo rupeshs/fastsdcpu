@@ -1,9 +1,5 @@
-from diffusers import DiffusionPipeline
-import torch
 from time import time
-import sys
 from PyQt5.QtWidgets import (
-    QApplication,
     QWidget,
     QPushButton,
     QHBoxLayout,
@@ -22,92 +18,44 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import (
     QSize,
-    pyqtSignal,
-    pyqtSlot,
-    QObject,
-    QRunnable,
     QThreadPool,
     Qt,
 )
+
 from PIL.ImageQt import ImageQt
-import traceback, sys
 import os
 from uuid import uuid4
-from src.backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
-    OVLatentConsistencyModelPipeline,
-)
-from src.backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import LCMScheduler
-import numpy as np
-
-
-RESULTS_DIRECTORY = "results"
-
-
-def get_lcm_diffusion_pipeline_path():
-    main_path = os.path.dirname(os.path.abspath(__file__))
-    file_path = os.path.join(
-        main_path,
-        "src",
-        "backend",
-        "lcmdiffusion",
-        "pipelines",
-        "latent_consistency_txt2img.py",
-    )
-    return file_path
-
-
-def get_results_path():
-    app_dir = os.path.dirname(__file__)
-    config_path = os.path.join(app_dir, RESULTS_DIRECTORY)
-    return config_path
-
-
-class WorkerSignals(QObject):
-    finished = pyqtSignal()
-    error = pyqtSignal(tuple)
-    result = pyqtSignal(object)
-
-
-class Worker(QRunnable):
-    def __init__(self, fn, *args, **kwargs):
-        super(Worker, self).__init__()
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-        self.signals = WorkerSignals()
-
-    @pyqtSlot()
-    def run(self):
-        try:
-            result = self.fn(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            self.signals.result.emit(result)
-        finally:
-            self.signals.finished.emit()
+from backend.lcm_text_to_image import LCMTextToImage
+from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
+from pprint import pprint
+from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO, APP_NAME
+from frontend.gui.image_generator_worker import ImageGeneratorWorker
+from app_settings import AppSettings
+from models.settings import Settings
+from paths import FastStableDiffusionPaths
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, app_settings: AppSettings):
         super().__init__()
-        self.setWindowTitle("FastSD CPU")
+        self.setWindowTitle(APP_NAME)
         self.setFixedSize(QSize(530, 600))
         self.init_ui()
         self.pipeline = None
         self.threadpool = QThreadPool()
-        self.output_path = get_results_path()
+        self.app_settings = app_settings
         self.device = "cpu"
-        self.seed_value.setEnabled(False)
+        self.settings = self.app_settings.get_settings()
+        self.output_path = self.settings.results_path
+        self.seed_value.setEnabled(self.settings.lcm_setting.use_seed)
         self.previous_width = 0
         self.previous_height = 0
-        print(f"Output path : { self.output_path}")
-        self.lcm_model.setEnabled(True)
-        self.use_openvino_check.setChecked(False)
+        self.lcm_model.setEnabled(not self.settings.lcm_setting.use_openvino)
+        self.use_openvino_check.setChecked(self.settings.lcm_setting.use_openvino)
         self.use_openvino = self.use_openvino_check.isChecked()
         self.previous_model = ""
+        self.lcm_text_to_image = LCMTextToImage()
+        print(f"Output path : { self.output_path}")
 
     def init_ui(self):
         self.create_main_tab()
@@ -150,7 +98,7 @@ class MainWindow(QMainWindow):
     def create_settings_tab(self):
         model_hlayout = QHBoxLayout()
         self.lcm_model_label = QLabel("Latent Consistency Model:")
-        self.lcm_model = QLineEdit("SimianLuo/LCM_Dreamshaper_v7")
+        self.lcm_model = QLineEdit(LCM_DEFAULT_MODEL)
         model_hlayout.addWidget(self.lcm_model_label)
         model_hlayout.addWidget(self.lcm_model)
 
@@ -191,6 +139,7 @@ class MainWindow(QMainWindow):
         self.safety_checker = QCheckBox("Use safety checker")
         self.safety_checker.setChecked(True)
         self.use_openvino_check = QCheckBox("Use OpenVINO")
+        self.use_openvino_check.setChecked(False)
         self.use_local_model_folder = QCheckBox(
             "Use locally cached model or downloaded model folder(offline)"
         )
@@ -227,7 +176,7 @@ class MainWindow(QMainWindow):
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
         self.label.setText(
-            """<h1>FastSD CPU v1.0.0 beta 6</h1> 
+            """<h1>FastSD CPU v1.0.0 beta 4</h1> 
                <h3>(c)2023 - Rupesh Sreeraman</h3>
                 <h3>Faster stable diffusion on CPU</h3>
                  <h3>Based on Latent Consistency Models</h3>
@@ -254,97 +203,59 @@ class MainWindow(QMainWindow):
         self.guidance_value.setText(f"Guidance scale: {val}")
 
     def seed_changed(self, state):
+        print(state)
         if state == 2:
             self.use_seed = True
             self.seed_value.setEnabled(True)
         else:
             self.use_seed = False
+            print("false")
             self.seed_value.setEnabled(False)
 
     def generate_image(self):
-        prompt = self.prompt.toPlainText()
-        guidance_scale = round(int(self.guidance.value()) / 10, 1)
-        img_width = int(self.width.currentText())
-        img_height = int(self.height.currentText())
-        num_inference_steps = self.inference_steps.value()
+        lcm_diffusion_setting = LCMDiffusionSetting(
+            prompt=self.prompt.toPlainText(),
+            image_height=int(self.width.currentText()),
+            image_width=int(self.height.currentText()),
+            inference_steps=self.inference_steps.value(),
+            guidance_scale=round(int(self.guidance.value()) / 10, 1),
+            number_of_images=1,
+            seed=int(self.seed_value.text()) if self.use_seed else -1,
+            use_offline_model=self.use_local_model_folder.isChecked(),
+            use_openvino=self.use_openvino,
+            use_safety_checker=self.safety_checker.isChecked(),
+        )
+
         if self.use_openvino:
-            model_id = "deinferno/LCM_Dreamshaper_v7-openvino"
+            model_id = LCM_DEFAULT_MODEL_OPENVINO
         else:
             model_id = self.lcm_model.text()
 
         if self.pipeline is None or self.previous_model != model_id:
             print(f"Using LCM model {model_id}")
-            if self.use_openvino:
-                if self.pipeline:
-                    del self.pipeline
-                scheduler = LCMScheduler.from_pretrained(
-                    model_id,
-                    subfolder="scheduler",
-                )
-                self.pipeline = OVLatentConsistencyModelPipeline.from_pretrained(
-                    model_id,
-                    scheduler=scheduler,
-                    compile=False,
-                    local_files_only=self.use_local_model_folder.isChecked(),
-                    ov_config={"CACHE_DIR":""},
-                )
-            else:
-                if self.pipeline:
-                    del self.pipeline
-                self.pipeline = DiffusionPipeline.from_pretrained(
-                    model_id,
-                    custom_pipeline=get_lcm_diffusion_pipeline_path(),
-                    custom_revision="main",
-                    local_files_only=self.use_local_model_folder.isChecked(),
-                )
-                self.pipeline.to(
-                    torch_device=self.device,
-                    torch_dtype=torch.float32,
-                )
+            self.lcm_text_to_image.init(
+                model_id=model_id,
+                use_openvino=self.use_openvino,
+                use_local_model=lcm_diffusion_setting.use_offline_model,
+            )
 
-        if self.use_seed:
-            cur_seed = int(self.seed_value.text())
-            if self.use_openvino:
-                np.random.seed(cur_seed)
-            else:
-                torch.manual_seed(cur_seed)
-
-        print(f"Prompt : {prompt}")
-        print(f"Resolution : {img_width} x {img_height}")
-        print(f"Guidance Scale : {guidance_scale}")
-        print(f"Inference_steps  : {num_inference_steps}")
-        if self.use_seed:
-            print(f"Seed: {cur_seed}")
-
+        pprint(dict(lcm_diffusion_setting))
         tick = time()
-
+        reshape_required = False
         if self.use_openvino:
-            print("Using OpenVINO")
             # Dimension changed so reshape and compile
             if (
-                self.previous_width != img_width
-                or self.previous_height != img_height
+                self.previous_width != lcm_diffusion_setting.image_width
+                or self.previous_height != lcm_diffusion_setting.image_height
                 or self.previous_model != model_id
             ):
-                print("Reshape and compile")
-                self.pipeline.reshape(
-                    batch_size=1,
-                    height=img_height,
-                    width=img_width,
-                    num_images_per_prompt=1,
-                )
-                self.pipeline.compile()
+                pprint("Reshape and compile")
+                reshape_required = True
 
-        if not self.safety_checker.isChecked():
-            self.pipeline.safety_checker = None
-        images = self.pipeline(
-            prompt=prompt,
-            num_inference_steps=num_inference_steps,
-            guidance_scale=guidance_scale,
-            width=img_width,
-            height=img_height,
-            output_type="pil",
-        ).images
+        images = self.lcm_text_to_image.generate(
+            lcm_diffusion_setting,
+            reshape_required,
+        )
         elapsed = time() - tick
         print(f"Elapsed time : {elapsed:.2f} sec")
         image_id = uuid4()
@@ -356,20 +267,32 @@ class MainWindow(QMainWindow):
         im = ImageQt(images[0]).copy()
         pixmap = QPixmap.fromImage(im)
         self.img.setPixmap(pixmap)
-        self.previous_width = img_width
-        self.previous_height = img_height
+        self.previous_width = lcm_diffusion_setting.image_width
+        self.previous_height = lcm_diffusion_setting.image_height
         self.previous_model = model_id
 
     def text_to_image(self):
         self.img.setText("Please wait...")
-        worker = Worker(self.generate_image)
+        worker = ImageGeneratorWorker(self.generate_image)
         self.threadpool.start(worker)
 
-    def latents_callback(self, i, t, latents):
-        print(i)
-
-
-app = QApplication(sys.argv)
-window = MainWindow()
-window.show()
-app.exec()
+    def closeEvent(self, event):
+        print(self.use_openvino)
+        lcm_diffusion_setting = LCMDiffusionSetting(
+            prompt=self.prompt.toPlainText(),
+            image_height=int(self.width.currentText()),
+            image_width=int(self.height.currentText()),
+            inference_steps=self.inference_steps.value(),
+            guidance_scale=round(int(self.guidance.value()) / 10, 1),
+            number_of_images=1,
+            seed=int(self.seed_value.text()) if self.use_seed else -1,
+            use_offline_model=self.use_local_model_folder.isChecked(),
+            use_openvino=self.use_openvino_check.isChecked(),
+            use_safety_checker=self.safety_checker.isChecked(),
+        )
+        app_settings = Settings(
+            results_path=FastStableDiffusionPaths().get_results_path(),
+            lcm_diffusion_setting=lcm_diffusion_setting,
+        )
+        print(app_settings.dict())
+        self.app_settings.save(app_settings)
