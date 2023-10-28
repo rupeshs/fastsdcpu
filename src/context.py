@@ -4,6 +4,7 @@ from models.interface_types import InterfaceType
 from backend.lcm_text_to_image import LCMTextToImage
 from time import time
 from backend.image_saver import ImageSaver
+from pprint import pprint
 
 
 class Context:
@@ -22,6 +23,7 @@ class Context:
         device: str = "cpu",
     ) -> Any:
         tick = time()
+        pprint(settings.lcm_diffusion_setting.model_dump())
         self.lcm_text_to_image.init(
             settings.lcm_diffusion_setting.lcm_model_id,
             settings.lcm_diffusion_setting.use_openvino,

@@ -1,6 +1,6 @@
 from typing import List
 from frontend.gui.app_window import MainWindow
-from PyQt5.QtWidgets import QApplication, QApplication
+from PyQt5.QtWidgets import QApplication
 import sys
 from app_settings import AppSettings
 

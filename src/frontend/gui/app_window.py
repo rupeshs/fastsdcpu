@@ -1,4 +1,3 @@
-from time import time
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
@@ -25,11 +24,6 @@ from PyQt5.QtCore import (
 )
 
 from PIL.ImageQt import ImageQt
-import os
-from uuid import uuid4
-from backend.lcm_text_to_image import LCMTextToImage
-from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
-from pprint import pprint
 from constants import (
     LCM_DEFAULT_MODEL,
     LCM_DEFAULT_MODEL_OPENVINO,
@@ -366,8 +360,6 @@ class MainWindow(QMainWindow):
             model_id = self.lcm_model.text()
 
         self.config.settings.lcm_diffusion_setting.lcm_model_id = model_id
-
-        pprint(dict(self.config.settings.lcm_diffusion_setting))
 
         reshape_required = False
         if self.config.settings.lcm_diffusion_setting.use_openvino:

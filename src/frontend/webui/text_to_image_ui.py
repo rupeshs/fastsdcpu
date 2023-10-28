@@ -2,7 +2,6 @@ from typing import Any
 import gradio as gr
 
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
-from pprint import pprint
 from context import Context
 from models.interface_types import InterfaceType
 from app_settings import Settings
@@ -66,9 +65,6 @@ def generate_text_to_image(
             previous_num_of_images,
             num_images,
         )
-
-    pprint(lcm_diffusion_settings.model_dump())
-
     images = context.generate_text_to_image(
         settings,
         reshape,
