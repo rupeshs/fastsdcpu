@@ -33,6 +33,7 @@ from paths import FastStableDiffusionPaths
 from frontend.utils import is_reshape_required
 from context import Context
 from models.interface_types import InterfaceType
+from constants import DEVICE
 
 
 class MainWindow(QMainWindow):
@@ -384,6 +385,7 @@ class MainWindow(QMainWindow):
         images = self.context.generate_text_to_image(
             self.config.settings,
             reshape_required,
+            DEVICE,
         )
         self.image_index = 0
         self.gen_images = []

@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from context import Context
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
+from constants import DEVICE
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -164,7 +165,13 @@ else:
             if user_input == "exit":
                 break
             config.lcm_diffusion_setting.prompt = user_input
-            context.generate_text_to_image(config)
+            context.generate_text_to_image(
+                settings=config,
+                device=DEVICE,
+            )
 
     else:
-        context.generate_text_to_image(config)
+        context.generate_text_to_image(
+            settings=config,
+            device=DEVICE,
+        )
