@@ -16,12 +16,9 @@ from PyQt5.QtWidgets import (
     QToolButton,
     QFileDialog,
 )
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import (
-    QSize,
-    QThreadPool,
-    Qt,
-)
+
+from PyQt5.QtGui import QPixmap, QDesktopServices
+from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl
 
 from PIL.ImageQt import ImageQt
 from constants import (
@@ -108,10 +105,15 @@ class MainWindow(QMainWindow):
         self.generate = QPushButton("Generate")
         self.generate.clicked.connect(self.text_to_image)
         self.prompt.setFixedHeight(35)
+        self.browse_results = QPushButton("...")
+        self.browse_results.setFixedWidth(30)
+        self.browse_results.clicked.connect(self.on_open_results_folder)
+        self.browse_results.setToolTip("Open output folder")
 
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.prompt)
         hlayout.addWidget(self.generate)
+        hlayout.addWidget(self.browse_results)
 
         self.previous_img_btn = QToolButton()
         self.previous_img_btn.setText("<")
@@ -274,6 +276,9 @@ class MainWindow(QMainWindow):
             self.img.setPixmap(self.gen_images[self.image_index])
             if self.image_index == len(self.gen_images) - 1:
                 self.next_img_btn.setEnabled(False)
+
+    def on_open_results_folder(self):
+        QDesktopServices.openUrl(QUrl.fromLocalFile(self.config.settings.results_path))
 
     def on_show_previous_image(self):
         if self.image_index != 0:
