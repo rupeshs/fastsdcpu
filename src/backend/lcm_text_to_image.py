@@ -105,7 +105,6 @@ class LCMTextToImage:
             prompt=lcm_diffusion_setting.prompt,
             num_inference_steps=lcm_diffusion_setting.inference_steps,
             guidance_scale=lcm_diffusion_setting.guidance_scale,
-            lcm_origin_steps=lcm_diffusion_setting.lcm_origin_steps,
             width=lcm_diffusion_setting.image_width,
             height=lcm_diffusion_setting.image_height,
             output_type="pil",
