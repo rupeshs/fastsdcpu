@@ -40,5 +40,5 @@ class Context:
             images=images,
             lcm_diffusion_setting=settings.lcm_diffusion_setting,
         )
-        print(f"Elapsed time : {elapsed:.2f} sec")
+        print(f"Elapsed time : {elapsed:.2f} seconds")
         return images

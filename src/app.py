@@ -123,7 +123,7 @@ app_settings.load()
 if args.gui:
     from frontend.gui.ui import start_gui
 
-    print("Starting in desktop GUI mode(Qt)")
+    print("Starting desktop GUI mode(Qt)")
     start_gui(
         [],
         app_settings,
@@ -131,7 +131,7 @@ if args.gui:
 elif args.webui:
     from frontend.webui.ui import start_webui
 
-    print("Starting in Web UI mode")
+    print("Starting web UI mode")
     start_webui(
         app_settings,
         args.share,
