@@ -83,7 +83,7 @@ Ensure that you have Python 3.8 or higher version installed.
 ![FastSD CPU WebUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastcpu-webui.png)
 
 ## Google Colab
-Due to the limitation of using CPU/OpenVINO inside colab currently using GPU.
+Due to the limitation of using CPU/OpenVINO inside colab, we are using GPU with colab.
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1SuAqskB-_gjWLYNRFENAkIXZ1aoyINqL?usp=sharing)
 
 
