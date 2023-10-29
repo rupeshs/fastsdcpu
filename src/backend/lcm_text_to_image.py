@@ -46,7 +46,7 @@ class LCMTextToImage:
         self.device = device
         self.use_openvino = use_openvino
         if self.pipeline is None or self.previous_model_id != model_id:
-            if self.use_openvino:
+            if self.use_openvino and DEVICE == "cpu":
                 if self.pipeline:
                     del self.pipeline
                 scheduler = LCMScheduler.from_pretrained(
@@ -87,7 +87,7 @@ class LCMTextToImage:
             else:
                 torch.manual_seed(cur_seed)
 
-        if self.use_openvino:
+        if self.use_openvino and DEVICE == "cpu":
             print("Using OpenVINO")
             if reshape:
                 print("Reshape and compile")
@@ -101,6 +101,7 @@ class LCMTextToImage:
 
         if not lcm_diffusion_setting.use_safety_checker:
             self.pipeline.safety_checker = None
+
         result_images = self.pipeline(
             prompt=lcm_diffusion_setting.prompt,
             num_inference_steps=lcm_diffusion_setting.inference_steps,
