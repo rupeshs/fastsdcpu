@@ -31,12 +31,12 @@ Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7
 - Fixed OpenVINO image reproducibility issue
 - Fixed OpenVINO high RAM usage,thanks [deinferno](https://github.com/deinferno) 
 - Added multiple image generation support
-- Desktop GUI saves settings
+- Application settings
 
 ## OpenVINO support
 
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
-We can get 2X speed improvement when using OpenVINO. 
+We can get 2x speed improvement when using OpenVINO. 
 
 ## LCM Models 
 
@@ -57,15 +57,15 @@ Clone/download this repo or download release.
 ### Run
 You can run in desktop GUI mode or web UI mode.
 #### Desktop GUI
-- To start fastsdcpu double click `start.bat`
+- To start desktop GUI double click `start.bat`
 #### Web UI 
-- To start fastsdcpu double click `start-webui.bat`
+- To start web UI double click `start-webui.bat`
 ## FastSD CPU on Linux
 
 Ensure that you have Python 3.8 or higher version installed.
 
 - Clone/download this repo
-- In the terminal enter into fastsdcpu directory
+- In the terminal, enter into fastsdcpu directory
 - Run the following command
 
   `chmod +x install.sh`
