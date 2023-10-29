@@ -70,14 +70,18 @@ Ensure that you have Python 3.8 or higher version installed.
   `chmod +x install.sh`
 
   `./install.sh`
-- To start FastSD CPU run
-
-  `chmod +x start.sh`
 
 #### To start Desktop GUI
+
   `./start.sh`
 #### To start Desktop GUI
+
   `./start-webui.sh`
+
+### Run
+You can run in desktop GUI mode or web UI mode.
+#### Desktop GUI
+- To start fastsdcpu double click `start.bat`
 
 ## Web UI screenshot
 
@@ -87,10 +91,6 @@ Ensure that you have Python 3.8 or higher version installed.
 Due to the limitation of using CPU/OpenVINO inside colab currently using GPU.
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1SuAqskB-_gjWLYNRFENAkIXZ1aoyINqL?usp=sharing)
 
-### Run
-You can run in desktop GUI mode or web UI mode.
-#### Desktop GUI
-- To start fastsdcpu double click `start.bat`
 
 ## CLI mode (Advanced users)
 
