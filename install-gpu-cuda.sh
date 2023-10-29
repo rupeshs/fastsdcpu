@@ -27,5 +27,5 @@ source "$BASEDIR/env/bin/activate"
 pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cu117
 pip install -r "$BASEDIR/requirements.txt"
 chmod +x "start.sh"
-chmod +x "start-webui.sh"
+chmod +x "start-gpu-mode.sh"
 read -n1 -r -p "FastSD CPU installation completed,press any key to continue..." key
