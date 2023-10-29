@@ -1,3 +1,6 @@
+from constants import DEVICE
+
+
 def is_reshape_required(
     prev_width: int,
     cur_width: int,
@@ -22,3 +25,7 @@ def is_reshape_required(
         reshape_required = True
 
     return reshape_required
+
+
+def enable_openvino_controls() -> bool:
+    return DEVICE == "cpu"

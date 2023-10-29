@@ -34,6 +34,7 @@ from frontend.utils import is_reshape_required
 from context import Context
 from models.interface_types import InterfaceType
 from constants import DEVICE
+from frontend.utils import enable_openvino_controls
 
 
 class MainWindow(QMainWindow):
@@ -203,6 +204,7 @@ class MainWindow(QMainWindow):
         self.use_local_model_folder = QCheckBox(
             "Use locally cached model or downloaded model folder(offline)"
         )
+        self.use_openvino_check.setEnabled(enable_openvino_controls())
         self.use_local_model_folder.setChecked(False)
         self.use_local_model_folder.stateChanged.connect(self.use_offline_model_changed)
         self.use_openvino_check.stateChanged.connect(self.use_openvino_changed)

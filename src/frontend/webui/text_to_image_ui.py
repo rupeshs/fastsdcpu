@@ -9,6 +9,7 @@ from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 from frontend.utils import is_reshape_required
 from app_settings import AppSettings
 from constants import DEVICE
+from frontend.utils import enable_openvino_controls
 
 random_enabled = True
 
@@ -141,7 +142,7 @@ def get_text_to_image_ui(app_settings: AppSettings) -> None:
                     openvino_checkbox = gr.Checkbox(
                         label="Use OpenVINO",
                         value=False,
-                        interactive=True if DEVICE == "cpu" else False,
+                        interactive=enable_openvino_controls(),
                     )
 
                     safety_checker_checkbox = gr.Checkbox(
