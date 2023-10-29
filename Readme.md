@@ -16,7 +16,6 @@ Took 10 seconds to generate single 512x512 image on Core i7-12700(With OpenVINO)
 
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
-![FastSD CPU WebUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastcpu-webui.png)
 
 ## Features
 - Supports 256,512,768 image sizes
@@ -80,6 +79,10 @@ Ensure that you have Python 3.8 or higher version installed.
 #### To start Desktop GUI
   `./start-webui.sh`
 
+## Web UI screenshot
+
+![FastSD CPU WebUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastcpu-webui.png)
+
 ## Google Colab
 Due to the limitation of using CPU/OpenVINO inside colab currently using GPU.
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1SuAqskB-_gjWLYNRFENAkIXZ1aoyINqL?usp=sharing)
@@ -90,6 +93,8 @@ You can run in desktop GUI mode or web UI mode.
 - To start fastsdcpu double click `start.bat`
 
 ## CLI mode (Advanced users)
+
+![FastSD CPU CLI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastcpu-cli.png)
 
  Open the terminal and enter into fastsdcpu folder.
  Activate virtual environment using the command:
