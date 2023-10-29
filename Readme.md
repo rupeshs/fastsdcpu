@@ -6,7 +6,8 @@ The application available as :
 - WebUI 
 - CLI (CommandLine Interface)
 
-Took 10 seconds to generate single 512x512 image on Core i7-12700(With OpenVINO).
+Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7-12700.
+
 
 ## Supported platforms
  - Windows
@@ -26,11 +27,11 @@ Took 10 seconds to generate single 512x512 image on Core i7-12700(With OpenVINO)
 - Maximum inference steps increased to 25
 - Added OpenVINO support
 - Added web UI 
-- Added CommandLine Interface
+- Added CommandLine Interface(CLI)
 - Fixed OpenVINO image reproducibility issue
 - Fixed OpenVINO high RAM usage,thanks [deinferno](https://github.com/deinferno) 
-- Added more than one image support
-- Stores and loads settings
+- Added multiple image generation support
+- Desktop GUI saves settings
 
 ## OpenVINO support
 
@@ -39,10 +40,10 @@ We can get 2X speed improvement when using OpenVINO.
 
 ## LCM Models 
 
-Currently LCM model(Dreamshaper_v7) is supported (Diffuser format).
+Following LCM models are supported:
 
-- https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7
-- https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino
+- LCM_Dreamshaper_v7 -https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7 by [Simian Luo](https://github.com/luosiallen)
+- LCM_Dreamshaper_v7-openvino - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino by [deinferno](https://github.com/deinferno) 
 
 ## FastSD CPU on Windows
 :exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
@@ -94,13 +95,13 @@ Due to the limitation of using CPU/OpenVINO inside colab, we are using GPU with 
  Open the terminal and enter into fastsdcpu folder.
  Activate virtual environment using the command:
 #### Windows users :
- (Suppose it is in the d drive "d:\fastsdcpu")
+ (Suppose FastSD CPU available in the directory "d:\fastsdcpu")
   `d:\fastsdcpu\env\Scripts\activate.bat`
 
-#### Posix users:
+#### Linux users:
   `source env/bin/activate`
 
-Start CLI by `src/app.py -h`
+Start CLI  `src/app.py -h`
 ## Raspberry PI 4 support
 
 Thanks WGNW_MGM for Raspberry PI 4 testing.FastSD CPU worked without problems.
