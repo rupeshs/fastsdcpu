@@ -74,7 +74,7 @@ Ensure that you have Python 3.8 or higher version installed.
 #### To start Desktop GUI
 
   `./start.sh`
-#### To start Desktop GUI
+#### To start Web UI
 
   `./start-webui.sh`
 
