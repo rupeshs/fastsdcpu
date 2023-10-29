@@ -8,5 +8,6 @@ optimum-intel==1.11.0
 onnx==1.14.1
 onnxruntime==1.16.1
 pydantic==2.4.2
+typing-extensions==4.8.0
 pyyaml
-gradio==3.41.2
+gradio==3.39.0
