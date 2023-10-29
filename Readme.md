@@ -78,11 +78,6 @@ Ensure that you have Python 3.8 or higher version installed.
 
   `./start-webui.sh`
 
-### Run
-You can run in desktop GUI mode or web UI mode.
-#### Desktop GUI
-- To start fastsdcpu double click `start.bat`
-
 ## Web UI screenshot
 
 ![FastSD CPU WebUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastcpu-webui.png)
