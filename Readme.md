@@ -81,6 +81,9 @@ Ensure that you have Python 3.8 or higher version installed.
 
 ## FastSD CPU on Mac
 
+![FastSD CPU running on Mac](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-mac-gui.jpg)
+
+### Installation
 Ensure that you have Python 3.8 or higher version installed.
 
 - Clone/download this repo
@@ -104,6 +107,7 @@ Thanks [Autantpourmoi ](https://github.com/Autantpourmoi) for Mac testing.
 If you want to increase image generation speed on Mac(M1/M2 chip) try this:
 
 `export DEVICE=mps` and start app `start.sh`
+
 
 ## Web UI screenshot
 
