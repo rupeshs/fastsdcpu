@@ -1,22 +1,21 @@
 # FastSD CPU :sparkles:
 
 FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model).
-The application available as :
+The following interfaces are available :
 - Desktop GUI (Qt)
 - WebUI 
 - CLI (CommandLine Interface)
 
 Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7-12700.
 
-
 ## Supported platforms
  - Windows
  - Linux
+ - Mac
  - Raspberry PI 4
- - Mac (Need testers)
-
+ 
+ 
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
-
 
 ## Features
 - Supports 256,512,768 image sizes
@@ -25,7 +24,7 @@ Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7
 - Settings to control,steps,guidance and seed
 - Added safety checker setting
 - Maximum inference steps increased to 25
-- Added OpenVINO support
+- Added [OpenVINO](https://github.com/openvinotoolkit/openvino) support
 - Added web UI 
 - Added CommandLine Interface(CLI)
 - Fixed OpenVINO image reproducibility issue
@@ -79,6 +78,33 @@ Ensure that you have Python 3.8 or higher version installed.
 
   `./start-webui.sh`
 
+
+## FastSD CPU on Mac
+
+Ensure that you have Python 3.8 or higher version installed.
+
+- Clone/download this repo
+- In the terminal, enter into fastsdcpu directory
+- Run the following command
+
+  `chmod +x install-mac.sh`
+
+  `./install-mac.sh`
+
+#### To start Desktop GUI
+
+  `./start.sh`
+#### To start Web UI
+
+  `./start-webui.sh`
+
+Thanks [Autantpourmoi ](https://github.com/Autantpourmoi) for Mac testing.
+:exclamation: We don't support OpenVINO on Mac. 
+
+If you want to increase image generation speed on Mac(M1/M2 chip) try this:
+
+`export DEVICE=mps` and start app `start.sh`
+
 ## Web UI screenshot
 
 ![FastSD CPU WebUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastcpu-webui.png)
@@ -95,8 +121,8 @@ Due to the limitation of using CPU/OpenVINO inside colab, we are using GPU with 
  Open the terminal and enter into fastsdcpu folder.
  Activate virtual environment using the command:
 #### Windows users :
- (Suppose FastSD CPU available in the directory "d:\fastsdcpu")
-  `d:\fastsdcpu\env\Scripts\activate.bat`
+ (Suppose FastSD CPU available in the directory "D:\fastsdcpu")
+  `D:\fastsdcpu\env\Scripts\activate.bat`
 
 #### Linux users:
   `source env/bin/activate`
