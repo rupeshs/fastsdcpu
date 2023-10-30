@@ -1,4 +1,5 @@
 from constants import DEVICE
+import platform
 
 
 def is_reshape_required(
@@ -28,4 +29,4 @@ def is_reshape_required(
 
 
 def enable_openvino_controls() -> bool:
-    return DEVICE == "cpu"
+    return DEVICE == "cpu" and platform.system().lower() != "darwin"
