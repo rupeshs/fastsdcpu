@@ -102,7 +102,8 @@ Ensure that you have Python 3.8 or higher version installed.
   `./start-webui.sh`
 
 Thanks [Autantpourmoi ](https://github.com/Autantpourmoi) for Mac testing.
-:exclamation: We don't support OpenVINO on Mac. 
+
+:exclamation:We don't support OpenVINO on Mac. 
 
 If you want to increase image generation speed on Mac(M1/M2 chip) try this:
 
