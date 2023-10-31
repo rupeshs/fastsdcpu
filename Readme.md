@@ -18,19 +18,19 @@ Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
 ## Features
-- Supports 256,512,768 image sizes
-- Supports Windows and Linux
-- Saves images and diffusion setting used to generate the image
-- Settings to control,steps,guidance and seed
-- Added safety checker setting
-- Maximum inference steps increased to 25
+- Supports 256,512,768 image sizes.
+- Supports Windows and Linux.
+- Saves images and diffusion setting used to generate the image.
+- Settings to control,steps,guidance and seed.
+- Added safety checker setting.
+- Maximum inference steps increased to 25.
 - Added [OpenVINO](https://github.com/openvinotoolkit/openvino) support
-- Added web UI 
-- Added CommandLine Interface(CLI)
-- Fixed OpenVINO image reproducibility issue
-- Fixed OpenVINO high RAM usage,thanks [deinferno](https://github.com/deinferno) 
-- Added multiple image generation support
-- Application settings
+- Added web UI.
+- Added CommandLine Interface.(CLI)
+- Fixed OpenVINO image reproducibility issue.
+- Fixed OpenVINO high RAM usage,thanks [deinferno](https://github.com/deinferno) .
+- Added multiple image generation support.
+- Application settings.
 
 ## OpenVINO support
 
@@ -58,7 +58,7 @@ You can run in desktop GUI mode or web UI mode.
 #### Desktop GUI
 - To start desktop GUI double click `start.bat`
 #### Web UI 
-- To start web UI double click `start-webui.bat`
+- To start web UI, double click `start-webui.bat`
 ## FastSD CPU on Linux
 
 Ensure that you have Python 3.8 or higher version installed.
