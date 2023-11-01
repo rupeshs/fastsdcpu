@@ -272,11 +272,27 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.label)
         self.tab_about.setLayout(vlayout)
 
+    def show_image(self, pixmap):
+        image_width = self.config.settings.lcm_diffusion_setting.image_width
+        image_height = self.config.settings.lcm_diffusion_setting.image_height
+        if image_width > 512 or image_height > 512:
+            new_width = 512 if image_width > 512 else image_width
+            new_height = 512 if image_height > 512 else image_height
+            self.img.setPixmap(
+                pixmap.scaled(
+                    new_width,
+                    new_height,
+                    Qt.KeepAspectRatio,
+                )
+            )
+        else:
+            self.img.setPixmap(pixmap)
+
     def on_show_next_image(self):
         if self.image_index != len(self.gen_images) - 1 and len(self.gen_images) > 0:
             self.previous_img_btn.setEnabled(True)
             self.image_index += 1
-            self.img.setPixmap(self.gen_images[self.image_index])
+            self.show_image(self.gen_images[self.image_index])
             if self.image_index == len(self.gen_images) - 1:
                 self.next_img_btn.setEnabled(False)
 
@@ -287,7 +303,7 @@ class MainWindow(QMainWindow):
         if self.image_index != 0:
             self.next_img_btn.setEnabled(True)
             self.image_index -= 1
-            self.img.setPixmap(self.gen_images[self.image_index])
+            self.show_image(self.gen_images[self.image_index])
             if self.image_index == 0:
                 self.previous_img_btn.setEnabled(False)
 
@@ -403,7 +419,7 @@ class MainWindow(QMainWindow):
             self.next_img_btn.setEnabled(False)
             self.previous_img_btn.setEnabled(False)
 
-        self.img.setPixmap(self.gen_images[0])
+        self.show_image(self.gen_images[0])
 
         self.previous_width = self.config.settings.lcm_diffusion_setting.image_width
         self.previous_height = self.config.settings.lcm_diffusion_setting.image_height
