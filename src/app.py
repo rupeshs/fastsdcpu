@@ -105,7 +105,11 @@ parser.add_argument(
     action="store_true",
     help="Interactive CLI mode",
 )
-
+parser.add_argument(
+    "--use_tiny_auto_encoder",
+    action="store_true",
+    help="Use tiny auto encoder for SD (TAESD)",
+)
 args = parser.parse_args()
 
 if args.version:
@@ -152,6 +156,7 @@ else:
     config.lcm_diffusion_setting.number_of_images = args.number_of_images
     config.lcm_diffusion_setting.seed = args.seed
     config.lcm_diffusion_setting.use_openvino = args.use_openvino
+    config.lcm_diffusion_setting.use_tiny_auto_encoder = args.use_tiny_auto_encoder
     if args.seed > -1:
         config.lcm_diffusion_setting.use_seed = True
     else:

@@ -89,6 +89,9 @@ class MainWindow(QMainWindow):
         self.num_images.setValue(
             self.config.settings.lcm_diffusion_setting.number_of_images
         )
+        self.use_tae_sd.setChecked(
+            self.config.settings.lcm_diffusion_setting.use_tiny_auto_encoder
+        )
 
     def init_ui(self):
         self.create_main_tab()
@@ -209,6 +212,10 @@ class MainWindow(QMainWindow):
         self.use_local_model_folder.stateChanged.connect(self.use_offline_model_changed)
         self.use_openvino_check.stateChanged.connect(self.use_openvino_changed)
 
+        self.use_tae_sd = QCheckBox("Use Tiny Auto Encoder (Fast, moderate quality)")
+        self.use_tae_sd.setChecked(False)
+        self.use_tae_sd.stateChanged.connect(self.use_tae_sd_changed)
+
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.seed_check)
         hlayout.addWidget(self.seed_value)
@@ -244,6 +251,7 @@ class MainWindow(QMainWindow):
         vlayout.addLayout(hlayout)
         vlayout.addWidget(self.safety_checker)
         vlayout.addWidget(self.use_openvino_check)
+        vlayout.addWidget(self.use_tae_sd)
         vlayout.addWidget(self.results_path_label)
         hlayout_path = QHBoxLayout()
         hlayout_path.addWidget(self.results_path)
@@ -336,6 +344,12 @@ class MainWindow(QMainWindow):
             self.config.settings.lcm_diffusion_setting.use_openvino = True
         else:
             self.config.settings.lcm_diffusion_setting.use_openvino = False
+
+    def use_tae_sd_changed(self, state):
+        if state == 2:
+            self.config.settings.lcm_diffusion_setting.use_tiny_auto_encoder = True
+        else:
+            self.config.settings.lcm_diffusion_setting.use_tiny_auto_encoder = False
 
     def use_offline_model_changed(self, state):
         if state == 2:
@@ -449,3 +463,4 @@ class MainWindow(QMainWindow):
         self.seed_check.setChecked(False)
         self.safety_checker.setChecked(True)
         self.results_path.setText(FastStableDiffusionPaths().get_results_path())
+        self.use_tae_sd.setChecked(False)

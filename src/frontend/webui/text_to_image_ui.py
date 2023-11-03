@@ -30,6 +30,7 @@ def generate_text_to_image(
     seed,
     use_openvino,
     use_safety_checker,
+    tiny_auto_encoder_checkbox,
 ) -> Any:
     global previous_height, previous_width, previous_model_id, previous_num_of_images
     model_id = LCM_DEFAULT_MODEL
@@ -50,6 +51,7 @@ def generate_text_to_image(
         use_openvino=use_openvino,
         use_safety_checker=use_safety_checker,
         use_seed=use_seed,
+        use_tiny_auto_encoder=tiny_auto_encoder_checkbox,
     )
     settings = Settings(
         lcm_diffusion_setting=lcm_diffusion_settings,
@@ -150,6 +152,11 @@ def get_text_to_image_ui(app_settings: AppSettings) -> None:
                         value=True,
                         interactive=True,
                     )
+                    tiny_auto_encoder_checkbox = gr.Checkbox(
+                        label="Use tiny auto encoder for SD",
+                        value=False,
+                        interactive=True,
+                    )
 
                     input_params = [
                         prompt,
@@ -161,6 +168,7 @@ def get_text_to_image_ui(app_settings: AppSettings) -> None:
                         seed,
                         openvino_checkbox,
                         safety_checker_checkbox,
+                        tiny_auto_encoder_checkbox,
                     ]
 
             with gr.Column():

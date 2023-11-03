@@ -1,5 +1,5 @@
 from typing import Any
-from diffusers import DiffusionPipeline
+from diffusers import DiffusionPipeline, AutoencoderTiny
 from os import path
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
@@ -25,6 +25,7 @@ class LCMTextToImage:
         self.use_openvino = False
         self.device = None
         self.previous_model_id = None
+        self.previous_use_tae_sd = False
 
     def _get_lcm_diffusion_pipeline_path(self) -> str:
         script_path = path.dirname(path.abspath(__file__))
@@ -42,10 +43,15 @@ class LCMTextToImage:
         use_openvino: bool = False,
         device: str = "cpu",
         use_local_model: bool = False,
+        use_tiny_auto_encoder: bool = False,
     ) -> None:
         self.device = device
         self.use_openvino = use_openvino
-        if self.pipeline is None or self.previous_model_id != model_id:
+        if (
+            self.pipeline is None
+            or self.previous_model_id != model_id
+            or self.previous_use_tae_sd != use_tiny_auto_encoder
+        ):
             if self.use_openvino and DEVICE == "cpu":
                 if self.pipeline:
                     del self.pipeline
@@ -69,11 +75,21 @@ class LCMTextToImage:
                     custom_revision="main",
                     local_files_only=use_local_model,
                 )
+
+                if use_tiny_auto_encoder:
+                    print("Using Tiny Auto Encoder")
+                    self.pipeline.vae = AutoencoderTiny.from_pretrained(
+                        "madebyollin/taesd",
+                        torch_dtype=torch.float32,
+                    )
+
                 self.pipeline.to(
                     torch_device=self.device,
                     torch_dtype=torch.float32,
                 )
+                # print(self.pipeline)
             self.previous_model_id = model_id
+            self.previous_use_tae_sd = use_tiny_auto_encoder
 
     def generate(
         self,
