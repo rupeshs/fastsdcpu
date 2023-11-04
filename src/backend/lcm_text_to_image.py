@@ -8,12 +8,20 @@ from constants import DEVICE
 
 
 if DEVICE == "cpu":
+    from huggingface_hub import snapshot_download
+    from optimum.intel.openvino.modeling_diffusion import OVModelVaeDecoder, OVBaseModel
     from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
         OVLatentConsistencyModelPipeline,
     )
     from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
         LCMScheduler,
     )
+
+    class CustomOVModelVaeDecoder(OVModelVaeDecoder):
+        def __init__(
+            self, model, parent_model, ov_config = None, model_dir = None,
+        ):
+            super(OVModelVaeDecoder, self).__init__(model, parent_model, ov_config, "vae_decoder", model_dir)
 
 
 class LCMTextToImage:
@@ -59,12 +67,19 @@ class LCMTextToImage:
                     model_id,
                     subfolder="scheduler",
                 )
+
                 self.pipeline = OVLatentConsistencyModelPipeline.from_pretrained(
                     model_id,
                     scheduler=scheduler,
                     compile=False,
                     local_files_only=use_local_model,
                 )
+
+                if use_tiny_auto_encoder:
+                    print("Using Tiny Auto Encoder")
+                    taesd_dir = snapshot_download(repo_id="deinferno/taesd-openvino")
+                    self.pipeline.vae_decoder = CustomOVModelVaeDecoder(model = OVBaseModel.load_model(f"{taesd_dir}/vae_decoder/openvino_model.xml"), parent_model = self.pipeline, model_dir = taesd_dir)
+
             else:
                 if self.pipeline:
                     del self.pipeline
