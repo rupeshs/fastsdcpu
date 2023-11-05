@@ -31,6 +31,8 @@ Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7
 - Fixed OpenVINO high RAM usage,thanks [deinferno](https://github.com/deinferno) 
 - Added multiple image generation support
 - Application settings
+- Added Tiny Auto Encoder for SD (TAESD), 1.4x speed boost
+- Safety checker disabled by default
 
 ## OpenVINO support
 

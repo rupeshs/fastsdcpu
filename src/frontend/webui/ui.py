@@ -6,7 +6,7 @@ from app_settings import AppSettings
 
 
 def _get_footer_message() -> str:
-    version = f"<center><p> v{APP_VERSION} "
+    version = f"<center><p> {APP_VERSION} "
     footer_msg = version + (
         '  © 2023 <a href="https://github.com/rupeshs">'
         " Rupesh Sreeraman</a></p></center>"
