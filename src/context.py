@@ -29,6 +29,7 @@ class Context:
             settings.lcm_diffusion_setting.use_openvino,
             device,
             settings.lcm_diffusion_setting.use_offline_model,
+            settings.lcm_diffusion_setting.use_tiny_auto_encoder,
         )
         images = self.lcm_text_to_image.generate(
             settings.lcm_diffusion_setting,

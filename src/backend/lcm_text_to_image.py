@@ -1,5 +1,5 @@
 from typing import Any
-from diffusers import DiffusionPipeline
+from diffusers import DiffusionPipeline, AutoencoderTiny
 from os import path
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
@@ -8,12 +8,30 @@ from constants import DEVICE
 
 
 if DEVICE == "cpu":
+    from huggingface_hub import snapshot_download
+    from optimum.intel.openvino.modeling_diffusion import OVModelVaeDecoder, OVBaseModel
     from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
         OVLatentConsistencyModelPipeline,
     )
     from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
         LCMScheduler,
     )
+
+    class CustomOVModelVaeDecoder(OVModelVaeDecoder):
+        def __init__(
+            self,
+            model,
+            parent_model,
+            ov_config=None,
+            model_dir=None,
+        ):
+            super(OVModelVaeDecoder, self).__init__(
+                model,
+                parent_model,
+                ov_config,
+                "vae_decoder",
+                model_dir,
+            )
 
 
 class LCMTextToImage:
@@ -25,6 +43,7 @@ class LCMTextToImage:
         self.use_openvino = False
         self.device = None
         self.previous_model_id = None
+        self.previous_use_tae_sd = False
 
     def _get_lcm_diffusion_pipeline_path(self) -> str:
         script_path = path.dirname(path.abspath(__file__))
@@ -42,10 +61,15 @@ class LCMTextToImage:
         use_openvino: bool = False,
         device: str = "cpu",
         use_local_model: bool = False,
+        use_tiny_auto_encoder: bool = False,
     ) -> None:
         self.device = device
         self.use_openvino = use_openvino
-        if self.pipeline is None or self.previous_model_id != model_id:
+        if (
+            self.pipeline is None
+            or self.previous_model_id != model_id
+            or self.previous_use_tae_sd != use_tiny_auto_encoder
+        ):
             if self.use_openvino and DEVICE == "cpu":
                 if self.pipeline:
                     del self.pipeline
@@ -53,12 +77,28 @@ class LCMTextToImage:
                     model_id,
                     subfolder="scheduler",
                 )
+
                 self.pipeline = OVLatentConsistencyModelPipeline.from_pretrained(
                     model_id,
                     scheduler=scheduler,
                     compile=False,
                     local_files_only=use_local_model,
                 )
+
+                if use_tiny_auto_encoder:
+                    print("Using Tiny Auto Encoder (OpenVINO)")
+                    taesd_dir = snapshot_download(
+                        repo_id="deinferno/taesd-openvino",
+                        local_files_only=use_local_model,
+                    )
+                    self.pipeline.vae_decoder = CustomOVModelVaeDecoder(
+                        model=OVBaseModel.load_model(
+                            f"{taesd_dir}/vae_decoder/openvino_model.xml"
+                        ),
+                        parent_model=self.pipeline,
+                        model_dir=taesd_dir,
+                    )
+
             else:
                 if self.pipeline:
                     del self.pipeline
@@ -69,11 +109,22 @@ class LCMTextToImage:
                     custom_revision="main",
                     local_files_only=use_local_model,
                 )
+
+                if use_tiny_auto_encoder:
+                    print("Using Tiny Auto Encoder")
+                    self.pipeline.vae = AutoencoderTiny.from_pretrained(
+                        "madebyollin/taesd",
+                        torch_dtype=torch.float32,
+                        local_files_only=use_local_model,
+                    )
+
                 self.pipeline.to(
                     torch_device=self.device,
                     torch_dtype=torch.float32,
                 )
+
             self.previous_model_id = model_id
+            self.previous_use_tae_sd = use_tiny_auto_encoder
 
     def generate(
         self,
