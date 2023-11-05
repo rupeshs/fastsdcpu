@@ -12,9 +12,6 @@ def is_reshape_required(
     prev_num_of_images: int,
     cur_num_of_images: int,
 ) -> bool:
-    print(f"width - {prev_width} {cur_width}")
-    print(f"height - {prev_height} {cur_height}")
-    print(f"model - {prev_model} {cur_model}")
     reshape_required = False
     if (
         prev_width != cur_width

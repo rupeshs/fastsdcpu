@@ -19,9 +19,19 @@ if DEVICE == "cpu":
 
     class CustomOVModelVaeDecoder(OVModelVaeDecoder):
         def __init__(
-            self, model, parent_model, ov_config = None, model_dir = None,
+            self,
+            model,
+            parent_model,
+            ov_config=None,
+            model_dir=None,
         ):
-            super(OVModelVaeDecoder, self).__init__(model, parent_model, ov_config, "vae_decoder", model_dir)
+            super(OVModelVaeDecoder, self).__init__(
+                model,
+                parent_model,
+                ov_config,
+                "vae_decoder",
+                model_dir,
+            )
 
 
 class LCMTextToImage:
@@ -76,9 +86,18 @@ class LCMTextToImage:
                 )
 
                 if use_tiny_auto_encoder:
-                    print("Using Tiny Auto Encoder")
-                    taesd_dir = snapshot_download(repo_id="deinferno/taesd-openvino")
-                    self.pipeline.vae_decoder = CustomOVModelVaeDecoder(model = OVBaseModel.load_model(f"{taesd_dir}/vae_decoder/openvino_model.xml"), parent_model = self.pipeline, model_dir = taesd_dir)
+                    print("Using Tiny Auto Encoder (OpenVINO)")
+                    taesd_dir = snapshot_download(
+                        repo_id="deinferno/taesd-openvino",
+                        local_files_only=use_local_model,
+                    )
+                    self.pipeline.vae_decoder = CustomOVModelVaeDecoder(
+                        model=OVBaseModel.load_model(
+                            f"{taesd_dir}/vae_decoder/openvino_model.xml"
+                        ),
+                        parent_model=self.pipeline,
+                        model_dir=taesd_dir,
+                    )
 
             else:
                 if self.pipeline:
@@ -96,13 +115,14 @@ class LCMTextToImage:
                     self.pipeline.vae = AutoencoderTiny.from_pretrained(
                         "madebyollin/taesd",
                         torch_dtype=torch.float32,
+                        local_files_only=use_local_model,
                     )
 
                 self.pipeline.to(
                     torch_device=self.device,
                     torch_dtype=torch.float32,
                 )
-                # print(self.pipeline)
+
             self.previous_model_id = model_id
             self.previous_use_tae_sd = use_tiny_auto_encoder
 

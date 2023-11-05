@@ -16,5 +16,5 @@ class LCMDiffusionSetting(BaseModel):
     use_openvino: bool = False
     use_seed: bool = False
     use_offline_model: bool = False
-    use_safety_checker: bool = True
+    use_safety_checker: bool = False
     use_tiny_auto_encoder: bool = False

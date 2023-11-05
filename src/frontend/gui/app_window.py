@@ -212,7 +212,9 @@ class MainWindow(QMainWindow):
         self.use_local_model_folder.stateChanged.connect(self.use_offline_model_changed)
         self.use_openvino_check.stateChanged.connect(self.use_openvino_changed)
 
-        self.use_tae_sd = QCheckBox("Use Tiny Auto Encoder (Fast, moderate quality)")
+        self.use_tae_sd = QCheckBox(
+            "Use Tiny Auto Encoder - TAESD (Fast, moderate quality)"
+        )
         self.use_tae_sd.setChecked(False)
         self.use_tae_sd.stateChanged.connect(self.use_tae_sd_changed)
 
@@ -461,6 +463,6 @@ class MainWindow(QMainWindow):
         self.guidance.setValue(80)
         self.use_openvino_check.setChecked(False)
         self.seed_check.setChecked(False)
-        self.safety_checker.setChecked(True)
+        self.safety_checker.setChecked(False)
         self.results_path.setText(FastStableDiffusionPaths().get_results_path())
         self.use_tae_sd.setChecked(False)
