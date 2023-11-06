@@ -45,16 +45,6 @@ class LCMTextToImage:
         self.previous_model_id = None
         self.previous_use_tae_sd = False
 
-    def _get_lcm_diffusion_pipeline_path(self) -> str:
-        script_path = path.dirname(path.abspath(__file__))
-        file_path = path.join(
-            script_path,
-            "lcmdiffusion",
-            "pipelines",
-            "latent_consistency_txt2img.py",
-        )
-        return file_path
-
     def init(
         self,
         model_id: str,
@@ -105,8 +95,6 @@ class LCMTextToImage:
 
                 self.pipeline = DiffusionPipeline.from_pretrained(
                     model_id,
-                    custom_pipeline=self._get_lcm_diffusion_pipeline_path(),
-                    custom_revision="main",
                     local_files_only=use_local_model,
                 )
 
