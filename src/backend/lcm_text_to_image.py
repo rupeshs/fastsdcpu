@@ -1,10 +1,16 @@
 from typing import Any
-from diffusers import DiffusionPipeline, AutoencoderTiny
+from diffusers import (
+    DiffusionPipeline,
+    AutoencoderTiny,
+    LCMScheduler,
+    UNet2DConditionModel,
+)
 from os import path
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 import numpy as np
-from constants import DEVICE
+from constants import DEVICE, LCM_DEFAULT_MODEL
+from huggingface_hub import model_info
 
 
 if DEVICE == "cpu":
@@ -14,7 +20,7 @@ if DEVICE == "cpu":
         OVLatentConsistencyModelPipeline,
     )
     from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
-        LCMScheduler,
+        LCMScheduler as OpenVinoLCMscheduler,
     )
 
     class CustomOVModelVaeDecoder(OVModelVaeDecoder):
@@ -45,6 +51,51 @@ class LCMTextToImage:
         self.previous_model_id = None
         self.previous_use_tae_sd = False
 
+    def _get_lcm_pipeline(
+        self,
+        lcm_model_id: str,
+        base_model_id: str,
+    ):
+        pipeline = None
+        unet = UNet2DConditionModel.from_pretrained(
+            lcm_model_id,
+            torch_dtype=torch.float32,
+            # resume_download=True,
+        )
+        pipeline = DiffusionPipeline.from_pretrained(
+            base_model_id,
+            unet=unet,
+            torch_dtype=torch.float32,
+            # resume_download=True,
+        )
+        pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
+
+        return pipeline
+
+    def _get_diffuser_pipeline(
+        self,
+        model_id: str,
+        use_local_model,
+    ):
+        pipeline = None
+        if model_id == LCM_DEFAULT_MODEL:
+            pipeline = DiffusionPipeline.from_pretrained(
+                model_id,
+                local_files_only=use_local_model,
+            )
+        elif model_id == "latent-consistency/lcm-sdxl":
+            pipeline = self._get_lcm_pipeline(
+                model_id,
+                "stabilityai/stable-diffusion-xl-base-1.0",
+            )
+
+        elif model_id == "latent-consistency/lcm-ssd-1b":
+            pipeline = self._get_lcm_pipeline(
+                model_id,
+                "segmind/SSD-1B",
+            )
+        return pipeline
+
     def init(
         self,
         model_id: str,
@@ -63,7 +114,7 @@ class LCMTextToImage:
             if self.use_openvino and DEVICE == "cpu":
                 if self.pipeline:
                     del self.pipeline
-                scheduler = LCMScheduler.from_pretrained(
+                scheduler = OpenVinoLCMscheduler.from_pretrained(
                     model_id,
                     subfolder="scheduler",
                 )
@@ -93,9 +144,9 @@ class LCMTextToImage:
                 if self.pipeline:
                     del self.pipeline
 
-                self.pipeline = DiffusionPipeline.from_pretrained(
+                self.pipeline = self._get_diffuser_pipeline(
                     model_id,
-                    local_files_only=use_local_model,
+                    use_local_model,
                 )
 
                 if use_tiny_auto_encoder:
@@ -147,7 +198,6 @@ class LCMTextToImage:
             guidance_scale=lcm_diffusion_setting.guidance_scale,
             width=lcm_diffusion_setting.image_width,
             height=lcm_diffusion_setting.image_height,
-            output_type="pil",
             num_images_per_prompt=lcm_diffusion_setting.number_of_images,
         ).images
 

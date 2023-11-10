@@ -35,6 +35,7 @@ from context import Context
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from frontend.utils import enable_openvino_controls
+from backend.lcm_models import get_available_models
 
 
 class MainWindow(QMainWindow):
@@ -151,7 +152,13 @@ class MainWindow(QMainWindow):
     def create_settings_tab(self):
         model_hlayout = QHBoxLayout()
         self.lcm_model_label = QLabel("Latent Consistency Model:")
-        self.lcm_model = QLineEdit(LCM_DEFAULT_MODEL)
+        # self.lcm_model = QLineEdit(LCM_DEFAULT_MODEL)
+        self.lcm_model_label = QLabel("Latent Consistency Model:")
+        lcm_models = get_available_models()
+        self.lcm_model = QComboBox(self)
+        for model in lcm_models:
+            self.lcm_model.addItem(model)
+
         model_hlayout.addWidget(self.lcm_model_label)
         model_hlayout.addWidget(self.lcm_model)
 
@@ -181,6 +188,7 @@ class MainWindow(QMainWindow):
         self.width.addItem("256")
         self.width.addItem("512")
         self.width.addItem("768")
+        self.width.addItem("1024")
         self.width.setCurrentText("512")
         self.width.currentIndexChanged.connect(self.on_width_changed)
 
@@ -189,6 +197,7 @@ class MainWindow(QMainWindow):
         self.height.addItem("256")
         self.height.addItem("512")
         self.height.addItem("768")
+        self.height.addItem("1024")
         self.height.setCurrentText("512")
         self.height.currentIndexChanged.connect(self.on_height_changed)
 
@@ -398,7 +407,7 @@ class MainWindow(QMainWindow):
         if self.config.settings.lcm_diffusion_setting.use_openvino:
             model_id = LCM_DEFAULT_MODEL_OPENVINO
         else:
-            model_id = self.lcm_model.text()
+            model_id = self.lcm_model.currentText()
 
         self.config.settings.lcm_diffusion_setting.lcm_model_id = model_id
 

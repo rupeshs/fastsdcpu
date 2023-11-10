@@ -1,5 +1,5 @@
 accelerate==0.23.0
-diffusers==0.22.1
+diffusers==0.23.0
 transformers==4.34.0
 PyQt5
 Pillow==9.4.0
@@ -9,5 +9,6 @@ onnx==1.14.1
 onnxruntime==1.16.1
 pydantic==2.4.2
 typing-extensions==4.8.0
-pyyaml
+pyyaml==6.0.1
 gradio==3.39.0
+peft==0.6.1
