@@ -30,6 +30,8 @@ class Context:
             device,
             settings.lcm_diffusion_setting.use_offline_model,
             settings.lcm_diffusion_setting.use_tiny_auto_encoder,
+            settings.lcm_diffusion_setting.use_lcm_lora,
+            settings.lcm_diffusion_setting.lcm_lora,
         )
         images = self.lcm_text_to_image.generate(
             settings.lcm_diffusion_setting,

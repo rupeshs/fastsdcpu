@@ -122,8 +122,8 @@ print(f"Using device : {constants.DEVICE}")
 
 app_settings = AppSettings()
 app_settings.load()
-
-
+print(app_settings.stable_diffsuion_models)
+print(app_settings.lcm_lora_models)
 if args.gui:
     from frontend.gui.ui import start_gui
 

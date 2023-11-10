@@ -11,7 +11,7 @@ from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 import numpy as np
 from constants import DEVICE, LCM_DEFAULT_MODEL
 from huggingface_hub import model_info
-
+from backend.models.lcmdiffusion_setting import LCMLora
 
 if DEVICE == "cpu":
     from huggingface_hub import snapshot_download
@@ -96,6 +96,23 @@ class LCMTextToImage:
             )
         return pipeline
 
+    def _get_lcm_lora_pipeline(
+        self,
+        base_model_id: str,
+        lcm_lora_id: str,
+        use_local_model: bool,
+    ):
+        pipeline = DiffusionPipeline.from_pretrained(
+            base_model_id,
+            torch_dtype=torch.float32,
+            local_files_only=use_local_model,
+        )
+        pipeline.load_lora_weights(lcm_lora_id)
+        pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
+        # pipe.to(device="cuda", dtype=torch.float16)
+        print(pipeline)
+        return pipeline
+
     def init(
         self,
         model_id: str,
@@ -103,6 +120,8 @@ class LCMTextToImage:
         device: str = "cpu",
         use_local_model: bool = False,
         use_tiny_auto_encoder: bool = False,
+        use_lora: bool = False,
+        lcm_lora: LCMLora = None,
     ) -> None:
         self.device = device
         self.use_openvino = use_openvino
@@ -110,10 +129,13 @@ class LCMTextToImage:
             self.pipeline is None
             or self.previous_model_id != model_id
             or self.previous_use_tae_sd != use_tiny_auto_encoder
+            or self.previous_lcm_lora_base_id != lcm_lora.base_model_id
+            or self.previous_lcm_lora_id != lcm_lora.lcm_lora_id
         ):
             if self.use_openvino and DEVICE == "cpu":
                 if self.pipeline:
                     del self.pipeline
+                    self.pipeline = None
                 scheduler = OpenVinoLCMscheduler.from_pretrained(
                     model_id,
                     subfolder="scheduler",
@@ -143,12 +165,20 @@ class LCMTextToImage:
             else:
                 if self.pipeline:
                     del self.pipeline
+                    self.pipeline = None
+                print("*88888888888888888888888888888888888888888888888")
 
-                self.pipeline = self._get_diffuser_pipeline(
-                    model_id,
-                    use_local_model,
-                )
-
+                if use_lora:
+                    self.pipeline = self._get_lcm_lora_pipeline(
+                        lcm_lora.base_model_id,
+                        lcm_lora.lcm_lora_id,
+                        use_local_model,
+                    )
+                else:
+                    self.pipeline = self._get_diffuser_pipeline(
+                        model_id,
+                        use_local_model,
+                    )
                 if use_tiny_auto_encoder:
                     print("Using Tiny Auto Encoder")
                     self.pipeline.vae = AutoencoderTiny.from_pretrained(
@@ -164,12 +194,15 @@ class LCMTextToImage:
 
             self.previous_model_id = model_id
             self.previous_use_tae_sd = use_tiny_auto_encoder
+            self.previous_lcm_lora_base_id = lcm_lora.base_model_id
+            self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
 
     def generate(
         self,
         lcm_diffusion_setting: LCMDiffusionSetting,
         reshape: bool = False,
     ) -> Any:
+        guidance_scale = lcm_diffusion_setting.guidance_scale
         if lcm_diffusion_setting.use_seed:
             cur_seed = lcm_diffusion_setting.seed
             if self.use_openvino:
@@ -192,10 +225,13 @@ class LCMTextToImage:
         if not lcm_diffusion_setting.use_safety_checker:
             self.pipeline.safety_checker = None
 
+        if lcm_diffusion_setting.use_lcm_lora:
+            guidance_scale = 1
+
         result_images = self.pipeline(
             prompt=lcm_diffusion_setting.prompt,
             num_inference_steps=lcm_diffusion_setting.inference_steps,
-            guidance_scale=lcm_diffusion_setting.guidance_scale,
+            guidance_scale=guidance_scale,
             width=lcm_diffusion_setting.image_width,
             height=lcm_diffusion_setting.image_height,
             num_images_per_prompt=lcm_diffusion_setting.number_of_images,

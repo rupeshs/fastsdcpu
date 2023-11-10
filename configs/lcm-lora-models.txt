@@ -1,0 +1,3 @@
+latent-consistency/lcm-lora-sdv1-5
+latent-consistency/lcm-lora-sdxl
+latent-consistency/lcm-lora-ssd-1b

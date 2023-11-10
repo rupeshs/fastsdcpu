@@ -46,3 +46,21 @@ class FastStableDiffusionPaths:
             "style.css",
         )
         return css_path
+
+    @staticmethod
+    def get_stable_diffusion_models_config_path():
+        configs_path = get_configs_path()
+        models_path = join_paths(
+            configs_path,
+            constants.SD_MODELS_FILE,
+        )
+        return models_path
+
+    @staticmethod
+    def get_lcm_lora_models_config_path():
+        configs_path = get_configs_path()
+        lcm_lora_models_path = join_paths(
+            configs_path,
+            constants.LCM_LORA_MODELS_FILE,
+        )
+        return lcm_lora_models_path

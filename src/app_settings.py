@@ -2,15 +2,30 @@ import yaml
 from os import path, makedirs
 from models.settings import Settings
 from paths import FastStableDiffusionPaths
+from utils import get_models_from_text_file
 
 
 class AppSettings:
     def __init__(self):
         self.config_path = FastStableDiffusionPaths().get_app_settings_path()
+        self._stable_diffsuion_models = get_models_from_text_file(
+            FastStableDiffusionPaths().get_stable_diffusion_models_config_path()
+        )
+        self._lcm_lora_models = get_models_from_text_file(
+            FastStableDiffusionPaths().get_lcm_lora_models_config_path()
+        )
 
     @property
     def settings(self):
         return self._config
+
+    @property
+    def stable_diffsuion_models(self):
+        return self._stable_diffsuion_models
+
+    @property
+    def lcm_lora_models(self):
+        return self._lcm_lora_models
 
     def load(self):
         if not path.exists(self.config_path):

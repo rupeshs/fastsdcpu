@@ -4,6 +4,11 @@ from pydantic import BaseModel
 from constants import LCM_DEFAULT_MODEL
 
 
+class LCMLora(BaseModel):
+    base_model_id: str = ""
+    lcm_lora_id: str = ""
+
+
 class LCMDiffusionSetting(BaseModel):
     lcm_model_id: str = LCM_DEFAULT_MODEL
     prompt: str = ""
@@ -18,3 +23,5 @@ class LCMDiffusionSetting(BaseModel):
     use_offline_model: bool = False
     use_safety_checker: bool = False
     use_tiny_auto_encoder: bool = False
+    use_lcm_lora: bool = False
+    lcm_lora: LCMLora

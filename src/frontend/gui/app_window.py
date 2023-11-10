@@ -41,12 +41,12 @@ from backend.lcm_models import get_available_models
 class MainWindow(QMainWindow):
     def __init__(self, config: AppSettings):
         super().__init__()
+        self.config = config
         self.setWindowTitle(APP_NAME)
         self.setFixedSize(QSize(600, 620))
         self.init_ui()
         self.pipeline = None
         self.threadpool = QThreadPool()
-        self.config = config
         self.device = "cpu"
         self.previous_width = 0
         self.previous_height = 0
@@ -162,6 +162,18 @@ class MainWindow(QMainWindow):
         model_hlayout.addWidget(self.lcm_model_label)
         model_hlayout.addWidget(self.lcm_model)
 
+        self.use_lcm_lora = QCheckBox("Use LCM LoRA")
+        self.use_lcm_lora.setChecked(False)
+        self.use_lcm_lora.stateChanged.connect(self.use_lcm_lora_changed)
+
+        self.lora_base_model_id_label = QLabel("Lora base model ID :")
+        self.lcm_lora_model_id_label = QLabel("LCM LoRA model ID :")
+        self.base_model_id = QComboBox(self)
+        self.base_model_id.addItems(self.config.stable_diffsuion_models)
+
+        self.lcm_lora_id = QComboBox(self)
+        self.lcm_lora_id.addItems(self.config.lcm_lora_models)
+
         self.inference_steps_value = QLabel("Number of inference steps: 4")
         self.inference_steps = QSlider(orientation=Qt.Orientation.Horizontal)
         self.inference_steps.setMaximum(25)
@@ -248,6 +260,11 @@ class MainWindow(QMainWindow):
         vlayout.addItem(hspacer)
         vlayout.addLayout(model_hlayout)
         vlayout.addWidget(self.use_local_model_folder)
+        vlayout.addWidget(self.use_lcm_lora)
+        vlayout.addWidget(self.lora_base_model_id_label)
+        vlayout.addWidget(self.base_model_id)
+        vlayout.addWidget(self.lcm_lora_model_id_label)
+        vlayout.addWidget(self.lcm_lora_id)
         vlayout.addItem(slider_hspacer)
         vlayout.addWidget(self.inference_steps_value)
         vlayout.addWidget(self.inference_steps)
@@ -352,8 +369,15 @@ class MainWindow(QMainWindow):
     def use_openvino_changed(self, state):
         if state == 2:
             self.lcm_model.setEnabled(False)
+            self.use_lcm_lora.setEnabled(False)
+            self.lcm_lora_id.setEnabled(False)
+            self.base_model_id.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_openvino = True
         else:
+            self.lcm_model.setEnabled(True)
+            self.use_lcm_lora.setEnabled(True)
+            self.lcm_lora_id.setEnabled(True)
+            self.base_model_id.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_openvino = False
 
     def use_tae_sd_changed(self, state):
@@ -367,6 +391,18 @@ class MainWindow(QMainWindow):
             self.config.settings.lcm_diffusion_setting.use_offline_model = True
         else:
             self.config.settings.lcm_diffusion_setting.use_offline_model = False
+
+    def use_lcm_lora_changed(self, state):
+        if state == 2:
+            self.lcm_model.setEnabled(False)
+            self.lcm_lora_id.setEnabled(True)
+            self.base_model_id.setEnabled(True)
+            self.config.settings.lcm_diffusion_setting.use_lcm_lora = True
+        else:
+            self.lcm_model.setEnabled(True)
+            self.lcm_lora_id.setEnabled(False)
+            self.base_model_id.setEnabled(False)
+            self.config.settings.lcm_diffusion_setting.use_lcm_lora = False
 
     def use_safety_checker_changed(self, state):
         if state == 2:
@@ -403,6 +439,12 @@ class MainWindow(QMainWindow):
     def generate_image(self):
         self.config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
         self.config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
+        self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = (
+            self.lcm_lora_id.currentText()
+        )
+        self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id = (
+            self.base_model_id.currentText()
+        )
 
         if self.config.settings.lcm_diffusion_setting.use_openvino:
             model_id = LCM_DEFAULT_MODEL_OPENVINO
