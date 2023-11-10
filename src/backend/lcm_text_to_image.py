@@ -166,7 +166,6 @@ class LCMTextToImage:
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
-                print("*88888888888888888888888888888888888888888888888")
 
                 if use_lora:
                     self.pipeline = self._get_lcm_lora_pipeline(
