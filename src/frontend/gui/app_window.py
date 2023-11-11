@@ -43,7 +43,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.config = config
         self.setWindowTitle(APP_NAME)
-        self.setFixedSize(QSize(600, 620))
+        self.setFixedSize(QSize(600, 670))
         self.init_ui()
         self.pipeline = None
         self.threadpool = QThreadPool()
@@ -122,6 +122,7 @@ class MainWindow(QMainWindow):
         self.img = QLabel("<<Image>>")
         self.img.setAlignment(Qt.AlignCenter)
         self.img.setFixedSize(QSize(512, 512))
+        self.vspacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.prompt = QTextEdit()
         self.prompt.setPlaceholderText("A fantasy landscape")
@@ -157,6 +158,7 @@ class MainWindow(QMainWindow):
 
         vlayout = QVBoxLayout()
         vlayout.addLayout(hlayout_nav)
+        vlayout.addItem(self.vspacer)
         vlayout.addWidget(self.prompt)
         vlayout.addWidget(self.neg_prompt_label)
         vlayout.addLayout(hlayout)
@@ -292,6 +294,8 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.base_model_id)
         vlayout.addWidget(self.lcm_lora_model_id_label)
         vlayout.addWidget(self.lcm_lora_id)
+        vlayout.addWidget(self.use_openvino_check)
+        vlayout.addWidget(self.use_tae_sd)
         vlayout.addItem(slider_hspacer)
         vlayout.addWidget(self.inference_steps_value)
         vlayout.addWidget(self.inference_steps)
@@ -305,8 +309,7 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.guidance)
         vlayout.addLayout(hlayout)
         vlayout.addWidget(self.safety_checker)
-        vlayout.addWidget(self.use_openvino_check)
-        vlayout.addWidget(self.use_tae_sd)
+
         vlayout.addWidget(self.results_path_label)
         hlayout_path = QHBoxLayout()
         hlayout_path.addWidget(self.results_path)

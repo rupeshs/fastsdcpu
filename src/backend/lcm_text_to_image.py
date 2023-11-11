@@ -47,7 +47,7 @@ class LCMTextToImage:
     ) -> None:
         self.pipeline = None
         self.use_openvino = False
-        self.device = None
+        self.device = ""
         self.previous_model_id = None
         self.previous_use_tae_sd = False
         self.previous_use_lcm_lora = False
@@ -129,7 +129,7 @@ class LCMTextToImage:
         use_local_model: bool = False,
         use_tiny_auto_encoder: bool = False,
         use_lora: bool = False,
-        lcm_lora: LCMLora = None,
+        lcm_lora: LCMLora = LCMLora(),
     ) -> None:
         self.device = device
         self.use_openvino = use_openvino

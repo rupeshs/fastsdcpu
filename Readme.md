@@ -66,7 +66,7 @@ Following LCM models are supported:
 
 ### How to add new LCM-LoRA models
 To add new model follow the steps:
-For example we will add `wavymulder/collage-diffusion`, you can give Stable diffusion 1.5 Or SDXL,SSD1-B fine tuned models.
+For example we will add `wavymulder/collage-diffusion`, you can give Stable diffusion 1.5 Or SDXL,SSD-1B fine tuned models.
 
 1. Open `configs/stable-diffusion-models.txt` file in text editor.
 2. Add the model ID `wavymulder/collage-diffusion`  or locally cloned path.

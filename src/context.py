@@ -24,6 +24,8 @@ class Context:
     ) -> Any:
         tick = perf_counter()
         pprint(settings.lcm_diffusion_setting.model_dump())
+        if not settings.lcm_diffusion_setting.lcm_lora:
+            return None
         self.lcm_text_to_image.init(
             settings.lcm_diffusion_setting.lcm_model_id,
             settings.lcm_diffusion_setting.use_openvino,
