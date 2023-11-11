@@ -202,7 +202,6 @@ class LCMTextToImage:
                     torch_device=self.device,
                     torch_dtype=torch.float32,
                 )
-
             self.previous_model_id = model_id
             self.previous_use_tae_sd = use_tiny_auto_encoder
             self.previous_lcm_lora_base_id = lcm_lora.base_model_id

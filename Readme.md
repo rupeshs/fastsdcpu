@@ -33,18 +33,77 @@ Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7
 - Application settings
 - Added Tiny Auto Encoder for SD (TAESD) support, 1.4x speed boost (Fast,moderate quality)
 - Safety checker disabled by default
+- Added SDXL,SSD1B - 1B LCM models
+- Added LCM-LoRA support, works well for fine-tuned Stable Diffusion model 1.5  or SDXL models
+- Added negative prompt support in LCM-LoRA mode
+- LCM-LoRA models can be configured using text configuration file
 
 ## OpenVINO support
 
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
-We can get 2x speed improvement when using OpenVINO. 
+We can get 2x speed improvement when using OpenVINO.
 
-## LCM Models 
+## Models 
+Fast SD supports LCM models and LCM-LoRA models.
+
+### LCM Models 
 
 Following LCM models are supported:
 
-- LCM_Dreamshaper_v7 -https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7 by [Simian Luo](https://github.com/luosiallen)
-- LCM_Dreamshaper_v7-openvino - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino by [deinferno](https://github.com/deinferno) 
+- *LCM_Dreamshaper_v7* - https://huggingface.co/SimianLuo/LCM_Dreamshaper_v7 by [Simian Luo](https://github.com/luosiallen)
+- *SSD-1B* -LCM distilled version of [segmind/SSD-1B](https://huggingface.co/segmind/SSD-1B)
+- *StableDiffusion XL* -LCM distilled version of [stable-diffusion-xl-base-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)
+
+#### OpenVINO models
+- *LCM_Dreamshaper_v7-openvino* - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino by [deinferno](https://github.com/deinferno) 
+
+### LCM-LoRA models
+- *lcm-lora-sdv1-5* - distilled consistency adapter for [runwayml/stable-diffusion-v1-5](https://huggingface.co/runwayml/stable-diffusion-v1-5) 
+- *lcm-lora-sdxl* - Distilled consistency adapter for [stable-diffusion-xl-base-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)
+- *lcm-lora-ssd-1b* - Distilled consistency adapter for [segmind/SSD-1B](https://huggingface.co/segmind/SSD-1B) 
+
+:exclamation: Currently no support for OpenVINO LCM-LoRA models.
+
+### How to add new LCM-LoRA models
+To add new model follow the steps:
+For example we will add `wavymulder/collage-diffusion`, you can give Stable diffusion 1.5 Or SDXL,SSD1-B fine tuned models.
+
+1. Open `configs/stable-diffusion-models.txt` file in text editor.
+2. Add the model ID `wavymulder/collage-diffusion`  or locally cloned path.
+
+Updated file as shown below :
+
+```Lykon/dreamshaper-8
+Fictiverse/Stable_Diffusion_PaperCut_Model
+stabilityai/stable-diffusion-xl-base-1.0
+runwayml/stable-diffusion-v1-5
+segmind/SSD-1B
+stablediffusionapi/anything-v5
+wavymulder/collage-diffusion
+```
+
+Similarly we can update `configs/lcm-lora-models.txt` file with lcm-lora ID.
+
+### How to use LCM-LoRA models offline
+Please follow the steps to run LCM-LoRA models offline :
+- In the settings ensure that  "Use locally cached model" setting is ticked.
+- Download the model for example `latent-consistency/lcm-lora-sdv1-5`
+Run the following commands:
+
+```
+git lfs install
+git clone https://huggingface.co/latent-consistency/lcm-lora-sdv1-5
+```
+
+Copy the cloned model folder path for example "D:\demo\lcm-lora-sdv1-5" and update the `configs/lcm-lora-models.txt` file as shown below :
+
+```
+D:\demo\lcm-lora-sdv1-5
+latent-consistency/lcm-lora-sdxl
+latent-consistency/lcm-lora-ssd-1b
+```
+- Open the app and select the newly added local folder in the combo box menu.
+- That's all!
 
 ## FastSD CPU on Windows
 :exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**

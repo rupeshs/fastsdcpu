@@ -108,6 +108,9 @@ class MainWindow(QMainWindow):
                 self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id,
             )
         )
+        self.neg_prompt.setEnabled(
+            self.config.settings.lcm_diffusion_setting.use_lcm_lora
+        )
 
     def init_ui(self):
         self.create_main_tab()
