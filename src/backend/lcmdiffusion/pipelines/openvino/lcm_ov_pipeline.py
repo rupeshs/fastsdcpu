@@ -11,7 +11,14 @@ import openvino
 import torch
 
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
-from optimum.intel.openvino.modeling_diffusion import OVStableDiffusionPipeline, OVModelUnet, OVModelVaeDecoder, OVModelTextEncoder, OVModelVaeEncoder, VaeImageProcessor
+from optimum.intel.openvino.modeling_diffusion import (
+    OVStableDiffusionPipeline,
+    OVModelUnet,
+    OVModelVaeDecoder,
+    OVModelTextEncoder,
+    OVModelVaeEncoder,
+    VaeImageProcessor,
+)
 from optimum.utils import (
     DIFFUSION_MODEL_TEXT_ENCODER_2_SUBFOLDER,
     DIFFUSION_MODEL_TEXT_ENCODER_SUBFOLDER,
@@ -22,7 +29,9 @@ from optimum.utils import (
 
 
 from diffusers import logging
+
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
+
 
 class LCMOVModelUnet(OVModelUnet):
     def __call__(
@@ -52,8 +61,8 @@ class LCMOVModelUnet(OVModelUnet):
         outputs = self.request(inputs, shared_memory=True)
         return list(outputs.values())
 
-class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
 
+class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
     def __init__(
         self,
         vae_decoder: openvino.runtime.Model,
@@ -78,20 +87,32 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         self.is_dynamic = dynamic_shapes
         self.ov_config = ov_config if ov_config is not None else {}
         self._model_save_dir = (
-            Path(model_save_dir.name) if isinstance(model_save_dir, TemporaryDirectory) else model_save_dir
+            Path(model_save_dir.name)
+            if isinstance(model_save_dir, TemporaryDirectory)
+            else model_save_dir
         )
         self.vae_decoder = OVModelVaeDecoder(vae_decoder, self)
         self.unet = LCMOVModelUnet(unet, self)
-        self.text_encoder = OVModelTextEncoder(text_encoder, self) if text_encoder is not None else None
+        self.text_encoder = (
+            OVModelTextEncoder(text_encoder, self) if text_encoder is not None else None
+        )
         self.text_encoder_2 = (
-            OVModelTextEncoder(text_encoder_2, self, model_name=DIFFUSION_MODEL_TEXT_ENCODER_2_SUBFOLDER)
+            OVModelTextEncoder(
+                text_encoder_2,
+                self,
+                model_name=DIFFUSION_MODEL_TEXT_ENCODER_2_SUBFOLDER,
+            )
             if text_encoder_2 is not None
             else None
         )
-        self.vae_encoder = OVModelVaeEncoder(vae_encoder, self) if vae_encoder is not None else None
+        self.vae_encoder = (
+            OVModelVaeEncoder(vae_encoder, self) if vae_encoder is not None else None
+        )
 
         if "block_out_channels" in self.vae_decoder.config:
-            self.vae_scale_factor = 2 ** (len(self.vae_decoder.config["block_out_channels"]) - 1)
+            self.vae_scale_factor = 2 ** (
+                len(self.vae_decoder.config["block_out_channels"]) - 1
+            )
         else:
             self.vae_scale_factor = 8
 
@@ -119,7 +140,9 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         }
         for name in sub_models.keys():
             self._internal_dict[name] = (
-                ("optimum", sub_models[name].__class__.__name__) if sub_models[name] is not None else (None, None)
+                ("optimum", sub_models[name].__class__.__name__)
+                if sub_models[name] is not None
+                else (None, None)
             )
 
         self._internal_dict.pop("vae", None)
@@ -132,7 +155,7 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         width: int = -1,
         num_images_per_prompt: int = -1,
         tokenizer_max_length: int = -1,
-    ):  
+    ):
         if batch_size == -1 or num_images_per_prompt == -1:
             batch_size = -1
         else:
@@ -152,14 +175,17 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
                     if in_channels.is_dynamic:
                         logger.warning(
                             "Could not identify `in_channels` from the unet configuration, to statically reshape the unet please provide a configuration."
-                        ) 
+                        )
                         self.is_dynamic = True
-    
+
                 shapes[inputs] = [batch_size, in_channels, height, width]
             elif inputs.get_any_name() == "timestep_cond":
                 shapes[inputs] = [batch_size, inputs.get_partial_shape()[1]]
             elif inputs.get_any_name() == "text_embeds":
-                shapes[inputs] = [batch_size, self.text_encoder_2.config["projection_dim"]]
+                shapes[inputs] = [
+                    batch_size,
+                    self.text_encoder_2.config["projection_dim"],
+                ]
             elif inputs.get_any_name() == "time_ids":
                 shapes[inputs] = [batch_size, inputs.get_partial_shape()[1]]
             else:
@@ -180,10 +206,10 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         embedding vectors with shape `(len(timesteps), embedding_dim)`
         """
         assert len(w.shape) == 1
-        w = w * 1000.
+        w = w * 1000.0
 
         half_dim = embedding_dim // 2
-        emb = np.log(np.array(10000.)) / (half_dim - 1)
+        emb = np.log(np.array(10000.0)) / (half_dim - 1)
         emb = np.exp(np.arange(half_dim, dtype=dtype) * -emb)
         emb = w.astype(dtype)[:, None] * emb[None, :]
         emb = np.concatenate([np.sin(emb), np.cos(emb)], axis=1)
@@ -276,7 +302,9 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        height = height or self.unet.config.get("sample_size", 64) * self.vae_scale_factor
+        height = (
+            height or self.unet.config.get("sample_size", 64) * self.vae_scale_factor
+        )
         width = width or self.unet.config.get("sample_size", 64) * self.vae_scale_factor
 
         # check inputs. Raise error if not correct
@@ -296,9 +324,11 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
             generator = np.random
 
         # Create torch.Generator instance with same state as np.random.RandomState
-        torch_generator = torch.Generator().manual_seed(int(generator.get_state()[1][0]))
+        torch_generator = torch.Generator().manual_seed(
+            int(generator.get_state()[1][0])
+        )
 
-        #do_classifier_free_guidance = guidance_scale > 1.0
+        # do_classifier_free_guidance = guidance_scale > 1.0
 
         # NOTE: when a LCM is distilled from an LDM via latent consistency distillation (Algorithm 1) with guided
         # distillation, the forward pass of the LCM learns to approximate sampling from the LDM using CFG with the
@@ -313,7 +343,11 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         )
 
         # set timesteps
-        self.scheduler.set_timesteps(num_inference_steps, "cpu", original_inference_steps=original_inference_steps)
+        self.scheduler.set_timesteps(
+            num_inference_steps,
+            "cpu",
+            original_inference_steps=original_inference_steps,
+        )
         timesteps = self.scheduler.timesteps
 
         latents = self.prepare_latents(
@@ -328,7 +362,9 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
 
         # Get Guidance Scale Embedding
         w = np.tile(guidance_scale - 1, batch_size * num_images_per_prompt)
-        w_embedding = self.get_guidance_scale_embedding(w, embedding_dim=self.unet.config.get("time_cond_proj_dim", 256))
+        w_embedding = self.get_guidance_scale_embedding(
+            w, embedding_dim=self.unet.config.get("time_cond_proj_dim", 256)
+        )
 
         # Adapted from diffusers to extend it for other runtimes than ORT
         timestep_dtype = self.unet.input_dtype.get("timestep", np.float32)
@@ -337,32 +373,46 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
         # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
         # and should be between [0, 1]
-        accepts_eta = "eta" in set(inspect.signature(self.scheduler.step).parameters.keys())
+        accepts_eta = "eta" in set(
+            inspect.signature(self.scheduler.step).parameters.keys()
+        )
         extra_step_kwargs = {}
         if accepts_eta:
             extra_step_kwargs["eta"] = eta
 
-        accepts_generator = "generator" in set(inspect.signature(self.scheduler.step).parameters.keys())
+        accepts_generator = "generator" in set(
+            inspect.signature(self.scheduler.step).parameters.keys()
+        )
         if accepts_generator:
             extra_step_kwargs["generator"] = torch_generator
 
         num_warmup_steps = len(timesteps) - num_inference_steps * self.scheduler.order
         for i, t in enumerate(self.progress_bar(timesteps)):
-
             # predict the noise residual
             timestep = np.array([t], dtype=timestep_dtype)
-            
-            noise_pred = self.unet(sample=latents, timestep=timestep, timestep_cond = w_embedding, encoder_hidden_states=prompt_embeds)[0]
+
+            noise_pred = self.unet(
+                sample=latents,
+                timestep=timestep,
+                timestep_cond=w_embedding,
+                encoder_hidden_states=prompt_embeds,
+            )[0]
 
             # compute the previous noisy sample x_t -> x_t-1
             latents, denoised = self.scheduler.step(
-                torch.from_numpy(noise_pred), t, torch.from_numpy(latents), **extra_step_kwargs, return_dict = False
+                torch.from_numpy(noise_pred),
+                t,
+                torch.from_numpy(latents),
+                **extra_step_kwargs,
+                return_dict=False,
             )
 
             latents, denoised = latents.numpy(), denoised.numpy()
 
             # call the callback, if provided
-            if i == len(timesteps) - 1 or ((i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0):
+            if i == len(timesteps) - 1 or (
+                (i + 1) > num_warmup_steps and (i + 1) % self.scheduler.order == 0
+            ):
                 if callback is not None and i % callback_steps == 0:
                     callback(i, t, latents)
 
@@ -373,7 +423,10 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
             denoised /= self.vae_decoder.config.get("scaling_factor", 0.18215)
             # it seems likes there is a strange result for using half-precision vae decoder if batchsize>1
             image = np.concatenate(
-                [self.vae_decoder(latent_sample=denoised[i : i + 1])[0] for i in range(latents.shape[0])]
+                [
+                    self.vae_decoder(latent_sample=denoised[i : i + 1])[0]
+                    for i in range(latents.shape[0])
+                ]
             )
             image, has_nsfw_concept = self.run_safety_checker(image)
 
@@ -382,9 +435,13 @@ class OVLatentConsistencyModelPipeline(OVStableDiffusionPipeline):
         else:
             do_denormalize = [not has_nsfw for has_nsfw in has_nsfw_concept]
 
-        image = self.image_processor.postprocess(image, output_type=output_type, do_denormalize=do_denormalize)
+        image = self.image_processor.postprocess(
+            image, output_type=output_type, do_denormalize=do_denormalize
+        )
 
         if not return_dict:
             return (image, has_nsfw_concept)
 
-        return StableDiffusionPipelineOutput(images=image, nsfw_content_detected=has_nsfw_concept)
+        return StableDiffusionPipelineOutput(
+            images=image, nsfw_content_detected=has_nsfw_concept
+        )

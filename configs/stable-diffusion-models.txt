@@ -1,0 +1,7 @@
+Lykon/dreamshaper-8
+Fictiverse/Stable_Diffusion_PaperCut_Model
+stabilityai/stable-diffusion-xl-base-1.0
+runwayml/stable-diffusion-v1-5
+segmind/SSD-1B
+stablediffusionapi/anything-v5
+prompthero/openjourney-v4

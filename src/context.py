@@ -2,7 +2,7 @@ from typing import Any
 from app_settings import Settings
 from models.interface_types import InterfaceType
 from backend.lcm_text_to_image import LCMTextToImage
-from time import time
+from time import perf_counter
 from backend.image_saver import ImageSaver
 from pprint import pprint
 
@@ -22,20 +22,24 @@ class Context:
         reshape: bool = False,
         device: str = "cpu",
     ) -> Any:
-        tick = time()
+        tick = perf_counter()
         pprint(settings.lcm_diffusion_setting.model_dump())
+        if not settings.lcm_diffusion_setting.lcm_lora:
+            return None
         self.lcm_text_to_image.init(
             settings.lcm_diffusion_setting.lcm_model_id,
             settings.lcm_diffusion_setting.use_openvino,
             device,
             settings.lcm_diffusion_setting.use_offline_model,
             settings.lcm_diffusion_setting.use_tiny_auto_encoder,
+            settings.lcm_diffusion_setting.use_lcm_lora,
+            settings.lcm_diffusion_setting.lcm_lora,
         )
         images = self.lcm_text_to_image.generate(
             settings.lcm_diffusion_setting,
             reshape,
         )
-        elapsed = time() - tick
+        elapsed = perf_counter() - tick
         ImageSaver.save_images(
             settings.results_path,
             images=images,

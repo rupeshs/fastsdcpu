@@ -66,8 +66,8 @@ parser.add_argument(
 parser.add_argument(
     "--guidance_scale",
     type=int,
-    help="Guidance scale,default : 8.0",
-    default=8.0,
+    help="Guidance scale,default : 1.0",
+    default=1.0,
 )
 
 parser.add_argument(
@@ -98,7 +98,23 @@ parser.add_argument(
     action="store_false",
     help="Use safety checker",
 )
-
+parser.add_argument(
+    "--use_lcm_lora",
+    action="store_true",
+    help="Use LCM-LoRA",
+)
+parser.add_argument(
+    "--base_model_id",
+    type=str,
+    help="LCM LoRA base model ID,Default Lykon/dreamshaper-8",
+    default="Lykon/dreamshaper-8",
+)
+parser.add_argument(
+    "--lcm_lora_id",
+    type=str,
+    help="LCM LoRA model ID,Default latent-consistency/lcm-lora-sdv1-5",
+    default="latent-consistency/lcm-lora-sdv1-5",
+)
 parser.add_argument(
     "-i",
     "--interactive",
@@ -116,14 +132,18 @@ if args.version:
     print(APP_VERSION)
     exit()
 
-parser.print_help()
+# parser.print_help()
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
 
 app_settings = AppSettings()
 app_settings.load()
-
-
+print(
+    f"Found {len(app_settings.stable_diffsuion_models)} stable diffusion models in config/stable-diffusion-models.txt"
+)
+print(
+    f"Found {len(app_settings.lcm_lora_models)} LCM-LoRA models in config/lcm-lora-models.txt"
+)
 if args.gui:
     from frontend.gui.ui import start_gui
 
@@ -157,6 +177,10 @@ else:
     config.lcm_diffusion_setting.seed = args.seed
     config.lcm_diffusion_setting.use_openvino = args.use_openvino
     config.lcm_diffusion_setting.use_tiny_auto_encoder = args.use_tiny_auto_encoder
+    config.lcm_diffusion_setting.use_lcm_lora = args.use_lcm_lora
+    config.lcm_diffusion_setting.lcm_lora.base_model_id = args.base_model_id
+    config.lcm_diffusion_setting.lcm_lora.lcm_lora_id = args.lcm_lora_id
+
     if args.seed > -1:
         config.lcm_diffusion_setting.use_seed = True
     else:

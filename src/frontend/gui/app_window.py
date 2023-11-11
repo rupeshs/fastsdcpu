@@ -34,18 +34,19 @@ from frontend.utils import is_reshape_required
 from context import Context
 from models.interface_types import InterfaceType
 from constants import DEVICE
-from frontend.utils import enable_openvino_controls
+from frontend.utils import enable_openvino_controls, get_valid_model_id
+from backend.lcm_models import get_available_models
 
 
 class MainWindow(QMainWindow):
     def __init__(self, config: AppSettings):
         super().__init__()
+        self.config = config
         self.setWindowTitle(APP_NAME)
-        self.setFixedSize(QSize(600, 620))
+        self.setFixedSize(QSize(600, 670))
         self.init_ui()
         self.pipeline = None
         self.threadpool = QThreadPool()
-        self.config = config
         self.device = "cpu"
         self.previous_width = 0
         self.previous_height = 0
@@ -92,6 +93,24 @@ class MainWindow(QMainWindow):
         self.use_tae_sd.setChecked(
             self.config.settings.lcm_diffusion_setting.use_tiny_auto_encoder
         )
+        self.use_lcm_lora.setChecked(
+            self.config.settings.lcm_diffusion_setting.use_lcm_lora
+        )
+        self.base_model_id.setCurrentText(
+            get_valid_model_id(
+                self.config.stable_diffsuion_models,
+                self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id,
+            )
+        )
+        self.lcm_lora_id.setCurrentText(
+            get_valid_model_id(
+                self.config._lcm_lora_models,
+                self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id,
+            )
+        )
+        self.neg_prompt.setEnabled(
+            self.config.settings.lcm_diffusion_setting.use_lcm_lora
+        )
 
     def init_ui(self):
         self.create_main_tab()
@@ -103,20 +122,26 @@ class MainWindow(QMainWindow):
         self.img = QLabel("<<Image>>")
         self.img.setAlignment(Qt.AlignCenter)
         self.img.setFixedSize(QSize(512, 512))
+        self.vspacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.prompt = QTextEdit()
         self.prompt.setPlaceholderText("A fantasy landscape")
         self.prompt.setAcceptRichText(False)
+        self.neg_prompt = QTextEdit()
+        self.neg_prompt.setPlaceholderText("")
+        self.neg_prompt.setAcceptRichText(False)
+        self.neg_prompt_label = QLabel("Negative prompt (Set guidance scale > 1.0):")
         self.generate = QPushButton("Generate")
         self.generate.clicked.connect(self.text_to_image)
-        self.prompt.setFixedHeight(35)
+        self.prompt.setFixedHeight(40)
+        self.neg_prompt.setFixedHeight(35)
         self.browse_results = QPushButton("...")
         self.browse_results.setFixedWidth(30)
         self.browse_results.clicked.connect(self.on_open_results_folder)
         self.browse_results.setToolTip("Open output folder")
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(self.prompt)
+        hlayout.addWidget(self.neg_prompt)
         hlayout.addWidget(self.generate)
         hlayout.addWidget(self.browse_results)
 
@@ -133,6 +158,9 @@ class MainWindow(QMainWindow):
 
         vlayout = QVBoxLayout()
         vlayout.addLayout(hlayout_nav)
+        vlayout.addItem(self.vspacer)
+        vlayout.addWidget(self.prompt)
+        vlayout.addWidget(self.neg_prompt_label)
         vlayout.addLayout(hlayout)
 
         self.tab_widget = QTabWidget(self)
@@ -149,11 +177,26 @@ class MainWindow(QMainWindow):
         self.use_seed = False
 
     def create_settings_tab(self):
-        model_hlayout = QHBoxLayout()
         self.lcm_model_label = QLabel("Latent Consistency Model:")
-        self.lcm_model = QLineEdit(LCM_DEFAULT_MODEL)
-        model_hlayout.addWidget(self.lcm_model_label)
-        model_hlayout.addWidget(self.lcm_model)
+        # self.lcm_model = QLineEdit(LCM_DEFAULT_MODEL)
+        lcm_models = get_available_models()
+        self.lcm_model = QComboBox(self)
+        for model in lcm_models:
+            self.lcm_model.addItem(model)
+
+        self.use_lcm_lora = QCheckBox("Use LCM LoRA")
+        self.use_lcm_lora.setChecked(False)
+        self.use_lcm_lora.stateChanged.connect(self.use_lcm_lora_changed)
+
+        self.lora_base_model_id_label = QLabel("Lora base model ID :")
+        self.base_model_id = QComboBox(self)
+        self.base_model_id.addItems(self.config.stable_diffsuion_models)
+        self.base_model_id.currentIndexChanged.connect(self.on_base_model_id_changed)
+
+        self.lcm_lora_model_id_label = QLabel("LCM LoRA model ID :")
+        self.lcm_lora_id = QComboBox(self)
+        self.lcm_lora_id.addItems(self.config.lcm_lora_models)
+        self.lcm_lora_id.currentIndexChanged.connect(self.on_lcm_lora_id_changed)
 
         self.inference_steps_value = QLabel("Number of inference steps: 4")
         self.inference_steps = QSlider(orientation=Qt.Orientation.Horizontal)
@@ -169,11 +212,11 @@ class MainWindow(QMainWindow):
         self.num_images.setValue(1)
         self.num_images.valueChanged.connect(self.update_num_images_label)
 
-        self.guidance_value = QLabel("Guidance scale: 8")
+        self.guidance_value = QLabel("Guidance scale: 1")
         self.guidance = QSlider(orientation=Qt.Orientation.Horizontal)
-        self.guidance.setMaximum(200)
+        self.guidance.setMaximum(20)
         self.guidance.setMinimum(10)
-        self.guidance.setValue(80)
+        self.guidance.setValue(10)
         self.guidance.valueChanged.connect(self.update_guidance_label)
 
         self.width_value = QLabel("Width :")
@@ -181,6 +224,7 @@ class MainWindow(QMainWindow):
         self.width.addItem("256")
         self.width.addItem("512")
         self.width.addItem("768")
+        self.width.addItem("1024")
         self.width.setCurrentText("512")
         self.width.currentIndexChanged.connect(self.on_width_changed)
 
@@ -189,6 +233,7 @@ class MainWindow(QMainWindow):
         self.height.addItem("256")
         self.height.addItem("512")
         self.height.addItem("768")
+        self.height.addItem("1024")
         self.height.setCurrentText("512")
         self.height.currentIndexChanged.connect(self.on_height_changed)
 
@@ -237,8 +282,16 @@ class MainWindow(QMainWindow):
         vlayout = QVBoxLayout()
         vspacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         vlayout.addItem(hspacer)
-        vlayout.addLayout(model_hlayout)
+        vlayout.addWidget(self.lcm_model_label)
+        vlayout.addWidget(self.lcm_model)
         vlayout.addWidget(self.use_local_model_folder)
+        vlayout.addWidget(self.use_lcm_lora)
+        vlayout.addWidget(self.lora_base_model_id_label)
+        vlayout.addWidget(self.base_model_id)
+        vlayout.addWidget(self.lcm_lora_model_id_label)
+        vlayout.addWidget(self.lcm_lora_id)
+        vlayout.addWidget(self.use_openvino_check)
+        vlayout.addWidget(self.use_tae_sd)
         vlayout.addItem(slider_hspacer)
         vlayout.addWidget(self.inference_steps_value)
         vlayout.addWidget(self.inference_steps)
@@ -252,8 +305,7 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.guidance)
         vlayout.addLayout(hlayout)
         vlayout.addWidget(self.safety_checker)
-        vlayout.addWidget(self.use_openvino_check)
-        vlayout.addWidget(self.use_tae_sd)
+
         vlayout.addWidget(self.results_path_label)
         hlayout_path = QHBoxLayout()
         hlayout_path.addWidget(self.results_path)
@@ -340,11 +392,28 @@ class MainWindow(QMainWindow):
         height_txt = self.height.itemText(index)
         self.config.settings.lcm_diffusion_setting.image_height = int(height_txt)
 
+    def on_base_model_id_changed(self, index):
+        model_id = self.base_model_id.itemText(index)
+        self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id = model_id
+
+    def on_lcm_lora_id_changed(self, index):
+        model_id = self.lcm_lora_id.itemText(index)
+        self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = model_id
+
     def use_openvino_changed(self, state):
         if state == 2:
             self.lcm_model.setEnabled(False)
+            self.use_lcm_lora.setEnabled(False)
+            self.lcm_lora_id.setEnabled(False)
+            self.base_model_id.setEnabled(False)
+            self.neg_prompt.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_openvino = True
         else:
+            self.lcm_model.setEnabled(True)
+            self.use_lcm_lora.setEnabled(True)
+            self.lcm_lora_id.setEnabled(True)
+            self.base_model_id.setEnabled(True)
+            self.neg_prompt.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_openvino = False
 
     def use_tae_sd_changed(self, state):
@@ -358,6 +427,20 @@ class MainWindow(QMainWindow):
             self.config.settings.lcm_diffusion_setting.use_offline_model = True
         else:
             self.config.settings.lcm_diffusion_setting.use_offline_model = False
+
+    def use_lcm_lora_changed(self, state):
+        if state == 2:
+            self.lcm_model.setEnabled(False)
+            self.lcm_lora_id.setEnabled(True)
+            self.base_model_id.setEnabled(True)
+            self.neg_prompt.setEnabled(True)
+            self.config.settings.lcm_diffusion_setting.use_lcm_lora = True
+        else:
+            self.lcm_model.setEnabled(True)
+            self.lcm_lora_id.setEnabled(False)
+            self.base_model_id.setEnabled(False)
+            self.neg_prompt.setEnabled(False)
+            self.config.settings.lcm_diffusion_setting.use_lcm_lora = False
 
     def use_safety_checker_changed(self, state):
         if state == 2:
@@ -394,11 +477,20 @@ class MainWindow(QMainWindow):
     def generate_image(self):
         self.config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
         self.config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
+        self.config.settings.lcm_diffusion_setting.negative_prompt = (
+            self.neg_prompt.toPlainText()
+        )
+        self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = (
+            self.lcm_lora_id.currentText()
+        )
+        self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id = (
+            self.base_model_id.currentText()
+        )
 
         if self.config.settings.lcm_diffusion_setting.use_openvino:
             model_id = LCM_DEFAULT_MODEL_OPENVINO
         else:
-            model_id = self.lcm_model.text()
+            model_id = self.lcm_model.currentText()
 
         self.config.settings.lcm_diffusion_setting.lcm_model_id = model_id
 
@@ -460,9 +552,10 @@ class MainWindow(QMainWindow):
         self.width.setCurrentText("512")
         self.height.setCurrentText("512")
         self.inference_steps.setValue(4)
-        self.guidance.setValue(80)
+        self.guidance.setValue(10)
         self.use_openvino_check.setChecked(False)
         self.seed_check.setChecked(False)
         self.safety_checker.setChecked(False)
         self.results_path.setText(FastStableDiffusionPaths().get_results_path())
         self.use_tae_sd.setChecked(False)
+        self.use_lcm_lora.setChecked(False)
