@@ -237,8 +237,11 @@ class LCMTextToImage:
         if not lcm_diffusion_setting.use_safety_checker:
             self.pipeline.safety_checker = None
 
-        if not lcm_diffusion_setting.use_lcm_lora:
-            print("Setting guidance scale to 1.0")
+        if (
+            not lcm_diffusion_setting.use_lcm_lora
+            and lcm_diffusion_setting.guidance_scale != 1.0
+        ):
+            print("Not using LCM-LoRA so setting guidance_scale 1.0")
             guidance_scale = 1.0
 
         if lcm_diffusion_setting.use_openvino:
