@@ -126,7 +126,7 @@ def get_text_to_image_ui(app_settings: AppSettings) -> None:
                 )
                 with gr.Accordion("Advanced options", open=False):
                     guidance_scale = gr.Slider(
-                        1.0, 30.0, value=8, step=0.5, label="Guidance Scale"
+                        1.0, 2.0, value=1.0, step=0.5, label="Guidance Scale"
                     )
 
                     seed = gr.Number(

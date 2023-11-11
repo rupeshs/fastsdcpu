@@ -102,6 +102,12 @@ class MainWindow(QMainWindow):
                 self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id,
             )
         )
+        self.lcm_lora_id.setCurrentText(
+            get_valid_model_id(
+                self.config._lcm_lora_models,
+                self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id,
+            )
+        )
 
     def init_ui(self):
         self.create_main_tab()
@@ -117,16 +123,21 @@ class MainWindow(QMainWindow):
         self.prompt = QTextEdit()
         self.prompt.setPlaceholderText("A fantasy landscape")
         self.prompt.setAcceptRichText(False)
+        self.neg_prompt = QTextEdit()
+        self.neg_prompt.setPlaceholderText("bad,low quality")
+        self.neg_prompt.setAcceptRichText(False)
+        self.neg_prompt_label = QLabel("Negative prompt (Set guidance scale > 1.0):")
         self.generate = QPushButton("Generate")
         self.generate.clicked.connect(self.text_to_image)
-        self.prompt.setFixedHeight(35)
+        self.prompt.setFixedHeight(40)
+        self.neg_prompt.setFixedHeight(35)
         self.browse_results = QPushButton("...")
         self.browse_results.setFixedWidth(30)
         self.browse_results.clicked.connect(self.on_open_results_folder)
         self.browse_results.setToolTip("Open output folder")
 
         hlayout = QHBoxLayout()
-        hlayout.addWidget(self.prompt)
+        hlayout.addWidget(self.neg_prompt)
         hlayout.addWidget(self.generate)
         hlayout.addWidget(self.browse_results)
 
@@ -143,6 +154,8 @@ class MainWindow(QMainWindow):
 
         vlayout = QVBoxLayout()
         vlayout.addLayout(hlayout_nav)
+        vlayout.addWidget(self.prompt)
+        vlayout.addWidget(self.neg_prompt_label)
         vlayout.addLayout(hlayout)
 
         self.tab_widget = QTabWidget(self)
@@ -199,11 +212,11 @@ class MainWindow(QMainWindow):
         self.num_images.setValue(1)
         self.num_images.valueChanged.connect(self.update_num_images_label)
 
-        self.guidance_value = QLabel("Guidance scale: 8")
+        self.guidance_value = QLabel("Guidance scale: 1")
         self.guidance = QSlider(orientation=Qt.Orientation.Horizontal)
-        self.guidance.setMaximum(200)
+        self.guidance.setMaximum(20)
         self.guidance.setMinimum(10)
-        self.guidance.setValue(80)
+        self.guidance.setValue(10)
         self.guidance.valueChanged.connect(self.update_guidance_label)
 
         self.width_value = QLabel("Width :")
@@ -391,12 +404,14 @@ class MainWindow(QMainWindow):
             self.use_lcm_lora.setEnabled(False)
             self.lcm_lora_id.setEnabled(False)
             self.base_model_id.setEnabled(False)
+            self.neg_prompt.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_openvino = True
         else:
             self.lcm_model.setEnabled(True)
             self.use_lcm_lora.setEnabled(True)
             self.lcm_lora_id.setEnabled(True)
             self.base_model_id.setEnabled(True)
+            self.neg_prompt.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_openvino = False
 
     def use_tae_sd_changed(self, state):
@@ -416,11 +431,13 @@ class MainWindow(QMainWindow):
             self.lcm_model.setEnabled(False)
             self.lcm_lora_id.setEnabled(True)
             self.base_model_id.setEnabled(True)
+            self.neg_prompt.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_lcm_lora = True
         else:
             self.lcm_model.setEnabled(True)
             self.lcm_lora_id.setEnabled(False)
             self.base_model_id.setEnabled(False)
+            self.neg_prompt.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_lcm_lora = False
 
     def use_safety_checker_changed(self, state):
@@ -458,6 +475,9 @@ class MainWindow(QMainWindow):
     def generate_image(self):
         self.config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
         self.config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
+        self.config.settings.lcm_diffusion_setting.negative_prompt = (
+            self.neg_prompt.toPlainText()
+        )
         self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = (
             self.lcm_lora_id.currentText()
         )
@@ -530,7 +550,7 @@ class MainWindow(QMainWindow):
         self.width.setCurrentText("512")
         self.height.setCurrentText("512")
         self.inference_steps.setValue(4)
-        self.guidance.setValue(80)
+        self.guidance.setValue(10)
         self.use_openvino_check.setChecked(False)
         self.seed_check.setChecked(False)
         self.safety_checker.setChecked(False)

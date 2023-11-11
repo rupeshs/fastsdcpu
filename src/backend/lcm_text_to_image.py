@@ -12,7 +12,6 @@ import numpy as np
 from constants import DEVICE, LCM_DEFAULT_MODEL
 from huggingface_hub import model_info
 from backend.models.lcmdiffusion_setting import LCMLora
-from diffusers import DiffusionPipeline, ConsistencyDecoderVAE
 
 if DEVICE == "cpu":
     from huggingface_hub import snapshot_download
@@ -239,16 +238,28 @@ class LCMTextToImage:
         if not lcm_diffusion_setting.use_safety_checker:
             self.pipeline.safety_checker = None
 
-        if lcm_diffusion_setting.use_lcm_lora:
-            guidance_scale = 1
+        if not lcm_diffusion_setting.use_lcm_lora:
+            print("Setting guidance scale to 1.0")
+            guidance_scale = 1.0
 
-        result_images = self.pipeline(
-            prompt=lcm_diffusion_setting.prompt,
-            num_inference_steps=lcm_diffusion_setting.inference_steps,
-            guidance_scale=guidance_scale,
-            width=lcm_diffusion_setting.image_width,
-            height=lcm_diffusion_setting.image_height,
-            num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-        ).images
+        if lcm_diffusion_setting.use_openvino:
+            result_images = self.pipeline(
+                prompt=lcm_diffusion_setting.prompt,
+                num_inference_steps=lcm_diffusion_setting.inference_steps,
+                guidance_scale=guidance_scale,
+                width=lcm_diffusion_setting.image_width,
+                height=lcm_diffusion_setting.image_height,
+                num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+            ).images
+        else:
+            result_images = self.pipeline(
+                prompt=lcm_diffusion_setting.prompt,
+                negative_prompt=lcm_diffusion_setting.negative_prompt,
+                num_inference_steps=lcm_diffusion_setting.inference_steps,
+                guidance_scale=guidance_scale,
+                width=lcm_diffusion_setting.image_width,
+                height=lcm_diffusion_setting.image_height,
+                num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+            ).images
 
         return result_images
