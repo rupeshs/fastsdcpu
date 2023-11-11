@@ -37,11 +37,13 @@ def get_valid_model_id(
     if len(models) == 0:
         print("Error: model configuration file is empty,please add some models.")
         return ""
+    if model_id == "":
+        return models[0]
+
     if model_id in models:
         return model_id
     else:
         print(
             f"Error:{model_id} Model not found in configuration file,so using first model : {models[0]}"
         )
-
         return models[0]
