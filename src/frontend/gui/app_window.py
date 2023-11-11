@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
         self.prompt.setPlaceholderText("A fantasy landscape")
         self.prompt.setAcceptRichText(False)
         self.neg_prompt = QTextEdit()
-        self.neg_prompt.setPlaceholderText("bad,low quality")
+        self.neg_prompt.setPlaceholderText("")
         self.neg_prompt.setAcceptRichText(False)
         self.neg_prompt_label = QLabel("Negative prompt (Set guidance scale > 1.0):")
         self.generate = QPushButton("Generate")
@@ -177,17 +177,12 @@ class MainWindow(QMainWindow):
         self.use_seed = False
 
     def create_settings_tab(self):
-        model_hlayout = QHBoxLayout()
         self.lcm_model_label = QLabel("Latent Consistency Model:")
         # self.lcm_model = QLineEdit(LCM_DEFAULT_MODEL)
-        self.lcm_model_label = QLabel("Latent Consistency Model:")
         lcm_models = get_available_models()
         self.lcm_model = QComboBox(self)
         for model in lcm_models:
             self.lcm_model.addItem(model)
-
-        model_hlayout.addWidget(self.lcm_model_label)
-        model_hlayout.addWidget(self.lcm_model)
 
         self.use_lcm_lora = QCheckBox("Use LCM LoRA")
         self.use_lcm_lora.setChecked(False)
@@ -287,7 +282,8 @@ class MainWindow(QMainWindow):
         vlayout = QVBoxLayout()
         vspacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         vlayout.addItem(hspacer)
-        vlayout.addLayout(model_hlayout)
+        vlayout.addWidget(self.lcm_model_label)
+        vlayout.addWidget(self.lcm_model)
         vlayout.addWidget(self.use_local_model_folder)
         vlayout.addWidget(self.use_lcm_lora)
         vlayout.addWidget(self.lora_base_model_id_label)
