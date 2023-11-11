@@ -12,6 +12,7 @@ import numpy as np
 from constants import DEVICE, LCM_DEFAULT_MODEL
 from huggingface_hub import model_info
 from backend.models.lcmdiffusion_setting import LCMLora
+from diffusers import DiffusionPipeline, ConsistencyDecoderVAE
 
 if DEVICE == "cpu":
     from huggingface_hub import snapshot_download
@@ -50,29 +51,33 @@ class LCMTextToImage:
         self.device = None
         self.previous_model_id = None
         self.previous_use_tae_sd = False
+        self.previous_use_lcm_lora = False
 
     def _get_lcm_pipeline(
         self,
         lcm_model_id: str,
         base_model_id: str,
+        use_local_model: bool,
     ):
         pipeline = None
         unet = UNet2DConditionModel.from_pretrained(
             lcm_model_id,
             torch_dtype=torch.float32,
+            local_files_only=use_local_model
             # resume_download=True,
         )
         pipeline = DiffusionPipeline.from_pretrained(
             base_model_id,
             unet=unet,
             torch_dtype=torch.float32,
+            local_files_only=use_local_model
             # resume_download=True,
         )
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
 
         return pipeline
 
-    def _get_diffuser_pipeline(
+    def _get_lcm_model_pipeline(
         self,
         model_id: str,
         use_local_model,
@@ -87,12 +92,14 @@ class LCMTextToImage:
             pipeline = self._get_lcm_pipeline(
                 model_id,
                 "stabilityai/stable-diffusion-xl-base-1.0",
+                use_local_model,
             )
 
         elif model_id == "latent-consistency/lcm-ssd-1b":
             pipeline = self._get_lcm_pipeline(
                 model_id,
                 "segmind/SSD-1B",
+                use_local_model,
             )
         return pipeline
 
@@ -107,10 +114,12 @@ class LCMTextToImage:
             torch_dtype=torch.float32,
             local_files_only=use_local_model,
         )
-        pipeline.load_lora_weights(lcm_lora_id)
+        pipeline.load_lora_weights(
+            lcm_lora_id,
+            local_files_only=use_local_model,
+        )
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
         # pipe.to(device="cuda", dtype=torch.float16)
-        print(pipeline)
         return pipeline
 
     def init(
@@ -131,6 +140,7 @@ class LCMTextToImage:
             or self.previous_use_tae_sd != use_tiny_auto_encoder
             or self.previous_lcm_lora_base_id != lcm_lora.base_model_id
             or self.previous_lcm_lora_id != lcm_lora.lcm_lora_id
+            or self.previous_use_lcm_lora != use_lora
         ):
             if self.use_openvino and DEVICE == "cpu":
                 if self.pipeline:
@@ -146,6 +156,7 @@ class LCMTextToImage:
                     scheduler=scheduler,
                     compile=False,
                     local_files_only=use_local_model,
+                    ov_config={"CACHE_DIR": ""},
                 )
 
                 if use_tiny_auto_encoder:
@@ -168,13 +179,15 @@ class LCMTextToImage:
                     self.pipeline = None
 
                 if use_lora:
+                    print("Init LCM-LoRA pipeline")
                     self.pipeline = self._get_lcm_lora_pipeline(
                         lcm_lora.base_model_id,
                         lcm_lora.lcm_lora_id,
                         use_local_model,
                     )
                 else:
-                    self.pipeline = self._get_diffuser_pipeline(
+                    print("Init LCM Model pipeline")
+                    self.pipeline = self._get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
                     )
@@ -195,6 +208,8 @@ class LCMTextToImage:
             self.previous_use_tae_sd = use_tiny_auto_encoder
             self.previous_lcm_lora_base_id = lcm_lora.base_model_id
             self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
+            self.previous_use_lcm_lora = use_lora
+            print(f"Pipeline : {self.pipeline}")
 
     def generate(
         self,

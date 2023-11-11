@@ -1,4 +1,5 @@
 from constants import DEVICE
+from typing import List
 import platform
 
 
@@ -27,3 +28,20 @@ def is_reshape_required(
 
 def enable_openvino_controls() -> bool:
     return DEVICE == "cpu" and platform.system().lower() != "darwin"
+
+
+def get_valid_model_id(
+    models: List,
+    model_id: str,
+) -> str:
+    if len(models) == 0:
+        print("Error: model configuration file is empty,please add some models.")
+        return ""
+    if model_id in models:
+        return model_id
+    else:
+        print(
+            f"Error:{model_id} Model not found in configuration file,so using first model : {models[0]}"
+        )
+
+        return models[0]

@@ -34,7 +34,7 @@ from frontend.utils import is_reshape_required
 from context import Context
 from models.interface_types import InterfaceType
 from constants import DEVICE
-from frontend.utils import enable_openvino_controls
+from frontend.utils import enable_openvino_controls, get_valid_model_id
 from backend.lcm_models import get_available_models
 
 
@@ -92,6 +92,15 @@ class MainWindow(QMainWindow):
         )
         self.use_tae_sd.setChecked(
             self.config.settings.lcm_diffusion_setting.use_tiny_auto_encoder
+        )
+        self.use_lcm_lora.setChecked(
+            self.config.settings.lcm_diffusion_setting.use_lcm_lora
+        )
+        self.base_model_id.setCurrentText(
+            get_valid_model_id(
+                self.config.stable_diffsuion_models,
+                self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id,
+            )
         )
 
     def init_ui(self):
@@ -167,12 +176,14 @@ class MainWindow(QMainWindow):
         self.use_lcm_lora.stateChanged.connect(self.use_lcm_lora_changed)
 
         self.lora_base_model_id_label = QLabel("Lora base model ID :")
-        self.lcm_lora_model_id_label = QLabel("LCM LoRA model ID :")
         self.base_model_id = QComboBox(self)
         self.base_model_id.addItems(self.config.stable_diffsuion_models)
+        self.base_model_id.currentIndexChanged.connect(self.on_base_model_id_changed)
 
+        self.lcm_lora_model_id_label = QLabel("LCM LoRA model ID :")
         self.lcm_lora_id = QComboBox(self)
         self.lcm_lora_id.addItems(self.config.lcm_lora_models)
+        self.lcm_lora_id.currentIndexChanged.connect(self.on_lcm_lora_id_changed)
 
         self.inference_steps_value = QLabel("Number of inference steps: 4")
         self.inference_steps = QSlider(orientation=Qt.Orientation.Horizontal)
@@ -366,6 +377,14 @@ class MainWindow(QMainWindow):
         height_txt = self.height.itemText(index)
         self.config.settings.lcm_diffusion_setting.image_height = int(height_txt)
 
+    def on_base_model_id_changed(self, index):
+        model_id = self.base_model_id.itemText(index)
+        self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id = model_id
+
+    def on_lcm_lora_id_changed(self, index):
+        model_id = self.lcm_lora_id.itemText(index)
+        self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = model_id
+
     def use_openvino_changed(self, state):
         if state == 2:
             self.lcm_model.setEnabled(False)
@@ -517,3 +536,4 @@ class MainWindow(QMainWindow):
         self.safety_checker.setChecked(False)
         self.results_path.setText(FastStableDiffusionPaths().get_results_path())
         self.use_tae_sd.setChecked(False)
+        self.use_lcm_lora.setChecked(False)

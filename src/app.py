@@ -116,14 +116,18 @@ if args.version:
     print(APP_VERSION)
     exit()
 
-parser.print_help()
+# parser.print_help()
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
 
 app_settings = AppSettings()
 app_settings.load()
-print(app_settings.stable_diffsuion_models)
-print(app_settings.lcm_lora_models)
+print(
+    f"Found {len(app_settings.stable_diffsuion_models)} stable diffusion models in config/stable-diffusion-models.txt"
+)
+print(
+    f"Found {len(app_settings.lcm_lora_models)} LCM-LoRA models in config/lcm-lora-models.txt"
+)
 if args.gui:
     from frontend.gui.ui import start_gui
 
