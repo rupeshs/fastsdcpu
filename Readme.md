@@ -54,7 +54,7 @@ Following LCM models are supported:
 - *SSD-1B* -LCM distilled version of [segmind/SSD-1B](https://huggingface.co/segmind/SSD-1B)
 - *StableDiffusion XL* -LCM distilled version of [stable-diffusion-xl-base-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)
 
-#### OpenVINO models
+### OpenVINO models
 - *LCM_Dreamshaper_v7-openvino* - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino by [deinferno](https://github.com/deinferno) 
 
 ### LCM-LoRA models
