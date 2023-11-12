@@ -10,3 +10,4 @@ CONFIG_DIRECTORY = "configs"
 DEVICE = environ.get("DEVICE", "cpu")
 SD_MODELS_FILE = "stable-diffusion-models.txt"
 LCM_LORA_MODELS_FILE = "lcm-lora-models.txt"
+OPENVINO_LCM_MODELS_FILE = "openvino-lcm-models.txt"

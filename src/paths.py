@@ -9,7 +9,7 @@ def join_paths(
     return os.path.join(first_path, second_path)
 
 
-def get_app_path():
+def get_app_path() -> str:
     app_dir = os.path.dirname(__file__)
     work_dir = os.path.dirname(app_dir)
     return work_dir
@@ -36,7 +36,7 @@ class FastStableDiffusionPaths:
         return results_path
 
     @staticmethod
-    def get_css_path():
+    def get_css_path() -> str:
         app_dir = os.path.dirname(__file__)
         css_path = os.path.join(
             app_dir,
@@ -48,19 +48,10 @@ class FastStableDiffusionPaths:
         return css_path
 
     @staticmethod
-    def get_stable_diffusion_models_config_path():
+    def get_models_config_path(model_config_file: str) -> str:
         configs_path = get_configs_path()
         models_path = join_paths(
             configs_path,
-            constants.SD_MODELS_FILE,
+            model_config_file,
         )
         return models_path
-
-    @staticmethod
-    def get_lcm_lora_models_config_path():
-        configs_path = get_configs_path()
-        lcm_lora_models_path = join_paths(
-            configs_path,
-            constants.LCM_LORA_MODELS_FILE,
-        )
-        return lcm_lora_models_path
