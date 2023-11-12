@@ -3,16 +3,20 @@ from os import path, makedirs
 from models.settings import Settings
 from paths import FastStableDiffusionPaths
 from utils import get_models_from_text_file
+from constants import OPENVINO_LCM_MODELS_FILE, LCM_LORA_MODELS_FILE, SD_MODELS_FILE
 
 
 class AppSettings:
     def __init__(self):
         self.config_path = FastStableDiffusionPaths().get_app_settings_path()
         self._stable_diffsuion_models = get_models_from_text_file(
-            FastStableDiffusionPaths().get_stable_diffusion_models_config_path()
+            FastStableDiffusionPaths().get_models_config_path(SD_MODELS_FILE)
         )
         self._lcm_lora_models = get_models_from_text_file(
-            FastStableDiffusionPaths().get_lcm_lora_models_config_path()
+            FastStableDiffusionPaths().get_models_config_path(LCM_LORA_MODELS_FILE)
+        )
+        self._openvino_lcm_models = get_models_from_text_file(
+            FastStableDiffusionPaths().get_models_config_path(OPENVINO_LCM_MODELS_FILE)
         )
 
     @property
@@ -22,6 +26,10 @@ class AppSettings:
     @property
     def stable_diffsuion_models(self):
         return self._stable_diffsuion_models
+
+    @property
+    def openvino_lcm_models(self):
+        return self._openvino_lcm_models
 
     @property
     def lcm_lora_models(self):

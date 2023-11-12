@@ -144,6 +144,9 @@ print(
 print(
     f"Found {len(app_settings.lcm_lora_models)} LCM-LoRA models in config/lcm-lora-models.txt"
 )
+print(
+    f"Found {len(app_settings.openvino_lcm_models)} OpenVINO LCM models in config/openvino-lcm-models.txt"
+)
 if args.gui:
     from frontend.gui.ui import start_gui
 

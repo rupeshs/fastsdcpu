@@ -1,7 +1,7 @@
 from typing import Optional
 
 from pydantic import BaseModel
-from constants import LCM_DEFAULT_MODEL
+from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 
 
 class LCMLora(BaseModel):
@@ -11,6 +11,7 @@ class LCMLora(BaseModel):
 
 class LCMDiffusionSetting(BaseModel):
     lcm_model_id: str = LCM_DEFAULT_MODEL
+    openvino_lcm_model_id: str = LCM_DEFAULT_MODEL_OPENVINO
     use_offline_model: bool = False
     use_lcm_lora: bool = False
     lcm_lora: Optional[LCMLora] = LCMLora()

@@ -17,7 +17,7 @@ if DEVICE == "cpu":
     from huggingface_hub import snapshot_download
     from optimum.intel.openvino.modeling_diffusion import OVModelVaeDecoder, OVBaseModel
     from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
-        OVLatentConsistencyModelPipeline,
+        OVStableDiffusionPipeline,
     )
     from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
         LCMScheduler as OpenVinoLCMscheduler,
@@ -145,15 +145,14 @@ class LCMTextToImage:
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
-                scheduler = OpenVinoLCMscheduler.from_pretrained(
-                    model_id,
-                    subfolder="scheduler",
-                )
+                # scheduler = OpenVinoLCMscheduler.from_pretrained(
+                #     model_id,
+                #     subfolder="scheduler",
+                # )
 
-                self.pipeline = OVLatentConsistencyModelPipeline.from_pretrained(
+                self.pipeline = OVStableDiffusionPipeline.from_pretrained(
                     model_id,
-                    scheduler=scheduler,
-                    compile=False,
+                    # scheduler=scheduler,
                     local_files_only=use_local_model,
                     ov_config={"CACHE_DIR": ""},
                 )
@@ -207,6 +206,7 @@ class LCMTextToImage:
             self.previous_lcm_lora_base_id = lcm_lora.base_model_id
             self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
             self.previous_use_lcm_lora = use_lora
+            print(model_id)
             print(f"Pipeline : {self.pipeline}")
 
     def generate(
@@ -227,7 +227,7 @@ class LCMTextToImage:
             if reshape:
                 print("Reshape and compile")
                 self.pipeline.reshape(
-                    batch_size=1,
+                    batch_size=-1,
                     height=lcm_diffusion_setting.image_height,
                     width=lcm_diffusion_setting.image_width,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
@@ -239,6 +239,7 @@ class LCMTextToImage:
 
         if (
             not lcm_diffusion_setting.use_lcm_lora
+            and not lcm_diffusion_setting.use_openvino
             and lcm_diffusion_setting.guidance_scale != 1.0
         ):
             print("Not using LCM-LoRA so setting guidance_scale 1.0")
@@ -247,6 +248,7 @@ class LCMTextToImage:
         if lcm_diffusion_setting.use_openvino:
             result_images = self.pipeline(
                 prompt=lcm_diffusion_setting.prompt,
+                negative_prompt=lcm_diffusion_setting.negative_prompt,
                 num_inference_steps=lcm_diffusion_setting.inference_steps,
                 guidance_scale=guidance_scale,
                 width=lcm_diffusion_setting.image_width,

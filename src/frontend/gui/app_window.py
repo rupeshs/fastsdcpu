@@ -104,12 +104,22 @@ class MainWindow(QMainWindow):
         )
         self.lcm_lora_id.setCurrentText(
             get_valid_model_id(
-                self.config._lcm_lora_models,
+                self.config.lcm_lora_models,
                 self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id,
+            )
+        )
+        self.openvino_lcm_model_id.setCurrentText(
+            get_valid_model_id(
+                self.config.openvino_lcm_models,
+                self.config.settings.lcm_diffusion_setting.openvino_lcm_model_id,
             )
         )
         self.neg_prompt.setEnabled(
             self.config.settings.lcm_diffusion_setting.use_lcm_lora
+            or self.config.settings.lcm_diffusion_setting.use_openvino
+        )
+        self.openvino_lcm_model_id.setEnabled(
+            self.config.settings.lcm_diffusion_setting.use_openvino
         )
 
     def init_ui(self):
@@ -252,6 +262,12 @@ class MainWindow(QMainWindow):
         self.use_local_model_folder = QCheckBox(
             "Use locally cached model or downloaded model folder(offline)"
         )
+        self.openvino_lcm_model_id = QComboBox(self)
+        self.openvino_lcm_model_id.addItems(self.config.openvino_lcm_models)
+        self.openvino_lcm_model_id.currentIndexChanged.connect(
+            self.on_openvino_lcm_model_id_changed
+        )
+
         self.use_openvino_check.setEnabled(enable_openvino_controls())
         self.use_local_model_folder.setChecked(False)
         self.use_local_model_folder.stateChanged.connect(self.use_offline_model_changed)
@@ -291,6 +307,7 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.lcm_lora_model_id_label)
         vlayout.addWidget(self.lcm_lora_id)
         vlayout.addWidget(self.use_openvino_check)
+        vlayout.addWidget(self.openvino_lcm_model_id)
         vlayout.addWidget(self.use_tae_sd)
         vlayout.addItem(slider_hspacer)
         vlayout.addWidget(self.inference_steps_value)
@@ -400,20 +417,26 @@ class MainWindow(QMainWindow):
         model_id = self.lcm_lora_id.itemText(index)
         self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = model_id
 
+    def on_openvino_lcm_model_id_changed(self, index):
+        model_id = self.openvino_lcm_model_id.itemText(index)
+        self.config.settings.lcm_diffusion_setting.openvino_lcm_model_id = model_id
+
     def use_openvino_changed(self, state):
         if state == 2:
             self.lcm_model.setEnabled(False)
             self.use_lcm_lora.setEnabled(False)
             self.lcm_lora_id.setEnabled(False)
             self.base_model_id.setEnabled(False)
-            self.neg_prompt.setEnabled(False)
+            self.neg_prompt.setEnabled(True)
+            self.openvino_lcm_model_id.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_openvino = True
         else:
             self.lcm_model.setEnabled(True)
             self.use_lcm_lora.setEnabled(True)
             self.lcm_lora_id.setEnabled(True)
             self.base_model_id.setEnabled(True)
-            self.neg_prompt.setEnabled(True)
+            self.neg_prompt.setEnabled(False)
+            self.openvino_lcm_model_id.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_openvino = False
 
     def use_tae_sd_changed(self, state):
@@ -488,7 +511,7 @@ class MainWindow(QMainWindow):
         )
 
         if self.config.settings.lcm_diffusion_setting.use_openvino:
-            model_id = LCM_DEFAULT_MODEL_OPENVINO
+            model_id = self.openvino_lcm_model_id.currentText()
         else:
             model_id = self.lcm_model.currentText()
 
