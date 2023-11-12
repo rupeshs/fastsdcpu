@@ -104,13 +104,22 @@ class MainWindow(QMainWindow):
         )
         self.lcm_lora_id.setCurrentText(
             get_valid_model_id(
-                self.config._lcm_lora_models,
+                self.config.lcm_lora_models,
                 self.config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id,
+            )
+        )
+        self.openvino_lcm_model_id.setCurrentText(
+            get_valid_model_id(
+                self.config.openvino_lcm_models,
+                self.config.settings.lcm_diffusion_setting.openvino_lcm_model_id,
             )
         )
         self.neg_prompt.setEnabled(
             self.config.settings.lcm_diffusion_setting.use_lcm_lora
             or self.config.settings.lcm_diffusion_setting.use_openvino
+        )
+        self.openvino_lcm_model_id.setEnabled(
+            self.config.settings.lcm_diffusion_setting.use_openvino
         )
 
     def init_ui(self):
@@ -419,6 +428,7 @@ class MainWindow(QMainWindow):
             self.lcm_lora_id.setEnabled(False)
             self.base_model_id.setEnabled(False)
             self.neg_prompt.setEnabled(True)
+            self.openvino_lcm_model_id.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_openvino = True
         else:
             self.lcm_model.setEnabled(True)
@@ -426,6 +436,7 @@ class MainWindow(QMainWindow):
             self.lcm_lora_id.setEnabled(True)
             self.base_model_id.setEnabled(True)
             self.neg_prompt.setEnabled(False)
+            self.openvino_lcm_model_id.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_openvino = False
 
     def use_tae_sd_changed(self, state):

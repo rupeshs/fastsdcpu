@@ -37,11 +37,17 @@ Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7
 - Added LCM-LoRA support, works well for fine-tuned Stable Diffusion model 1.5  or SDXL models
 - Added negative prompt support in LCM-LoRA mode
 - LCM-LoRA models can be configured using text configuration file
+- Added support for custom models for OpenVINO (LCM-LoRA baked)
+- OpenVINO models now supports negative prompt (Set guidance >1.0)
 
 ## OpenVINO support
 
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
 We can get 2x speed improvement when using OpenVINO.
+Thanks [Disty0](https://github.com/Disty0) for the conversion script.
+
+### OpenVINO LCM-LoRA models 
+We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Conveter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
 ## Models 
 Fast SD supports LCM models and LCM-LoRA models.
