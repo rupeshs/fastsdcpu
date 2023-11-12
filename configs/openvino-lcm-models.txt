@@ -1,2 +1,2 @@
-deinferno/LCM_Dreamshaper_v7-openvino
+rupeshs/LCM-dreamshaper-v7-openvino
 Disty0/LCM_SoteMix
