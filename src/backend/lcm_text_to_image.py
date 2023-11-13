@@ -122,6 +122,7 @@ class LCMTextToImage:
         )
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
         if DEVICE == "cuda":
+            print("To CUDA pipe")
             pipeline.to(
                 torch_device="cuda",
                 torch_dtype=self.torch_data_type,
