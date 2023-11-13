@@ -86,4 +86,4 @@ with gr.Blocks(css=css) as demo:
 
 def start_realtime_text_to_image():
     demo.queue()
-    demo.launch()
+    demo.launch(share=True)
