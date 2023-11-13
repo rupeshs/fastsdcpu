@@ -51,6 +51,10 @@ class LCMTextToImage:
         self.previous_model_id = None
         self.previous_use_tae_sd = False
         self.previous_use_lcm_lora = False
+        self.torch_data_type = (
+            torch.float32 if DEVICE == "cpu" or DEVICE == "mps" else torch.float16
+        )
+        print(f"Torch datatype : {self.torch_data_type}")
 
     def _get_lcm_pipeline(
         self,
@@ -73,7 +77,6 @@ class LCMTextToImage:
             # resume_download=True,
         )
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
-
         return pipeline
 
     def _get_lcm_model_pipeline(
@@ -110,7 +113,7 @@ class LCMTextToImage:
     ):
         pipeline = DiffusionPipeline.from_pretrained(
             base_model_id,
-            torch_dtype=torch.float32,
+            torch_dtype=self.torch_data_type,
             local_files_only=use_local_model,
         )
         pipeline.load_lora_weights(
@@ -118,7 +121,11 @@ class LCMTextToImage:
             local_files_only=use_local_model,
         )
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
-        # pipe.to(device="cuda", dtype=torch.float16)
+        if DEVICE == "cuda":
+            pipeline.to(
+                torch_device="cuda",
+                torch_dtype=self.torch_data_type,
+            )
         return pipeline
 
     def init(
