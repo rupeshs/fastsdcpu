@@ -61,7 +61,8 @@ Following LCM models are supported:
 - *StableDiffusion XL* -LCM distilled version of [stable-diffusion-xl-base-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)
 
 ### OpenVINO models
-- *LCM_Dreamshaper_v7-openvino* - https://huggingface.co/deinferno/LCM_Dreamshaper_v7-openvino by [deinferno](https://github.com/deinferno) 
+ - *LCM-dreamshaper-v7-openvino* -[rupesh](https://huggingface.co/rupeshs/LCM-dreamshaper-v7-openvino)
+ - *LCM_SoteMix* - [Disty0](https://huggingface.co/Disty0/LCM_SoteMix)
 
 ### LCM-LoRA models
 - *lcm-lora-sdv1-5* - distilled consistency adapter for [runwayml/stable-diffusion-v1-5](https://huggingface.co/runwayml/stable-diffusion-v1-5) 
