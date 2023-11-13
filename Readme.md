@@ -46,7 +46,7 @@ Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribu
 We can get 2x speed improvement when using OpenVINO.
 Thanks [Disty0](https://github.com/Disty0) for the conversion script.
 
-### OpenVINO LCM-LoRA models 
+### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Conveter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
 ## Models 
@@ -61,8 +61,10 @@ Following LCM models are supported:
 - *StableDiffusion XL* -LCM distilled version of [stable-diffusion-xl-base-1.0](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0)
 
 ### OpenVINO models
- - *LCM-dreamshaper-v7-openvino* -[rupesh](https://huggingface.co/rupeshs/LCM-dreamshaper-v7-openvino)
- - *LCM_SoteMix* - [Disty0](https://huggingface.co/Disty0/LCM_SoteMix)
+These are LCM-LoRA baked in models.
+
+ - [LCM-dreamshaper-v7-openvino](https://huggingface.co/rupeshs/LCM-dreamshaper-v7-openvino) by Rupesh
+ - [LCM_SoteMix](https://huggingface.co/Disty0/LCM_SoteMix) by Disty0
 
 ### LCM-LoRA models
 - *lcm-lora-sdv1-5* - distilled consistency adapter for [runwayml/stable-diffusion-v1-5](https://huggingface.co/runwayml/stable-diffusion-v1-5) 
