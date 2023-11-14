@@ -120,14 +120,20 @@ class LCMTextToImage:
             lcm_lora_id,
             local_files_only=use_local_model,
         )
+
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
-        if DEVICE == "cuda":
-            print("To CUDA pipe")
-            pipeline.to(
-                torch_device="cuda",
-                torch_dtype=self.torch_data_type,
-            )
+
+        pipeline.fuse_lora()
+        pipeline.unet.to(memory_format=torch.channels_last)
         return pipeline
+
+    def _pipeline_to_device(self):
+        print(f"Pipeline device : {DEVICE}")
+        print(f"Pipeline dtype : {self.torch_data_type}")
+        self.pipeline.to(
+            torch_device=DEVICE,
+            torch_dtype=self.torch_data_type,
+        )
 
     def init(
         self,
@@ -153,10 +159,6 @@ class LCMTextToImage:
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
-                # scheduler = OpenVinoLCMscheduler.from_pretrained(
-                #     model_id,
-                #     subfolder="scheduler",
-                # )
 
                 self.pipeline = OVStableDiffusionPipeline.from_pretrained(
                     model_id,
@@ -205,16 +207,14 @@ class LCMTextToImage:
                         local_files_only=use_local_model,
                     )
 
-                self.pipeline.to(
-                    torch_device=self.device,
-                    torch_dtype=torch.float32,
-                )
+                self._pipeline_to_device()
+
             self.previous_model_id = model_id
             self.previous_use_tae_sd = use_tiny_auto_encoder
             self.previous_lcm_lora_base_id = lcm_lora.base_model_id
             self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
             self.previous_use_lcm_lora = use_lora
-            print(model_id)
+            print(f"Model :{model_id}")
             print(f"Pipeline : {self.pipeline}")
 
     def generate(
