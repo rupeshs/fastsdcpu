@@ -51,10 +51,14 @@ We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and the
 
 ## Realtime text to image (EXPERIMENTAL)
 Now we can generate near realtime text to images using FastSD CPU.
+
 **CPU (OpenVINO)**
 Near realtime inference on CPU using OpenVINO, run the `start-realtime.bat` batch file and open the link in brower (Resolution : 256x256,Latency : 2.3s on Intel Core i7)
+
 **Colab (GPU)**
 You can use the colab to generate realtime images (Resolution : 512x512,Latency : 500ms on Tesla T4) 
+[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1slhhDhxPcb0Xk19nMuxWT9xG6VrmE4a5?usp=sharing)
+
 
 ## Models 
 Fast SD supports LCM models and LCM-LoRA models.
