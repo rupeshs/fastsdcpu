@@ -19,7 +19,7 @@ lcm_lora = LCMLora(
 # https://github.com/gradio-app/gradio/issues/2635#issuecomment-1423531319
 def encode_pil_to_base64_new(pil_image):
     image_arr = np.asarray(pil_image)[:, :, ::-1]
-    _, byte_data = imencode(".jpg", image_arr)
+    _, byte_data = imencode(".png", image_arr)
     base64_data = base64.b64encode(byte_data)
     base64_string_opencv = base64_data.decode("utf-8")
     return "data:image/png;base64," + base64_string_opencv
@@ -32,7 +32,7 @@ gr.processing_utils.encode_pil_to_base64 = encode_pil_to_base64_new
 def predict(
     prompt,
     steps,
-    seed=123123,
+    seed,
 ):
     lcm_text_to_image.init(
         model_id=LCM_DEFAULT_MODEL_OPENVINO,
@@ -47,10 +47,9 @@ def predict(
     lcm_diffusion_setting.inference_steps = steps
     lcm_diffusion_setting.seed = seed
     lcm_diffusion_setting.use_seed = True
-    lcm_diffusion_setting.image_width = 320 if DEVICE == "cpu" else 512
-    lcm_diffusion_setting.image_height = 320 if DEVICE == "cpu" else 512
+    lcm_diffusion_setting.image_width = 256 if DEVICE == "cpu" else 512
+    lcm_diffusion_setting.image_height = 256 if DEVICE == "cpu" else 512
     lcm_diffusion_setting.use_openvino = True if DEVICE == "cpu" else False
-    lcm_diffusion_setting.use_tiny_auto_encoder = True
     start = perf_counter()
     images = lcm_text_to_image.generate(lcm_diffusion_setting)
     print(perf_counter() - start)
@@ -91,10 +90,10 @@ def _get_footer_message() -> str:
 
 with gr.Blocks(css=css) as demo:
     with gr.Column(elem_id="container"):
-        use_openvino = "OpenVINO" if DEVICE == "cpu" else ""
+        use_openvino = "- OpenVINO" if DEVICE == "cpu" else ""
         gr.Markdown(
-            f"""# Realtime FastSD CPU - {use_openvino}
-               Device : {DEVICE} , {get_device_name()}
+            f"""# Realtime FastSD CPU {use_openvino}
+               **Device : {DEVICE} , {get_device_name()}**
             """,
             elem_id="intro",
         )
@@ -127,7 +126,6 @@ with gr.Blocks(css=css) as demo:
                 maximum=999999999,
                 label="Seed",
                 step=1,
-                value=12123,
             )
         gr.HTML(_get_footer_message())
 

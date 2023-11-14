@@ -172,6 +172,7 @@ elif args.webui:
 elif args.realtime:
     from frontend.webui.realtime_ui import start_realtime_text_to_image
 
+    print("Starting realtime text to image(EXPERIMENTAL)")
     start_realtime_text_to_image(args.share)
 else:
     context = Context(InterfaceType.CLI)
