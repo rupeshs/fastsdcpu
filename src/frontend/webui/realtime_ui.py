@@ -52,7 +52,8 @@ def predict(
     lcm_diffusion_setting.use_openvino = True if DEVICE == "cpu" else False
     start = perf_counter()
     images = lcm_text_to_image.generate(lcm_diffusion_setting)
-    print(perf_counter() - start)
+    latency = perf_counter() - start
+    print(f"Latency: {latency:.2f} seconds")
     return images[0]
 
 
@@ -101,7 +102,7 @@ with gr.Blocks(css=css) as demo:
         with gr.Row():
             with gr.Row():
                 prompt = gr.Textbox(
-                    placeholder="Insert your prompt here:",
+                    placeholder="Describe the image you'd like to see",
                     scale=5,
                     container=False,
                 )

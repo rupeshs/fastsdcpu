@@ -49,6 +49,13 @@ Thanks [Disty0](https://github.com/Disty0) for the conversion script.
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Conveter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
+## Realtime text to image (EXPERIMENTAL)
+Now we can generate near realtime text to images using FastSD CPU.
+**CPU (OpenVINO)**
+Near realtime inference on CPU using OpenVINO, run the `start-realtime.bat` batch file and open the link in brower (Resolution : 256x256,Latency : 2.3s on Intel Core i7)
+**Colab (GPU)**
+You can use the colab to generate realtime images (Resolution : 512x512,Latency : 500ms on Tesla T4) 
+
 ## Models 
 Fast SD supports LCM models and LCM-LoRA models.
 
