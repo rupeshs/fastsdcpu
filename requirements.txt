@@ -13,3 +13,4 @@ typing-extensions==4.8.0
 pyyaml==6.0.1
 gradio==3.39.0
 peft==0.6.1
+opencv-python==4.8.1.78

@@ -29,6 +29,12 @@ group.add_argument(
     help="Start Web UI",
 )
 group.add_argument(
+    "-r",
+    "--realtime",
+    action="store_true",
+    help="Start realtime inference UI(experimental)",
+)
+group.add_argument(
     "-v",
     "--version",
     action="store_true",
@@ -163,6 +169,11 @@ elif args.webui:
         app_settings,
         args.share,
     )
+elif args.realtime:
+    from frontend.webui.realtime_ui import start_realtime_text_to_image
+
+    print("Starting realtime text to image(EXPERIMENTAL)")
+    start_realtime_text_to_image(args.share)
 else:
     context = Context(InterfaceType.CLI)
     config = app_settings.settings

@@ -51,6 +51,10 @@ class LCMTextToImage:
         self.previous_model_id = None
         self.previous_use_tae_sd = False
         self.previous_use_lcm_lora = False
+        self.torch_data_type = (
+            torch.float32 if DEVICE == "cpu" or DEVICE == "mps" else torch.float16
+        )
+        print(f"Torch datatype : {self.torch_data_type}")
 
     def _get_lcm_pipeline(
         self,
@@ -73,7 +77,6 @@ class LCMTextToImage:
             # resume_download=True,
         )
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
-
         return pipeline
 
     def _get_lcm_model_pipeline(
@@ -110,16 +113,27 @@ class LCMTextToImage:
     ):
         pipeline = DiffusionPipeline.from_pretrained(
             base_model_id,
-            torch_dtype=torch.float32,
+            torch_dtype=self.torch_data_type,
             local_files_only=use_local_model,
         )
         pipeline.load_lora_weights(
             lcm_lora_id,
             local_files_only=use_local_model,
         )
+
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
-        # pipe.to(device="cuda", dtype=torch.float16)
+
+        pipeline.fuse_lora()
+        pipeline.unet.to(memory_format=torch.channels_last)
         return pipeline
+
+    def _pipeline_to_device(self):
+        print(f"Pipeline device : {DEVICE}")
+        print(f"Pipeline dtype : {self.torch_data_type}")
+        self.pipeline.to(
+            torch_device=DEVICE,
+            torch_dtype=self.torch_data_type,
+        )
 
     def init(
         self,
@@ -145,10 +159,6 @@ class LCMTextToImage:
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
-                # scheduler = OpenVinoLCMscheduler.from_pretrained(
-                #     model_id,
-                #     subfolder="scheduler",
-                # )
 
                 self.pipeline = OVStableDiffusionPipeline.from_pretrained(
                     model_id,
@@ -197,16 +207,14 @@ class LCMTextToImage:
                         local_files_only=use_local_model,
                     )
 
-                self.pipeline.to(
-                    torch_device=self.device,
-                    torch_dtype=torch.float32,
-                )
+                self._pipeline_to_device()
+
             self.previous_model_id = model_id
             self.previous_use_tae_sd = use_tiny_auto_encoder
             self.previous_lcm_lora_base_id = lcm_lora.base_model_id
             self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
             self.previous_use_lcm_lora = use_lora
-            print(model_id)
+            print(f"Model :{model_id}")
             print(f"Pipeline : {self.pipeline}")
 
     def generate(
@@ -222,7 +230,7 @@ class LCMTextToImage:
             else:
                 torch.manual_seed(cur_seed)
 
-        if self.use_openvino and DEVICE == "cpu":
+        if lcm_diffusion_setting.use_openvino and DEVICE == "cpu":
             print("Using OpenVINO")
             if reshape:
                 print("Reshape and compile")
