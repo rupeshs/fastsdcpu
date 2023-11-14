@@ -230,7 +230,7 @@ class LCMTextToImage:
             else:
                 torch.manual_seed(cur_seed)
 
-        if self.use_openvino and DEVICE == "cpu":
+        if lcm_diffusion_setting.use_openvino and DEVICE == "cpu":
             print("Using OpenVINO")
             if reshape:
                 print("Reshape and compile")
