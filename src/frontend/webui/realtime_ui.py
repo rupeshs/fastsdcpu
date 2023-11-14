@@ -140,6 +140,6 @@ with gr.Blocks(css=css) as demo:
         seed.change(fn=predict, inputs=inputs, outputs=image, show_progress=False)
 
 
-def start_realtime_text_to_image():
+def start_realtime_text_to_image(share=False):
     demo.queue()
-    demo.launch(share=False)
+    demo.launch(share=share)
