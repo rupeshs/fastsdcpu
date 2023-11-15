@@ -39,6 +39,7 @@ Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7
 - LCM-LoRA models can be configured using text configuration file
 - Added support for custom models for OpenVINO (LCM-LoRA baked)
 - OpenVINO models now supports negative prompt (Set guidance >1.0)
+- Real-time inference support,generates images while you type (experimental)
 
 ## OpenVINO support
 
@@ -47,18 +48,18 @@ We can get 2x speed improvement when using OpenVINO.
 Thanks [Disty0](https://github.com/Disty0) for the conversion script.
 
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models 
-We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Conveter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
+We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
-## Realtime text to image (EXPERIMENTAL)
-Now we can generate near realtime text to images using FastSD CPU.
+## Real-time text to image (EXPERIMENTAL)
+Now we can generate near real-time text to images using FastSD CPU.
 
 **CPU (OpenVINO)**
 
-Near realtime inference on CPU using OpenVINO, run the `start-realtime.bat` batch file and open the link in brower (Resolution : 256x256,Latency : 2.3s on Intel Core i7)
+Near real-time inference on CPU using OpenVINO, run the `start-realtime.bat` batch file and open the link in brower (Resolution : 256x256,Latency : 2.3s on Intel Core i7)
 
 **Colab (GPU)**
 
-You can use the colab to generate realtime images (Resolution : 512x512,Latency : 500ms on Tesla T4) 
+You can use the colab to generate real-time images (Resolution : 512x512,Latency : 500ms on Tesla T4) 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1slhhDhxPcb0Xk19nMuxWT9xG6VrmE4a5?usp=sharing)
 
 
