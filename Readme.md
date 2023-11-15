@@ -62,8 +62,9 @@ You can use the colab to generate realtime images (Resolution : 512x512,Latency 
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1slhhDhxPcb0Xk19nMuxWT9xG6VrmE4a5?usp=sharing)
 
 
-<iframe width="600" height="600" src="https://www.youtube.com/embed/s2zSxBHkNE0" title="Near real-time stable diffusion inference on CPU using FastSD CPU | OpenVINO  #stablediffusion" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+Watch YouTube video :
 
+[![IMAGE_ALT](https://img.youtube.com/vi/s2zSxBHkNE0/sddefault.jpg)](https://youtu.be/s2zSxBHkNE0)
 ## Models 
 Fast SD supports LCM models and LCM-LoRA models.
 
