@@ -40,6 +40,10 @@ Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7
 - Added support for custom models for OpenVINO (LCM-LoRA baked)
 - OpenVINO models now supports negative prompt (Set guidance >1.0)
 - Real-time inference support,generates images while you type (experimental)
+- Fast 2,3 steps inference
+- Lcm-Lora fused models for faster inference
+- Supports integrated GPU(iGPU) using OpenVINO (export DEVICE=GPU)
+- 5.7x speed using OpenVINO(steps: 2,tiny autoencoder)
 
 ## OpenVINO support
 
