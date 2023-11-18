@@ -6,7 +6,7 @@ The following interfaces are available :
 - WebUI 
 - CLI (CommandLine Interface)
 
-Using OpenVINO, it took 10 seconds to create a single 512x512 image on a Core i7-12700.
+Using OpenVINO, it took 7 seconds to create a single 512x512 image on a Core i7-12700.
 
 ## Supported platforms
  - Windows
