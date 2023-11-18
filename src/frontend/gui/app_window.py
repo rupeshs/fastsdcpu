@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
     QToolButton,
     QFileDialog,
 )
-
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QPixmap, QDesktopServices
 from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl
 
@@ -36,6 +36,10 @@ from models.interface_types import InterfaceType
 from constants import DEVICE
 from frontend.utils import enable_openvino_controls, get_valid_model_id
 from backend.lcm_models import get_available_models
+
+# DPI scale fix
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
+QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 
 class MainWindow(QMainWindow):
