@@ -18,10 +18,13 @@ from constants import (
 )
 from huggingface_hub import model_info
 from backend.models.lcmdiffusion_setting import LCMLora
+from backend.device import is_openvino_device
 
-if DEVICE == "cpu":
+if is_openvino_device():
     from huggingface_hub import snapshot_download
     from optimum.intel.openvino.modeling_diffusion import OVModelVaeDecoder, OVBaseModel
+
+    # from optimum.intel.openvino.modeling_diffusion import OVStableDiffusionPipeline
     from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
         OVStableDiffusionPipeline,
     )
@@ -58,7 +61,7 @@ class LCMTextToImage:
         self.previous_use_tae_sd = False
         self.previous_use_lcm_lora = False
         self.torch_data_type = (
-            torch.float32 if DEVICE == "cpu" or DEVICE == "mps" else torch.float16
+            torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
         )
         print(f"Torch datatype : {self.torch_data_type}")
 
@@ -171,16 +174,16 @@ class LCMTextToImage:
             or self.previous_lcm_lora_id != lcm_lora.lcm_lora_id
             or self.previous_use_lcm_lora != use_lora
         ):
-            if self.use_openvino and DEVICE == "cpu":
+            if self.use_openvino and is_openvino_device():
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
 
                 self.pipeline = OVStableDiffusionPipeline.from_pretrained(
                     model_id,
-                    # scheduler=scheduler,
                     local_files_only=use_local_model,
                     ov_config={"CACHE_DIR": ""},
+                    device=DEVICE.upper(),
                 )
 
                 if use_tiny_auto_encoder:
@@ -232,6 +235,12 @@ class LCMTextToImage:
             self.previous_use_lcm_lora = use_lora
             print(f"Model :{model_id}")
             print(f"Pipeline : {self.pipeline}")
+            self.pipeline.scheduler = LCMScheduler.from_config(
+                self.pipeline.scheduler.config,
+                beta_start=0.001,
+                beta_end=0.01,
+            )
+            # self.pipeline.enable_freeu(s1=0.9, s2=0.2, b1=1.2, b2=1.4)
 
     def generate(
         self,
@@ -246,7 +255,7 @@ class LCMTextToImage:
             else:
                 torch.manual_seed(cur_seed)
 
-        if lcm_diffusion_setting.use_openvino and DEVICE == "cpu":
+        if lcm_diffusion_setting.use_openvino and is_openvino_device():
             print("Using OpenVINO")
             if reshape:
                 print("Reshape and compile")

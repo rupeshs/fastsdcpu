@@ -8,6 +8,7 @@ from cv2 import imencode
 import base64
 from backend.device import get_device_name
 from constants import APP_VERSION
+from backend.device import is_openvino_device
 
 lcm_text_to_image = LCMTextToImage()
 lcm_lora = LCMLora(
@@ -38,7 +39,7 @@ def predict(
         model_id=LCM_DEFAULT_MODEL_OPENVINO,
         use_lora=True,
         lcm_lora=lcm_lora,
-        use_openvino=True if DEVICE == "cpu" else False,
+        use_openvino=True if is_openvino_device() else False,
     )
 
     lcm_diffusion_setting = LCMDiffusionSetting()
@@ -47,9 +48,9 @@ def predict(
     lcm_diffusion_setting.inference_steps = steps
     lcm_diffusion_setting.seed = seed
     lcm_diffusion_setting.use_seed = True
-    lcm_diffusion_setting.image_width = 256 if DEVICE == "cpu" else 512
-    lcm_diffusion_setting.image_height = 256 if DEVICE == "cpu" else 512
-    lcm_diffusion_setting.use_openvino = True if DEVICE == "cpu" else False
+    lcm_diffusion_setting.image_width = 256 if is_openvino_device() else 512
+    lcm_diffusion_setting.image_height = 256 if is_openvino_device() else 512
+    lcm_diffusion_setting.use_openvino = True if is_openvino_device() else False
     start = perf_counter()
     images = lcm_text_to_image.generate(lcm_diffusion_setting)
     latency = perf_counter() - start
@@ -91,7 +92,7 @@ def _get_footer_message() -> str:
 
 with gr.Blocks(css=css) as demo:
     with gr.Column(elem_id="container"):
-        use_openvino = "- OpenVINO" if DEVICE == "cpu" else ""
+        use_openvino = "- OpenVINO" if is_openvino_device() else ""
         gr.Markdown(
             f"""# Realtime FastSD CPU {use_openvino}
                **Device : {DEVICE} , {get_device_name()}**
