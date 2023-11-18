@@ -11,3 +11,6 @@ DEVICE = environ.get("DEVICE", "cpu")
 SD_MODELS_FILE = "stable-diffusion-models.txt"
 LCM_LORA_MODELS_FILE = "lcm-lora-models.txt"
 OPENVINO_LCM_MODELS_FILE = "openvino-lcm-models.txt"
+TAESD_MODEL = "madebyollin/taesd"
+TAESDXL_MODEL = "madebyollin/taesdxl"
+TAESD_MODEL_OPENVINO = "deinferno/taesd-openvino"

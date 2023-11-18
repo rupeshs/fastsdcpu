@@ -9,7 +9,13 @@ from os import path
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 import numpy as np
-from constants import DEVICE, LCM_DEFAULT_MODEL
+from constants import (
+    DEVICE,
+    LCM_DEFAULT_MODEL,
+    TAESD_MODEL,
+    TAESDXL_MODEL,
+    TAESD_MODEL_OPENVINO,
+)
 from huggingface_hub import model_info
 from backend.models.lcmdiffusion_setting import LCMLora
 
@@ -78,6 +84,16 @@ class LCMTextToImage:
         )
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
         return pipeline
+
+    def get_tiny_decoder_vae_model(self) -> str:
+        pipeline_class = self.pipeline.__class__.__name__
+        print(f"Pipeline class : {pipeline_class}")
+        if pipeline_class == "LatentConsistencyModelPipeline":
+            return TAESD_MODEL
+        elif pipeline_class == "StableDiffusionXLPipeline":
+            return TAESDXL_MODEL
+        elif pipeline_class == "OVStableDiffusionPipeline":
+            return TAESD_MODEL_OPENVINO
 
     def _get_lcm_model_pipeline(
         self,
@@ -170,7 +186,7 @@ class LCMTextToImage:
                 if use_tiny_auto_encoder:
                     print("Using Tiny Auto Encoder (OpenVINO)")
                     taesd_dir = snapshot_download(
-                        repo_id="deinferno/taesd-openvino",
+                        repo_id=self.get_tiny_decoder_vae_model(),
                         local_files_only=use_local_model,
                     )
                     self.pipeline.vae_decoder = CustomOVModelVaeDecoder(
@@ -202,7 +218,7 @@ class LCMTextToImage:
                 if use_tiny_auto_encoder:
                     print("Using Tiny Auto Encoder")
                     self.pipeline.vae = AutoencoderTiny.from_pretrained(
-                        "madebyollin/taesd",
+                        self.get_tiny_decoder_vae_model(),
                         torch_dtype=torch.float32,
                         local_files_only=use_local_model,
                     )
