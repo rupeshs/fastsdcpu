@@ -91,7 +91,10 @@ class LCMTextToImage:
     def get_tiny_decoder_vae_model(self) -> str:
         pipeline_class = self.pipeline.__class__.__name__
         print(f"Pipeline class : {pipeline_class}")
-        if pipeline_class == "LatentConsistencyModelPipeline":
+        if (
+            pipeline_class == "LatentConsistencyModelPipeline"
+            or pipeline_class == "StableDiffusionPipeline"
+        ):
             return TAESD_MODEL
         elif pipeline_class == "StableDiffusionXLPipeline":
             return TAESDXL_MODEL
@@ -219,9 +222,10 @@ class LCMTextToImage:
                         use_local_model,
                     )
                 if use_tiny_auto_encoder:
-                    print("Using Tiny Auto Encoder")
+                    vae_model = self.get_tiny_decoder_vae_model()
+                    print(f"Using Tiny Auto Encoder {vae_model}")
                     self.pipeline.vae = AutoencoderTiny.from_pretrained(
-                        self.get_tiny_decoder_vae_model(),
+                        vae_model,
                         torch_dtype=torch.float32,
                         local_files_only=use_local_model,
                     )
@@ -240,7 +244,6 @@ class LCMTextToImage:
                 beta_start=0.001,
                 beta_end=0.01,
             )
-            # self.pipeline.enable_freeu(s1=0.9, s2=0.2, b1=1.2, b2=1.4)
 
     def generate(
         self,
