@@ -1,6 +1,7 @@
 from constants import DEVICE
 from typing import List
 import platform
+from backend.device import is_openvino_device
 
 
 def is_reshape_required(
@@ -27,7 +28,7 @@ def is_reshape_required(
 
 
 def enable_openvino_controls() -> bool:
-    return DEVICE == "cpu" and platform.system().lower() != "darwin"
+    return is_openvino_device() and platform.system().lower() != "darwin"
 
 
 def get_valid_model_id(

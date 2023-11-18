@@ -141,7 +141,6 @@ if args.version:
 # parser.print_help()
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
-
 app_settings = AppSettings()
 app_settings.load()
 print(

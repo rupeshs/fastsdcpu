@@ -263,6 +263,7 @@ class MainWindow(QMainWindow):
 
         self.use_openvino_check = QCheckBox("Use OpenVINO")
         self.use_openvino_check.setChecked(False)
+        self.openvino_model_label = QLabel("OpenVINO LCM model:")
         self.use_local_model_folder = QCheckBox(
             "Use locally cached model or downloaded model folder(offline)"
         )
@@ -311,6 +312,7 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.lcm_lora_model_id_label)
         vlayout.addWidget(self.lcm_lora_id)
         vlayout.addWidget(self.use_openvino_check)
+        vlayout.addWidget(self.openvino_model_label)
         vlayout.addWidget(self.openvino_lcm_model_id)
         vlayout.addWidget(self.use_tae_sd)
         vlayout.addItem(slider_hspacer)
