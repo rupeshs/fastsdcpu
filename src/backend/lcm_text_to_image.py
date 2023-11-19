@@ -157,6 +157,25 @@ class LCMTextToImage:
             torch_dtype=self.torch_data_type,
         )
 
+    def _add_freeu(self):
+        pipeline_class = self.pipeline.__class__.__name__
+        if pipeline_class == "StableDiffusionPipeline":
+            print("Add FreeU - SD")
+            self.pipeline.enable_freeu(
+                s1=0.9,
+                s2=0.2,
+                b1=1.2,
+                b2=1.4,
+            )
+        elif pipeline_class == "StableDiffusionXLPipeline":
+            print("Add FreeU - SDXL")
+            self.pipeline.enable_freeu(
+                s1=0.6,
+                s2=0.4,
+                b1=1.1,
+                b2=1.2,
+            )
+
     def init(
         self,
         model_id: str,
@@ -221,6 +240,7 @@ class LCMTextToImage:
                         model_id,
                         use_local_model,
                     )
+
                 if use_tiny_auto_encoder:
                     vae_model = self.get_tiny_decoder_vae_model()
                     print(f"Using Tiny Auto Encoder {vae_model}")
@@ -244,6 +264,8 @@ class LCMTextToImage:
                 beta_start=0.001,
                 beta_end=0.01,
             )
+            if use_lora:
+                self._add_freeu()
 
     def generate(
         self,

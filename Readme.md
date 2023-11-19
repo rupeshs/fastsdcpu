@@ -45,6 +45,10 @@ Using OpenVINO, it took 7 seconds to create a single 512x512 image on a Core i7-
 - Supports integrated GPU(iGPU) using OpenVINO (export DEVICE=GPU)
 - 5.7x speed using OpenVINO(steps: 2,tiny autoencoder)
 
+
+## 2 Steps inference with LCM-LoRA
+FastSD supports 2 to 3 steps fast inference using LCM-LoRA workflow. It works well with SD 1.5 models.
+
 ## OpenVINO support
 
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
