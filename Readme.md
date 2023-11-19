@@ -49,6 +49,8 @@ Using OpenVINO, it took 7 seconds to create a single 512x512 image on a Core i7-
 ## 2 Steps inference with LCM-LoRA
 FastSD supports 2 to 3 steps fast inference using LCM-LoRA workflow. It works well with SD 1.5 models.
 
+![2 Steps inference](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/2steps-inference.jpg)
+
 ## OpenVINO support
 
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
