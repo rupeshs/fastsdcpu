@@ -12,7 +12,7 @@ from backend.device import is_openvino_device
 
 lcm_text_to_image = LCMTextToImage()
 lcm_lora = LCMLora(
-    base_model_id="Lykon/dreamshaper-7",
+    base_model_id="Lykon/dreamshaper-8",
     lcm_lora_id="latent-consistency/lcm-lora-sdv1-5",
 )
 
