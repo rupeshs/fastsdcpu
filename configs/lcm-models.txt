@@ -1,0 +1,3 @@
+SimianLuo/LCM_Dreamshaper_v7
+latent-consistency/lcm-sdxl
+latent-consistency/lcm-ssd-1b

@@ -35,7 +35,6 @@ from context import Context
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from frontend.utils import enable_openvino_controls, get_valid_model_id
-from backend.lcm_models import get_available_models
 
 # DPI scale fix
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -193,10 +192,8 @@ class MainWindow(QMainWindow):
     def create_settings_tab(self):
         self.lcm_model_label = QLabel("Latent Consistency Model:")
         # self.lcm_model = QLineEdit(LCM_DEFAULT_MODEL)
-        lcm_models = get_available_models()
         self.lcm_model = QComboBox(self)
-        for model in lcm_models:
-            self.lcm_model.addItem(model)
+        self.lcm_model.addItems(self.config.lcm_models)
 
         self.use_lcm_lora = QCheckBox("Use LCM LoRA")
         self.use_lcm_lora.setChecked(False)

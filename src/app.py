@@ -143,6 +143,7 @@ show_system_info()
 print(f"Using device : {constants.DEVICE}")
 app_settings = AppSettings()
 app_settings.load()
+print(f"Found {len(app_settings.lcm_models)} LCM models in config/lcm-models.txt")
 print(
     f"Found {len(app_settings.stable_diffsuion_models)} stable diffusion models in config/stable-diffusion-models.txt"
 )
