@@ -303,6 +303,7 @@ class MainWindow(QMainWindow):
         vlayout = QVBoxLayout()
         vspacer = QSpacerItem(20, 20, QSizePolicy.Minimum, QSizePolicy.Expanding)
         vlayout.addItem(hspacer)
+        vlayout.setSpacing(3)
         vlayout.addWidget(self.lcm_model_label)
         vlayout.addWidget(self.lcm_model)
         vlayout.addWidget(self.use_local_model_folder)
