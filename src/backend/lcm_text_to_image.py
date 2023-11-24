@@ -4,6 +4,7 @@ from diffusers import (
     AutoencoderTiny,
     LCMScheduler,
     UNet2DConditionModel,
+    StableDiffusionImg2ImgPipeline,
 )
 from os import path
 import torch
@@ -19,15 +20,23 @@ from constants import (
 from huggingface_hub import model_info
 from backend.models.lcmdiffusion_setting import LCMLora
 from backend.device import is_openvino_device
+from PIL import Image
+from backend.openvino.pipelines import get_ov_text_to_image_pipeline, ov_load_taesd
+from backend.pipelines.lcm import get_lcm_model_pipeline, load_taesd
+from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 
 if is_openvino_device():
     from huggingface_hub import snapshot_download
     from optimum.intel.openvino.modeling_diffusion import OVModelVaeDecoder, OVBaseModel
 
-    # from optimum.intel.openvino.modeling_diffusion import OVStableDiffusionPipeline
-    from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
+    from optimum.intel.openvino.modeling_diffusion import (
         OVStableDiffusionPipeline,
+        OVStableDiffusionImg2ImgPipeline,
     )
+
+    # from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
+    #     OVStableDiffusionPipeline,
+    # )
     from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
         LCMScheduler as OpenVinoLCMscheduler,
     )
@@ -64,90 +73,6 @@ class LCMTextToImage:
             torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
         )
         print(f"Torch datatype : {self.torch_data_type}")
-
-    def _get_lcm_pipeline(
-        self,
-        lcm_model_id: str,
-        base_model_id: str,
-        use_local_model: bool,
-    ):
-        pipeline = None
-        unet = UNet2DConditionModel.from_pretrained(
-            lcm_model_id,
-            torch_dtype=torch.float32,
-            local_files_only=use_local_model
-            # resume_download=True,
-        )
-        pipeline = DiffusionPipeline.from_pretrained(
-            base_model_id,
-            unet=unet,
-            torch_dtype=torch.float32,
-            local_files_only=use_local_model
-            # resume_download=True,
-        )
-        pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
-        return pipeline
-
-    def get_tiny_decoder_vae_model(self) -> str:
-        pipeline_class = self.pipeline.__class__.__name__
-        print(f"Pipeline class : {pipeline_class}")
-        if (
-            pipeline_class == "LatentConsistencyModelPipeline"
-            or pipeline_class == "StableDiffusionPipeline"
-        ):
-            return TAESD_MODEL
-        elif pipeline_class == "StableDiffusionXLPipeline":
-            return TAESDXL_MODEL
-        elif pipeline_class == "OVStableDiffusionPipeline":
-            return TAESD_MODEL_OPENVINO
-
-    def _get_lcm_model_pipeline(
-        self,
-        model_id: str,
-        use_local_model,
-    ):
-        pipeline = None
-        if model_id == LCM_DEFAULT_MODEL:
-            pipeline = DiffusionPipeline.from_pretrained(
-                model_id,
-                local_files_only=use_local_model,
-            )
-        elif model_id == "latent-consistency/lcm-sdxl":
-            pipeline = self._get_lcm_pipeline(
-                model_id,
-                "stabilityai/stable-diffusion-xl-base-1.0",
-                use_local_model,
-            )
-
-        elif model_id == "latent-consistency/lcm-ssd-1b":
-            pipeline = self._get_lcm_pipeline(
-                model_id,
-                "segmind/SSD-1B",
-                use_local_model,
-            )
-        return pipeline
-
-    def _get_lcm_lora_pipeline(
-        self,
-        base_model_id: str,
-        lcm_lora_id: str,
-        use_local_model: bool,
-    ):
-        pipeline = DiffusionPipeline.from_pretrained(
-            base_model_id,
-            torch_dtype=self.torch_data_type,
-            local_files_only=use_local_model,
-        )
-        pipeline.load_lora_weights(
-            lcm_lora_id,
-            local_files_only=use_local_model,
-        )
-
-        pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
-
-        pipeline.fuse_lora()
-        pipeline.unet.to(memory_format=torch.channels_last)
-        return pipeline
 
     def _pipeline_to_device(self):
         print(f"Pipeline device : {DEVICE}")
@@ -201,27 +126,17 @@ class LCMTextToImage:
                     del self.pipeline
                     self.pipeline = None
 
-                self.pipeline = OVStableDiffusionPipeline.from_pretrained(
+                self.pipeline = get_ov_text_to_image_pipeline(
                     model_id,
-                    local_files_only=use_local_model,
-                    ov_config={"CACHE_DIR": ""},
-                    device=DEVICE.upper(),
+                    use_local_model,
                 )
 
                 if use_tiny_auto_encoder:
                     print("Using Tiny Auto Encoder (OpenVINO)")
-                    taesd_dir = snapshot_download(
-                        repo_id=self.get_tiny_decoder_vae_model(),
-                        local_files_only=use_local_model,
+                    ov_load_taesd(
+                        self.pipeline,
+                        use_local_model,
                     )
-                    self.pipeline.vae_decoder = CustomOVModelVaeDecoder(
-                        model=OVBaseModel.load_model(
-                            f"{taesd_dir}/vae_decoder/openvino_model.xml"
-                        ),
-                        parent_model=self.pipeline,
-                        model_dir=taesd_dir,
-                    )
-
             else:
                 if self.pipeline:
                     del self.pipeline
@@ -229,25 +144,25 @@ class LCMTextToImage:
 
                 if use_lora:
                     print("Init LCM-LoRA pipeline")
-                    self.pipeline = self._get_lcm_lora_pipeline(
+                    self.pipeline = get_lcm_lora_pipeline(
                         lcm_lora.base_model_id,
                         lcm_lora.lcm_lora_id,
                         use_local_model,
+                        torch_data_type=self.torch_data_type,
                     )
                 else:
                     print("Init LCM Model pipeline")
-                    self.pipeline = self._get_lcm_model_pipeline(
+                    self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
                     )
 
                 if use_tiny_auto_encoder:
-                    vae_model = self.get_tiny_decoder_vae_model()
-                    print(f"Using Tiny Auto Encoder {vae_model}")
-                    self.pipeline.vae = AutoencoderTiny.from_pretrained(
-                        vae_model,
-                        torch_dtype=torch.float32,
-                        local_files_only=use_local_model,
+                    print("Using Tiny Auto Encoder")
+                    load_taesd(
+                        self.pipeline,
+                        use_local_model,
+                        self.torch_data_type,
                     )
 
                 self._pipeline_to_device()
@@ -303,7 +218,19 @@ class LCMTextToImage:
             print("Not using LCM-LoRA so setting guidance_scale 1.0")
             guidance_scale = 1.0
 
+        init_image = Image.open(
+            r"F:\dev\push\faster\fastsdcpu\results\57540872-4f62-46b7-b6ef-3a3f10683763-1.png"
+        )
         if lcm_diffusion_setting.use_openvino:
+            # result_images = self.img_to_img_pipeline(
+            #     image=init_image,
+            #     strength=0.8,
+            #     prompt=lcm_diffusion_setting.prompt,
+            #     negative_prompt=lcm_diffusion_setting.negative_prompt,
+            #     num_inference_steps=lcm_diffusion_setting.inference_steps,
+            #     guidance_scale=guidance_scale,
+            #     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+            # ).images
             result_images = self.pipeline(
                 prompt=lcm_diffusion_setting.prompt,
                 negative_prompt=lcm_diffusion_setting.negative_prompt,
@@ -314,6 +241,17 @@ class LCMTextToImage:
                 num_images_per_prompt=lcm_diffusion_setting.number_of_images,
             ).images
         else:
+            # result_images = self.img_to_img_pipeline(
+            #     image=init_image,
+            #     strength=0.5,
+            #     prompt=lcm_diffusion_setting.prompt,
+            #     negative_prompt=lcm_diffusion_setting.negative_prompt,
+            #     num_inference_steps=lcm_diffusion_setting.inference_steps,
+            #     guidance_scale=guidance_scale,
+            #     width=lcm_diffusion_setting.image_width,
+            #     height=lcm_diffusion_setting.image_height,
+            #     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+            # ).images
             result_images = self.pipeline(
                 prompt=lcm_diffusion_setting.prompt,
                 negative_prompt=lcm_diffusion_setting.negative_prompt,

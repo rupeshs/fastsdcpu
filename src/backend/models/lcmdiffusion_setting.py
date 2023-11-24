@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Any
 
 from pydantic import BaseModel
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
@@ -19,6 +19,8 @@ class LCMDiffusionSetting(BaseModel):
     use_openvino: bool = False
     prompt: str = ""
     negative_prompt: str = ""
+    init_image: Any = None
+    strength: Optional[float] = 0.75
     image_height: Optional[int] = 512
     image_width: Optional[int] = 512
     inference_steps: Optional[int] = 4
