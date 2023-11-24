@@ -27,13 +27,8 @@ class Context:
         if not settings.lcm_diffusion_setting.lcm_lora:
             return None
         self.lcm_text_to_image.init(
-            settings.lcm_diffusion_setting.lcm_model_id,
-            settings.lcm_diffusion_setting.use_openvino,
             device,
-            settings.lcm_diffusion_setting.use_offline_model,
-            settings.lcm_diffusion_setting.use_tiny_auto_encoder,
-            settings.lcm_diffusion_setting.use_lcm_lora,
-            settings.lcm_diffusion_setting.lcm_lora,
+            settings.lcm_diffusion_setting,
         )
         images = self.lcm_text_to_image.generate(
             settings.lcm_diffusion_setting,

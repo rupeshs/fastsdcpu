@@ -1,61 +1,15 @@
 from typing import Any
-from diffusers import (
-    DiffusionPipeline,
-    AutoencoderTiny,
-    LCMScheduler,
-    UNet2DConditionModel,
-    StableDiffusionImg2ImgPipeline,
-)
-from os import path
+from diffusers import LCMScheduler
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 import numpy as np
-from constants import (
-    DEVICE,
-    LCM_DEFAULT_MODEL,
-    TAESD_MODEL,
-    TAESDXL_MODEL,
-    TAESD_MODEL_OPENVINO,
-)
-from huggingface_hub import model_info
+from constants import DEVICE
 from backend.models.lcmdiffusion_setting import LCMLora
 from backend.device import is_openvino_device
 from PIL import Image
 from backend.openvino.pipelines import get_ov_text_to_image_pipeline, ov_load_taesd
 from backend.pipelines.lcm import get_lcm_model_pipeline, load_taesd
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
-
-if is_openvino_device():
-    from huggingface_hub import snapshot_download
-    from optimum.intel.openvino.modeling_diffusion import OVModelVaeDecoder, OVBaseModel
-
-    from optimum.intel.openvino.modeling_diffusion import (
-        OVStableDiffusionPipeline,
-        OVStableDiffusionImg2ImgPipeline,
-    )
-
-    # from backend.lcmdiffusion.pipelines.openvino.lcm_ov_pipeline import (
-    #     OVStableDiffusionPipeline,
-    # )
-    from backend.lcmdiffusion.pipelines.openvino.lcm_scheduler import (
-        LCMScheduler as OpenVinoLCMscheduler,
-    )
-
-    class CustomOVModelVaeDecoder(OVModelVaeDecoder):
-        def __init__(
-            self,
-            model,
-            parent_model,
-            ov_config=None,
-            model_dir=None,
-        ):
-            super(OVModelVaeDecoder, self).__init__(
-                model,
-                parent_model,
-                ov_config,
-                "vae_decoder",
-                model_dir,
-            )
 
 
 class LCMTextToImage:
@@ -103,16 +57,17 @@ class LCMTextToImage:
 
     def init(
         self,
-        model_id: str,
-        use_openvino: bool = False,
         device: str = "cpu",
-        use_local_model: bool = False,
-        use_tiny_auto_encoder: bool = False,
-        use_lora: bool = False,
-        lcm_lora: LCMLora = LCMLora(),
+        lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting(),
     ) -> None:
         self.device = device
-        self.use_openvino = use_openvino
+        self.use_openvino = lcm_diffusion_setting.use_openvino
+        model_id = lcm_diffusion_setting.lcm_model_id
+        use_local_model = lcm_diffusion_setting.use_offline_model
+        use_tiny_auto_encoder = lcm_diffusion_setting.use_tiny_auto_encoder
+        use_lora = lcm_diffusion_setting.use_lcm_lora
+        lcm_lora: LCMLora = lcm_diffusion_setting.lcm_lora
+
         if (
             self.pipeline is None
             or self.previous_model_id != model_id

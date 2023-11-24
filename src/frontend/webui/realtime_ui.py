@@ -35,14 +35,8 @@ def predict(
     steps,
     seed,
 ):
-    lcm_text_to_image.init(
-        model_id=LCM_DEFAULT_MODEL_OPENVINO,
-        use_lora=True,
-        lcm_lora=lcm_lora,
-        use_openvino=True if is_openvino_device() else False,
-    )
-
     lcm_diffusion_setting = LCMDiffusionSetting()
+    lcm_diffusion_setting.lcm_model_id = LCM_DEFAULT_MODEL_OPENVINO
     lcm_diffusion_setting.prompt = prompt
     lcm_diffusion_setting.guidance_scale = 1.0
     lcm_diffusion_setting.inference_steps = steps
@@ -51,7 +45,12 @@ def predict(
     lcm_diffusion_setting.image_width = 256 if is_openvino_device() else 512
     lcm_diffusion_setting.image_height = 256 if is_openvino_device() else 512
     lcm_diffusion_setting.use_openvino = True if is_openvino_device() else False
+    lcm_text_to_image.init(
+        DEVICE,
+        lcm_diffusion_setting,
+    )
     start = perf_counter()
+
     images = lcm_text_to_image.generate(lcm_diffusion_setting)
     latency = perf_counter() - start
     print(f"Latency: {latency:.2f} seconds")
