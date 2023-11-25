@@ -1,12 +1,19 @@
 from typing import Optional, Any
-
+from enum import Enum
 from pydantic import BaseModel
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 
 
 class LCMLora(BaseModel):
-    base_model_id: str = ""
-    lcm_lora_id: str = ""
+    base_model_id: str = "Lykon/dreamshaper-8"
+    lcm_lora_id: str = "latent-consistency/lcm-lora-sdv1-5"
+
+
+class DiffusionTask(str, Enum):
+    """Diffusion task types"""
+
+    text_to_image = "text_to_image"
+    image_to_image = "image_to_image"
 
 
 class LCMDiffusionSetting(BaseModel):
@@ -29,3 +36,4 @@ class LCMDiffusionSetting(BaseModel):
     seed: Optional[int] = -1
     use_seed: bool = False
     use_safety_checker: bool = False
+    diffusion_task: str = DiffusionTask.text_to_image.value
