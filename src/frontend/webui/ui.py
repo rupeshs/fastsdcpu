@@ -4,7 +4,9 @@ from frontend.webui.text_to_image_ui import get_text_to_image_ui
 from frontend.webui.image_to_image_ui import get_image_to_image_ui
 from frontend.webui.models_ui import get_models_ui
 from paths import FastStableDiffusionPaths
-from app_settings import AppSettings
+from state import get_settings
+
+app_settings = get_settings()
 
 
 def _get_footer_message() -> str:
@@ -16,23 +18,15 @@ def _get_footer_message() -> str:
     return footer_msg
 
 
-_app_settings = None
-
-
-def get_web_ui(app_settings: AppSettings) -> gr.Blocks:
-    global _app_settings
-    _app_settings = app_settings
-
+def get_web_ui() -> gr.Blocks:
     def change_mode(mode):
-        global _app_settings
-        print(mode)
-        print(_app_settings)
-        _app_settings.settings.lcm_diffusion_setting.use_lcm_lora = False
-        _app_settings.settings.lcm_diffusion_setting.use_openvino = False
+        global app_settings
+        app_settings.settings.lcm_diffusion_setting.use_lcm_lora = False
+        app_settings.settings.lcm_diffusion_setting.use_openvino = False
         if mode == "LCM-LoRA":
-            _app_settings.settings.lcm_diffusion_setting.use_lcm_lora = True
+            app_settings.settings.lcm_diffusion_setting.use_lcm_lora = True
         elif mode == "LCM-OpenVINO":
-            _app_settings.settings.lcm_diffusion_setting.use_openvino = True
+            app_settings.settings.lcm_diffusion_setting.use_openvino = True
 
     with gr.Blocks(
         css=FastStableDiffusionPaths.get_css_path(),
@@ -49,11 +43,11 @@ def get_web_ui(app_settings: AppSettings) -> gr.Blocks:
 
         with gr.Tabs():
             with gr.TabItem("Text to Image"):
-                get_text_to_image_ui(_app_settings)
+                get_text_to_image_ui()
             with gr.TabItem("Image to Image"):
-                get_image_to_image_ui(_app_settings)
+                get_image_to_image_ui(app_settings)
             with gr.TabItem("Models"):
-                get_models_ui(_app_settings)
+                get_models_ui()
 
         gr.HTML(_get_footer_message())
 
@@ -61,8 +55,7 @@ def get_web_ui(app_settings: AppSettings) -> gr.Blocks:
 
 
 def start_webui(
-    app_settings: AppSettings,
     share: bool = False,
 ):
-    webui = get_web_ui(app_settings)
+    webui = get_web_ui()
     webui.launch(share=share)

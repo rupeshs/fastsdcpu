@@ -6,6 +6,7 @@ from context import Context
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
 from constants import DEVICE
+from state import get_settings
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -141,8 +142,9 @@ if args.version:
 # parser.print_help()
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
-app_settings = AppSettings()
-app_settings.load()
+app_settings = get_settings()
+print(app_settings)
+
 print(f"Found {len(app_settings.lcm_models)} LCM models in config/lcm-models.txt")
 print(
     f"Found {len(app_settings.stable_diffsuion_models)} stable diffusion models in config/stable-diffusion-models.txt"
@@ -166,7 +168,6 @@ elif args.webui:
 
     print("Starting web UI mode")
     start_webui(
-        app_settings,
         args.share,
     )
 elif args.realtime:

@@ -1,17 +1,15 @@
 from typing import Any
 import gradio as gr
 
-from backend.models.lcmdiffusion_setting import LCMDiffusionSetting, DiffusionTask
+from backend.models.lcmdiffusion_setting import DiffusionTask
 from context import Context
 from models.interface_types import InterfaceType
-from app_settings import Settings
-from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
-from frontend.utils import is_reshape_required
-from app_settings import AppSettings
 from constants import DEVICE
-from frontend.utils import enable_openvino_controls
+from state import get_settings
+from frontend.utils import is_reshape_required
 
-_app_settings = None
+app_settings = get_settings()
+
 random_enabled = True
 
 context = Context(InterfaceType.WEBUI)
@@ -33,27 +31,26 @@ def generate_text_to_image(
     use_safety_checker,
     tiny_auto_encoder_checkbox,
 ) -> Any:
-    global previous_height, previous_width, previous_model_id, previous_num_of_images, _app_settings
+    global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
 
-    _app_settings.settings.lcm_diffusion_setting.prompt = prompt
-    _app_settings.settings.lcm_diffusion_setting.image_height = image_height
-    _app_settings.settings.lcm_diffusion_setting.image_width = image_width
-    _app_settings.settings.lcm_diffusion_setting.inference_steps = inference_steps
-    _app_settings.settings.lcm_diffusion_setting.guidance_scale = guidance_scale
-    _app_settings.settings.lcm_diffusion_setting.number_of_images = num_images
-    _app_settings.settings.lcm_diffusion_setting.seed = seed
-    _app_settings.settings.lcm_diffusion_setting.use_seed = use_seed
-    _app_settings.settings.lcm_diffusion_setting.use_safety_checker = use_safety_checker
-    _app_settings.settings.lcm_diffusion_setting.use_tiny_auto_encoder = (
+    app_settings.settings.lcm_diffusion_setting.prompt = prompt
+    app_settings.settings.lcm_diffusion_setting.image_height = image_height
+    app_settings.settings.lcm_diffusion_setting.image_width = image_width
+    app_settings.settings.lcm_diffusion_setting.inference_steps = inference_steps
+    app_settings.settings.lcm_diffusion_setting.guidance_scale = guidance_scale
+    app_settings.settings.lcm_diffusion_setting.number_of_images = num_images
+    app_settings.settings.lcm_diffusion_setting.seed = seed
+    app_settings.settings.lcm_diffusion_setting.use_seed = use_seed
+    app_settings.settings.lcm_diffusion_setting.use_safety_checker = use_safety_checker
+    app_settings.settings.lcm_diffusion_setting.use_tiny_auto_encoder = (
         tiny_auto_encoder_checkbox
     )
-    _app_settings.settings.lcm_diffusion_setting.diffusion_task = (
+    app_settings.settings.lcm_diffusion_setting.diffusion_task = (
         DiffusionTask.text_to_image.value
     )
-    print(_app_settings.settings.lcm_diffusion_setting.model_dump_json())
-    model_id = _app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id
+    model_id = app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id
     reshape = False
-    if _app_settings.settings.lcm_diffusion_setting.use_openvino:
+    if app_settings.settings.lcm_diffusion_setting.use_openvino:
         reshape = is_reshape_required(
             previous_width,
             image_width,
@@ -66,7 +63,7 @@ def generate_text_to_image(
         )
 
     images = context.generate_text_to_image(
-        _app_settings.settings,
+        app_settings.settings,
         reshape,
         DEVICE,
     )
@@ -74,13 +71,10 @@ def generate_text_to_image(
     previous_height = image_height
     previous_model_id = model_id
     previous_num_of_images = num_images
-
     return images
 
 
-def get_text_to_image_ui(app_settings: AppSettings) -> None:
-    global _app_settings
-    _app_settings = app_settings
+def get_text_to_image_ui() -> None:
     with gr.Blocks():
         with gr.Row():
             with gr.Column():

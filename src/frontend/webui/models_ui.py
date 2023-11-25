@@ -2,23 +2,25 @@ from app_settings import AppSettings
 from typing import Any
 import gradio as gr
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
+from state import get_settings
+
+app_settings = get_settings()
 
 
-def get_models_ui(app_settings: AppSettings) -> None:
-    global _app_settings
-    _app_settings = app_settings
+def get_models_ui() -> None:
+    global app_settings
 
     def change_lcm_model_id(model_id):
-        _app_settings.settings.lcm_diffusion_setting.lcm_model_id = model_id
+        app_settings.settings.lcm_diffusion_setting.lcm_model_id = model_id
 
     def change_lcm_lora_model_id(model_id):
-        _app_settings.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = model_id
+        app_settings.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = model_id
 
     def change_lcm_lora_base_model_id(model_id):
-        _app_settings.settings.lcm_diffusion_setting.lcm_lora.base_model_id = model_id
+        app_settings.settings.lcm_diffusion_setting.lcm_lora.base_model_id = model_id
 
     def change_openvino_lcm_model_id(model_id):
-        _app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id = model_id
+        app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id = model_id
 
     with gr.Blocks():
         with gr.Row():
