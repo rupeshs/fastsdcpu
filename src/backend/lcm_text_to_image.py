@@ -1,5 +1,5 @@
 from typing import Any
-from diffusers import LCMScheduler
+from diffusers import LCMScheduler, StableDiffusionImg2ImgPipeline
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 import numpy as np
@@ -15,6 +15,7 @@ from backend.openvino.pipelines import (
 from backend.pipelines.lcm import get_lcm_model_pipeline, load_taesd
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from backend.models.lcmdiffusion_setting import DiffusionTask
+from image_ops import resize_pil_image
 
 
 class LCMTextToImage:
@@ -75,6 +76,13 @@ class LCMTextToImage:
         lcm_lora: LCMLora = lcm_diffusion_setting.lcm_lora
         ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
 
+        if lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value:
+            lcm_diffusion_setting.init_image = resize_pil_image(
+                lcm_diffusion_setting.init_image,
+                lcm_diffusion_setting.image_width,
+                lcm_diffusion_setting.image_height,
+            )
+
         if (
             self.pipeline is None
             or self.previous_model_id != model_id
@@ -107,20 +115,13 @@ class LCMTextToImage:
                         ov_model_id,
                         use_local_model,
                     )
-
-                if use_tiny_auto_encoder:
-                    print("Using Tiny Auto Encoder (OpenVINO)")
-                    ov_load_taesd(
-                        self.pipeline,
-                        use_local_model,
-                    )
             else:
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
 
                 if use_lora:
-                    print("Init LCM-LoRA pipeline")
+                    print(f"Init LCM-LoRA pipeline - {lcm_lora.base_model_id}")
                     self.pipeline = get_lcm_lora_pipeline(
                         lcm_lora.base_model_id,
                         lcm_lora.lcm_lora_id,
@@ -128,21 +129,36 @@ class LCMTextToImage:
                         torch_data_type=self.torch_data_type,
                     )
                 else:
-                    print("Init LCM Model pipeline")
+                    print(f"Init LCM Model pipeline - {model_id}")
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
                     )
 
-                if use_tiny_auto_encoder:
+                if (
+                    lcm_diffusion_setting.diffusion_task
+                    == DiffusionTask.image_to_image.value
+                ):
+                    components = self.pipeline.components
+                    self.img_to_img_pipeline = StableDiffusionImg2ImgPipeline(
+                        **components
+                    )
+                self._pipeline_to_device()
+
+            if use_tiny_auto_encoder:
+                if self.use_openvino and is_openvino_device():
+                    print("Using Tiny Auto Encoder (OpenVINO)")
+                    ov_load_taesd(
+                        self.pipeline,
+                        use_local_model,
+                    )
+                else:
                     print("Using Tiny Auto Encoder")
                     load_taesd(
                         self.pipeline,
                         use_local_model,
                         self.torch_data_type,
                     )
-
-                self._pipeline_to_device()
 
             self.pipeline.scheduler = LCMScheduler.from_config(
                 self.pipeline.scheduler.config,
@@ -197,10 +213,6 @@ class LCMTextToImage:
             print("Not using LCM-LoRA so setting guidance_scale 1.0")
             guidance_scale = 1.0
 
-        init_image = Image.open(
-            r"F:\dev\push\faster\fastsdcpu\results\657ad8cd-5a1c-43c1-a37a-4310eec8bb97-1.png"
-        )
-
         if lcm_diffusion_setting.use_openvino:
             if (
                 lcm_diffusion_setting.diffusion_task
@@ -230,25 +242,33 @@ class LCMTextToImage:
                 ).images
 
         else:
-            # result_images = self.img_to_img_pipeline(
-            #     image=init_image,
-            #     strength=0.5,
-            #     prompt=lcm_diffusion_setting.prompt,
-            #     negative_prompt=lcm_diffusion_setting.negative_prompt,
-            #     num_inference_steps=lcm_diffusion_setting.inference_steps,
-            #     guidance_scale=guidance_scale,
-            #     width=lcm_diffusion_setting.image_width,
-            #     height=lcm_diffusion_setting.image_height,
-            #     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-            # ).images
-            result_images = self.pipeline(
-                prompt=lcm_diffusion_setting.prompt,
-                negative_prompt=lcm_diffusion_setting.negative_prompt,
-                num_inference_steps=lcm_diffusion_setting.inference_steps,
-                guidance_scale=guidance_scale,
-                width=lcm_diffusion_setting.image_width,
-                height=lcm_diffusion_setting.image_height,
-                num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-            ).images
+            if (
+                lcm_diffusion_setting.diffusion_task
+                == DiffusionTask.text_to_image.value
+            ):
+                result_images = self.pipeline(
+                    prompt=lcm_diffusion_setting.prompt,
+                    negative_prompt=lcm_diffusion_setting.negative_prompt,
+                    num_inference_steps=lcm_diffusion_setting.inference_steps,
+                    guidance_scale=guidance_scale,
+                    width=lcm_diffusion_setting.image_width,
+                    height=lcm_diffusion_setting.image_height,
+                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                ).images
+            elif (
+                lcm_diffusion_setting.diffusion_task
+                == DiffusionTask.image_to_image.value
+            ):
+                result_images = self.img_to_img_pipeline(
+                    image=lcm_diffusion_setting.init_image,
+                    strength=lcm_diffusion_setting.strength,
+                    prompt=lcm_diffusion_setting.prompt,
+                    negative_prompt=lcm_diffusion_setting.negative_prompt,
+                    num_inference_steps=lcm_diffusion_setting.inference_steps,
+                    guidance_scale=guidance_scale,
+                    width=lcm_diffusion_setting.image_width,
+                    height=lcm_diffusion_setting.image_height,
+                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                ).images
 
         return result_images

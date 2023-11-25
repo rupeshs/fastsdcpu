@@ -1,17 +1,14 @@
-from typing import Any
 import gradio as gr
-
+from typing import Any
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from context import Context
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from state import get_settings
 from frontend.utils import is_reshape_required
+from concurrent.futures import ThreadPoolExecutor
 
 app_settings = get_settings()
-
-random_enabled = True
-
 context = Context(InterfaceType.WEBUI)
 previous_width = 0
 previous_height = 0
@@ -62,11 +59,20 @@ def generate_text_to_image(
             num_images,
         )
 
-    images = context.generate_text_to_image(
+    executor = ThreadPoolExecutor()
+    future = executor.submit(
+        context.generate_text_to_image,
         app_settings.settings,
         reshape,
         DEVICE,
     )
+    images = future.result()
+    # images = context.generate_text_to_image(
+    #     app_settings.settings,
+    #     reshape,
+    #     DEVICE,
+    # )
+
     previous_width = image_width
     previous_height = image_height
     previous_model_id = model_id
@@ -119,14 +125,14 @@ def get_text_to_image_ui() -> None:
                         step=1,
                     )
                     seed_checkbox = gr.Checkbox(
-                        label="Use random seed",
-                        value=True,
+                        label="Use seed",
+                        value=False,
                         interactive=True,
                     )
 
                     safety_checker_checkbox = gr.Checkbox(
                         label="Use Safety Checker",
-                        value=True,
+                        value=False,
                         interactive=True,
                     )
                     tiny_auto_encoder_checkbox = gr.Checkbox(

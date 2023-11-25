@@ -10,5 +10,10 @@ def get_tiny_decoder_vae_model(pipeline_class) -> str:
         return TAESD_MODEL
     elif pipeline_class == "StableDiffusionXLPipeline":
         return TAESDXL_MODEL
-    elif pipeline_class == "OVStableDiffusionPipeline":
+    elif (
+        pipeline_class == "OVStableDiffusionPipeline"
+        or pipeline_class == "OVStableDiffusionImg2ImgPipeline"
+    ):
         return TAESD_MODEL_OPENVINO
+    else:
+        raise Exception("No valid pipeline class found!")

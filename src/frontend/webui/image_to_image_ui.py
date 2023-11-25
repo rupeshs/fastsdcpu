@@ -1,17 +1,15 @@
 from typing import Any
 import gradio as gr
-
-from backend.models.lcmdiffusion_setting import LCMDiffusionSetting, DiffusionTask
+from backend.models.lcmdiffusion_setting import DiffusionTask
 from context import Context
 from models.interface_types import InterfaceType
-from app_settings import Settings
-from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 from frontend.utils import is_reshape_required
 from app_settings import AppSettings
 from constants import DEVICE
-from frontend.utils import enable_openvino_controls
+from state import get_settings
 
-random_enabled = True
+
+app_settings = get_settings()
 
 context = Context(InterfaceType.WEBUI)
 previous_width = 0
@@ -31,37 +29,31 @@ def generate_image_to_image(
     num_images,
     seed,
     use_seed,
-    use_openvino,
     use_safety_checker,
     tiny_auto_encoder_checkbox,
 ) -> Any:
-    global previous_height, previous_width, previous_model_id, previous_num_of_images
-    model_id = LCM_DEFAULT_MODEL
-    if use_openvino:
-        model_id = LCM_DEFAULT_MODEL_OPENVINO
+    global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
 
-    lcm_diffusion_settings = LCMDiffusionSetting(
-        init_image=init_image,
-        strength=strength,
-        lcm_model_id=model_id,
-        prompt=prompt,
-        image_height=image_height,
-        image_width=image_width,
-        inference_steps=inference_steps,
-        guidance_scale=guidance_scale,
-        number_of_images=num_images,
-        seed=seed,
-        use_openvino=use_openvino,
-        use_safety_checker=use_safety_checker,
-        use_seed=use_seed,
-        use_tiny_auto_encoder=tiny_auto_encoder_checkbox,
-        diffusion_task=DiffusionTask.image_to_image.value,
+    app_settings.settings.lcm_diffusion_setting.prompt = prompt
+    app_settings.settings.lcm_diffusion_setting.init_image = init_image
+    app_settings.settings.lcm_diffusion_setting.strength = strength
+    app_settings.settings.lcm_diffusion_setting.image_height = image_height
+    app_settings.settings.lcm_diffusion_setting.image_width = image_width
+    app_settings.settings.lcm_diffusion_setting.inference_steps = inference_steps
+    app_settings.settings.lcm_diffusion_setting.guidance_scale = guidance_scale
+    app_settings.settings.lcm_diffusion_setting.number_of_images = num_images
+    app_settings.settings.lcm_diffusion_setting.seed = seed
+    app_settings.settings.lcm_diffusion_setting.use_seed = use_seed
+    app_settings.settings.lcm_diffusion_setting.use_safety_checker = use_safety_checker
+    app_settings.settings.lcm_diffusion_setting.use_tiny_auto_encoder = (
+        tiny_auto_encoder_checkbox
     )
-    settings = Settings(
-        lcm_diffusion_setting=lcm_diffusion_settings,
+    app_settings.settings.lcm_diffusion_setting.diffusion_task = (
+        DiffusionTask.image_to_image.value
     )
+    model_id = app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id
     reshape = False
-    if use_openvino:
+    if app_settings.settings.lcm_diffusion_setting.use_openvino:
         reshape = is_reshape_required(
             previous_width,
             image_width,
@@ -72,8 +64,9 @@ def generate_image_to_image(
             previous_num_of_images,
             num_images,
         )
+
     images = context.generate_text_to_image(
-        settings,
+        app_settings.settings,
         reshape,
         DEVICE,
     )
@@ -81,7 +74,6 @@ def generate_image_to_image(
     previous_height = image_height
     previous_model_id = model_id
     previous_num_of_images = num_images
-
     return images
 
 
@@ -133,20 +125,13 @@ def get_image_to_image_ui(app_settings: AppSettings) -> None:
                         step=1,
                     )
                     seed_checkbox = gr.Checkbox(
-                        label="Use random seed",
-                        value=True,
+                        label="Use seed",
+                        value=False,
                         interactive=True,
                     )
-
-                    openvino_checkbox = gr.Checkbox(
-                        label="Use OpenVINO",
-                        value=False,
-                        interactive=enable_openvino_controls(),
-                    )
-
                     safety_checker_checkbox = gr.Checkbox(
                         label="Use Safety Checker",
-                        value=True,
+                        value=False,
                         interactive=True,
                     )
                     tiny_auto_encoder_checkbox = gr.Checkbox(
@@ -166,7 +151,6 @@ def get_image_to_image_ui(app_settings: AppSettings) -> None:
                         num_images,
                         seed,
                         seed_checkbox,
-                        openvino_checkbox,
                         safety_checker_checkbox,
                         tiny_auto_encoder_checkbox,
                     ]
