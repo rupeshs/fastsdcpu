@@ -210,7 +210,6 @@ class LCMTextToImage:
                 self.pipeline.compile()
 
         if not lcm_diffusion_setting.use_safety_checker:
-            print("Safety checker disabled")
             self.pipeline.safety_checker = None
             if (
                 lcm_diffusion_setting.diffusion_task

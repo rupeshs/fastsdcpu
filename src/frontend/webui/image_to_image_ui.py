@@ -86,7 +86,7 @@ def get_image_to_image_ui() -> None:
                     placeholder="",
                 )
                 strength = gr.Slider(
-                    0,
+                    0.3,
                     1,
                     value=app_settings.settings.lcm_diffusion_setting.strength,
                     step=0.01,
