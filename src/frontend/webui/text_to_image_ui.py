@@ -44,14 +44,14 @@ def generate_text_to_image(
             num_images,
         )
 
-    executor = ThreadPoolExecutor()
-    future = executor.submit(
-        context.generate_text_to_image,
-        app_settings.settings,
-        reshape,
-        DEVICE,
-    )
-    images = future.result()
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(
+            context.generate_text_to_image,
+            app_settings.settings,
+            reshape,
+            DEVICE,
+        )
+        images = future.result()
     # images = context.generate_text_to_image(
     #     app_settings.settings,
     #     reshape,

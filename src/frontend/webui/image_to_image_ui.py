@@ -6,7 +6,7 @@ from models.interface_types import InterfaceType
 from frontend.utils import is_reshape_required
 from constants import DEVICE
 from state import get_settings
-
+from concurrent.futures import ThreadPoolExecutor
 
 app_settings = get_settings()
 
@@ -50,11 +50,19 @@ def generate_image_to_image(
             num_images,
         )
 
-    images = context.generate_text_to_image(
-        app_settings.settings,
-        reshape,
-        DEVICE,
-    )
+    with ThreadPoolExecutor(max_workers=1) as executor:
+        future = executor.submit(
+            context.generate_text_to_image,
+            app_settings.settings,
+            reshape,
+            DEVICE,
+        )
+        images = future.result()
+    # images = context.generate_text_to_image(
+    #     app_settings.settings,
+    #     reshape,
+    #     DEVICE,
+    # )
     previous_width = image_width
     previous_height = image_height
     previous_model_id = model_id
