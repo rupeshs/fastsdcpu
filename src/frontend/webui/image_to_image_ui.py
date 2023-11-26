@@ -1,15 +1,15 @@
-import gradio as gr
 from typing import Any
+import gradio as gr
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from context import Context
 from models.interface_types import InterfaceType
+from frontend.utils import is_reshape_required
 from constants import DEVICE
 from state import get_settings
-from frontend.utils import is_reshape_required
 from concurrent.futures import ThreadPoolExecutor
-from pprint import pprint
 
 app_settings = get_settings()
+
 context = Context(InterfaceType.WEBUI)
 previous_width = 0
 previous_height = 0
@@ -17,15 +17,21 @@ previous_model_id = ""
 previous_num_of_images = 0
 
 
-def generate_text_to_image(
+def generate_image_to_image(
     prompt,
-    neg_prompt,
+    negative_prompt,
+    init_image,
+    strength,
 ) -> Any:
     global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
+
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
-    app_settings.settings.lcm_diffusion_setting.negative_prompt = neg_prompt
+    app_settings.settings.lcm_diffusion_setting.negative_prompt = negative_prompt
+    app_settings.settings.lcm_diffusion_setting.init_image = init_image
+    app_settings.settings.lcm_diffusion_setting.strength = strength
+
     app_settings.settings.lcm_diffusion_setting.diffusion_task = (
-        DiffusionTask.text_to_image.value
+        DiffusionTask.image_to_image.value
     )
     model_id = app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id
     reshape = False
@@ -64,10 +70,11 @@ def generate_text_to_image(
     return images
 
 
-def get_text_to_image_ui() -> None:
+def get_image_to_image_ui() -> None:
     with gr.Blocks():
         with gr.Row():
             with gr.Column():
+                input_image = gr.Image(label="Init image", type="pil")
                 with gr.Row():
                     prompt = gr.Textbox(
                         show_label=False,
@@ -82,12 +89,24 @@ def get_text_to_image_ui() -> None:
                         scale=0,
                     )
                 negative_prompt = gr.Textbox(
-                    label="Negative prompt (Works in LCM-LoRA mode, set guidance > 1.0) :",
+                    label="Negative prompt (Works in LCM-LoRA mode, set guidance > 1.0):",
                     lines=1,
                     placeholder="",
                 )
+                strength = gr.Slider(
+                    0.3,
+                    1,
+                    value=app_settings.settings.lcm_diffusion_setting.strength,
+                    step=0.01,
+                    label="Strength",
+                )
 
-                input_params = [prompt, negative_prompt]
+                input_params = [
+                    prompt,
+                    negative_prompt,
+                    input_image,
+                    strength,
+                ]
 
             with gr.Column():
                 output = gr.Gallery(
@@ -97,8 +116,9 @@ def get_text_to_image_ui() -> None:
                     columns=2,
                     height=512,
                 )
+
     generate_btn.click(
-        fn=generate_text_to_image,
+        fn=generate_image_to_image,
         inputs=input_params,
         outputs=output,
     )

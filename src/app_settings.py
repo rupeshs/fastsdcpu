@@ -9,6 +9,7 @@ from constants import (
     SD_MODELS_FILE,
     LCM_MODELS_FILE,
 )
+from copy import deepcopy
 
 
 class AppSettings:
@@ -47,32 +48,39 @@ class AppSettings:
     def lcm_lora_models(self):
         return self._lcm_lora_models
 
-    def load(self):
-        if not path.exists(self.config_path):
-            base_dir = path.dirname(self.config_path)
-            if not path.exists(base_dir):
-                makedirs(base_dir)
+    def load(self, skip_file=False):
+        if skip_file:
+            print("Skipping config file")
+            settings_dict = self._load_default()
+            self._config = Settings.parse_obj(settings_dict)
+        else:
+            if not path.exists(self.config_path):
+                base_dir = path.dirname(self.config_path)
+                if not path.exists(base_dir):
+                    makedirs(base_dir)
+                try:
+                    print("Settings not found creating default settings")
+                    with open(self.config_path, "w") as file:
+                        yaml.dump(
+                            self._load_default(),
+                            file,
+                        )
+                except Exception as ex:
+                    print(f"Error in creating settings : {ex}")
+                    exit()
             try:
-                print("Settings not found creating default settings")
-                with open(self.config_path, "w") as file:
-                    yaml.dump(
-                        self._load_default(),
-                        file,
-                    )
+                with open(self.config_path) as file:
+                    settings_dict = yaml.safe_load(file)
+                    self._config = Settings.parse_obj(settings_dict)
             except Exception as ex:
-                print(f"Error in creating settings : {ex}")
-                exit()
-        try:
-            with open(self.config_path) as file:
-                settings_dict = yaml.safe_load(file)
-                self._config = Settings.parse_obj(settings_dict)
-        except Exception as ex:
-            print(f"Error in loading settings : {ex}")
+                print(f"Error in loading settings : {ex}")
 
     def save(self):
         try:
             with open(self.config_path, "w") as file:
-                yaml.dump(self._config.dict(), file)
+                tmp_cfg = deepcopy(self._config)
+                tmp_cfg.lcm_diffusion_setting.init_image = None
+                yaml.dump(tmp_cfg.dict(), file)
         except Exception as ex:
             print(f"Error in saving settings : {ex}")
 

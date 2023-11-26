@@ -15,6 +15,7 @@ class ImageSaver:
         lcm_diffusion_setting: LCMDiffusionSetting = None,
     ) -> None:
         gen_id = uuid4()
+
         for index, image in enumerate(images):
             if not path.exists(output_path):
                 mkdir(output_path)
@@ -33,7 +34,7 @@ class ImageSaver:
         if lcm_diffusion_setting:
             with open(path.join(out_path, f"{gen_id}.json"), "w") as json_file:
                 json.dump(
-                    lcm_diffusion_setting.model_dump(),
+                    lcm_diffusion_setting.model_dump(exclude="init_image"),
                     json_file,
                     indent=4,
                 )
