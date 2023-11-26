@@ -5,10 +5,8 @@ footer {
 #generate_button {
     color: white;
     border-color: #007bff;
-    background: #007bff;
-    width: 150px;
-    margin-top: 38px;
-    height: 80px;
+    background: #2563eb;
+
 }
 
 #save_button {

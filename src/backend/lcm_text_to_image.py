@@ -196,7 +196,8 @@ class LCMTextToImage:
             else:
                 torch.manual_seed(cur_seed)
 
-        if lcm_diffusion_setting.use_openvino and is_openvino_device():
+        is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
+        if is_openvino_pipe:
             print("Using OpenVINO")
             if reshape:
                 print("Reshape and compile")
@@ -214,6 +215,7 @@ class LCMTextToImage:
             if (
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.image_to_image.value
+                and not is_openvino_pipe
             ):
                 self.img_to_img_pipeline.safety_checker = None
 

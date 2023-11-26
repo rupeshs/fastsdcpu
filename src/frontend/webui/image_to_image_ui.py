@@ -22,37 +22,21 @@ def generate_image_to_image(
     prompt,
     init_image,
     strength,
-    image_height,
-    image_width,
-    inference_steps,
-    guidance_scale,
-    num_images,
-    seed,
-    use_seed,
-    use_safety_checker,
-    tiny_auto_encoder_checkbox,
 ) -> Any:
     global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
 
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
     app_settings.settings.lcm_diffusion_setting.init_image = init_image
     app_settings.settings.lcm_diffusion_setting.strength = strength
-    app_settings.settings.lcm_diffusion_setting.image_height = image_height
-    app_settings.settings.lcm_diffusion_setting.image_width = image_width
-    app_settings.settings.lcm_diffusion_setting.inference_steps = inference_steps
-    app_settings.settings.lcm_diffusion_setting.guidance_scale = guidance_scale
-    app_settings.settings.lcm_diffusion_setting.number_of_images = num_images
-    app_settings.settings.lcm_diffusion_setting.seed = seed
-    app_settings.settings.lcm_diffusion_setting.use_seed = use_seed
-    app_settings.settings.lcm_diffusion_setting.use_safety_checker = use_safety_checker
-    app_settings.settings.lcm_diffusion_setting.use_tiny_auto_encoder = (
-        tiny_auto_encoder_checkbox
-    )
+
     app_settings.settings.lcm_diffusion_setting.diffusion_task = (
         DiffusionTask.image_to_image.value
     )
     model_id = app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id
     reshape = False
+    image_width = app_settings.settings.lcm_diffusion_setting.image_width
+    image_height = app_settings.settings.lcm_diffusion_setting.image_height
+    num_images = app_settings.settings.lcm_diffusion_setting.number_of_images
     if app_settings.settings.lcm_diffusion_setting.use_openvino:
         reshape = is_reshape_required(
             previous_width,
@@ -77,15 +61,17 @@ def generate_image_to_image(
     return images
 
 
-def get_image_to_image_ui(app_settings: AppSettings) -> None:
+def get_image_to_image_ui() -> None:
     with gr.Blocks():
         with gr.Row():
             with gr.Column():
+                input_image = gr.Image(label="Init image", type="pil")
                 with gr.Row():
                     prompt = gr.Textbox(
-                        label="Describe the image you'd like to see",
+                        show_label=False,
                         lines=3,
                         placeholder="A fantasy landscape",
+                        container=False,
                     )
 
                     generate_btn = gr.Button(
@@ -93,67 +79,13 @@ def get_image_to_image_ui(app_settings: AppSettings) -> None:
                         elem_id="generate_button",
                         scale=0,
                     )
-                input_image = gr.Image(label="Init image", type="pil")
                 strength = gr.Slider(0, 1, value=0.8, step=0.01, label="Strength")
-                num_inference_steps = gr.Slider(
-                    1, 25, value=4, step=1, label="Inference Steps"
-                )
 
-                with gr.Accordion("Advanced options", open=False):
-                    guidance_scale = gr.Slider(
-                        1.0, 2.0, value=1.0, step=0.5, label="Guidance Scale"
-                    )
-                    image_height = gr.Slider(
-                        256, 1024, value=512, step=256, label="Image Height"
-                    )
-                    image_width = gr.Slider(
-                        256, 1024, value=512, step=256, label="Image Width"
-                    )
-                    num_images = gr.Slider(
-                        1,
-                        50,
-                        value=1,
-                        step=1,
-                        label="Number of images to generate",
-                    )
-
-                    seed = gr.Slider(
-                        value=123123,
-                        minimum=0,
-                        maximum=999999999,
-                        label="Seed",
-                        step=1,
-                    )
-                    seed_checkbox = gr.Checkbox(
-                        label="Use seed",
-                        value=False,
-                        interactive=True,
-                    )
-                    safety_checker_checkbox = gr.Checkbox(
-                        label="Use Safety Checker",
-                        value=False,
-                        interactive=True,
-                    )
-                    tiny_auto_encoder_checkbox = gr.Checkbox(
-                        label="Use tiny auto encoder for SD",
-                        value=False,
-                        interactive=True,
-                    )
-
-                    input_params = [
-                        prompt,
-                        input_image,
-                        strength,
-                        image_height,
-                        image_width,
-                        num_inference_steps,
-                        guidance_scale,
-                        num_images,
-                        seed,
-                        seed_checkbox,
-                        safety_checker_checkbox,
-                        tiny_auto_encoder_checkbox,
-                    ]
+                input_params = [
+                    prompt,
+                    input_image,
+                    strength,
+                ]
 
             with gr.Column():
                 output = gr.Gallery(
@@ -161,9 +93,9 @@ def get_image_to_image_ui(app_settings: AppSettings) -> None:
                     show_label=True,
                     elem_id="gallery",
                     columns=2,
+                    height=512,
                 )
 
-    # seed_checkbox.change(fn=random_seed, outputs=seed)
     generate_btn.click(
         fn=generate_image_to_image,
         inputs=input_params,

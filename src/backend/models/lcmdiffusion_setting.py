@@ -33,7 +33,7 @@ class LCMDiffusionSetting(BaseModel):
     inference_steps: Optional[int] = 4
     guidance_scale: Optional[float] = 1
     number_of_images: Optional[int] = 1
-    seed: Optional[int] = -1
+    seed: Optional[int] = 123123
     use_seed: bool = False
     use_safety_checker: bool = False
     diffusion_task: str = DiffusionTask.text_to_image.value
