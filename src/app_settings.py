@@ -9,6 +9,7 @@ from constants import (
     SD_MODELS_FILE,
     LCM_MODELS_FILE,
 )
+from copy import deepcopy
 
 
 class AppSettings:
@@ -77,7 +78,9 @@ class AppSettings:
     def save(self):
         try:
             with open(self.config_path, "w") as file:
-                yaml.dump(self._config.dict(), file)
+                tmp_cfg = deepcopy(self._config)
+                tmp_cfg.lcm_diffusion_setting.init_image = None
+                yaml.dump(tmp_cfg.dict(), file)
         except Exception as ex:
             print(f"Error in saving settings : {ex}")
 

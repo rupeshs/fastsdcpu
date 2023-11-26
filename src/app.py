@@ -147,8 +147,6 @@ if args.webui:
 else:
     app_settings = get_settings()
 
-print(app_settings)
-
 print(f"Found {len(app_settings.lcm_models)} LCM models in config/lcm-models.txt")
 print(
     f"Found {len(app_settings.stable_diffsuion_models)} stable diffusion models in config/stable-diffusion-models.txt"
