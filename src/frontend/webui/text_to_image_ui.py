@@ -22,9 +22,6 @@ def generate_text_to_image(
     neg_prompt,
 ) -> Any:
     global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
-
-    pprint(app_settings.settings.lcm_diffusion_setting.model_dump())
-
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
     app_settings.settings.lcm_diffusion_setting.negative_prompt = neg_prompt
     app_settings.settings.lcm_diffusion_setting.diffusion_task = (
@@ -60,7 +57,6 @@ def generate_text_to_image(
     #     reshape,
     #     DEVICE,
     # )
-
     previous_width = image_width
     previous_height = image_height
     previous_model_id = model_id
@@ -86,7 +82,7 @@ def get_text_to_image_ui() -> None:
                         scale=0,
                     )
                 negative_prompt = gr.Textbox(
-                    label="Negative prompt (Works in LCM-LoRA, set guidance > 1.0) :",
+                    label="Negative prompt (Works in LCM-LoRA mode, set guidance > 1.0) :",
                     lines=1,
                     placeholder="",
                 )

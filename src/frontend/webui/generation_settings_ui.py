@@ -4,52 +4,67 @@ from state import get_settings
 app_settings = get_settings()
 
 
-def get_generation_settings_ui() -> None:
-    global app_settings
+def on_change_inference_steps(steps):
+    app_settings.settings.lcm_diffusion_setting.inference_steps = steps
 
-    def on_change_inference_steps(steps):
-        app_settings.settings.lcm_diffusion_setting.inference_steps = steps
 
-    def on_change_image_width(img_width):
-        app_settings.settings.lcm_diffusion_setting.image_width = img_width
+def on_change_image_width(img_width):
+    app_settings.settings.lcm_diffusion_setting.image_width = img_width
 
-    def on_change_image_height(img_height):
-        app_settings.settings.lcm_diffusion_setting.image_height = img_height
 
-    def on_change_num_images(num_images):
-        app_settings.settings.lcm_diffusion_setting.number_of_images = num_images
+def on_change_image_height(img_height):
+    app_settings.settings.lcm_diffusion_setting.image_height = img_height
 
-    def on_change_guidance_scale(guidance_scale):
-        app_settings.settings.lcm_diffusion_setting.guidance_scale = guidance_scale
 
-    def on_change_seed_value(seed):
-        app_settings.settings.lcm_diffusion_setting.seed = seed
+def on_change_num_images(num_images):
+    app_settings.settings.lcm_diffusion_setting.number_of_images = num_images
 
-    def on_change_seed_checkbox(seed_checkbox):
-        app_settings.settings.lcm_diffusion_setting.use_seed = seed_checkbox
+
+def on_change_guidance_scale(guidance_scale):
+    app_settings.settings.lcm_diffusion_setting.guidance_scale = guidance_scale
+
+
+def on_change_seed_value(seed):
+    app_settings.settings.lcm_diffusion_setting.seed = seed
+
+
+def on_change_seed_checkbox(seed_checkbox):
+    app_settings.settings.lcm_diffusion_setting.use_seed = seed_checkbox
+
+
+def on_change_safety_checker_checkbox(safety_checker_checkbox):
+    app_settings.settings.lcm_diffusion_setting.use_safety_checker = (
         safety_checker_checkbox
+    )
 
-    def on_change_safety_checker_checkbox(safety_checker_checkbox):
-        app_settings.settings.lcm_diffusion_setting.use_safety_checker = (
-            safety_checker_checkbox
-        )
 
-    def on_change_tiny_auto_encoder_checkbox(tiny_auto_encoder_checkbox):
-        app_settings.settings.lcm_diffusion_setting.use_tiny_auto_encoder = (
-            tiny_auto_encoder_checkbox
-        )
+def on_change_tiny_auto_encoder_checkbox(tiny_auto_encoder_checkbox):
+    app_settings.settings.lcm_diffusion_setting.use_tiny_auto_encoder = (
+        tiny_auto_encoder_checkbox
+    )
 
+
+def on_offline_checkbox(offline_checkbox):
+    app_settings.settings.lcm_diffusion_setting.use_offline_model = offline_checkbox
+
+
+def get_generation_settings_ui() -> None:
     with gr.Blocks():
         with gr.Row():
             with gr.Column():
                 num_inference_steps = gr.Slider(
-                    1, 25, value=4, step=1, label="Inference Steps", interactive=True
+                    1,
+                    25,
+                    value=app_settings.settings.lcm_diffusion_setting.inference_steps,
+                    step=1,
+                    label="Inference Steps",
+                    interactive=True,
                 )
 
                 image_height = gr.Slider(
                     256,
                     1024,
-                    value=512,
+                    value=app_settings.settings.lcm_diffusion_setting.image_height,
                     step=256,
                     label="Image Height",
                     interactive=True,
@@ -57,7 +72,7 @@ def get_generation_settings_ui() -> None:
                 image_width = gr.Slider(
                     256,
                     1024,
-                    value=512,
+                    value=app_settings.settings.lcm_diffusion_setting.image_width,
                     step=256,
                     label="Image Width",
                     interactive=True,
@@ -65,7 +80,7 @@ def get_generation_settings_ui() -> None:
                 num_images = gr.Slider(
                     1,
                     50,
-                    value=1,
+                    value=app_settings.settings.lcm_diffusion_setting.number_of_images,
                     step=1,
                     label="Number of images to generate",
                     interactive=True,
@@ -73,14 +88,14 @@ def get_generation_settings_ui() -> None:
                 guidance_scale = gr.Slider(
                     1.0,
                     2.0,
-                    value=1.0,
+                    value=app_settings.settings.lcm_diffusion_setting.guidance_scale,
                     step=0.1,
                     label="Guidance Scale",
                     interactive=True,
                 )
 
                 seed = gr.Slider(
-                    value=123123,
+                    value=app_settings.settings.lcm_diffusion_setting.seed,
                     minimum=0,
                     maximum=999999999,
                     label="Seed",
@@ -89,18 +104,23 @@ def get_generation_settings_ui() -> None:
                 )
                 seed_checkbox = gr.Checkbox(
                     label="Use seed",
-                    value=False,
+                    value=app_settings.settings.lcm_diffusion_setting.use_seed,
                     interactive=True,
                 )
 
                 safety_checker_checkbox = gr.Checkbox(
                     label="Use Safety Checker",
-                    value=False,
+                    value=app_settings.settings.lcm_diffusion_setting.use_safety_checker,
                     interactive=True,
                 )
                 tiny_auto_encoder_checkbox = gr.Checkbox(
                     label="Use tiny auto encoder for SD",
-                    value=False,
+                    value=app_settings.settings.lcm_diffusion_setting.use_tiny_auto_encoder,
+                    interactive=True,
+                )
+                offline_checkbox = gr.Checkbox(
+                    label="Use locally cached model or downloaded model folder(offline)",
+                    value=app_settings.settings.lcm_diffusion_setting.use_offline_model,
                     interactive=True,
                 )
 
@@ -117,3 +137,4 @@ def get_generation_settings_ui() -> None:
         tiny_auto_encoder_checkbox.change(
             on_change_tiny_auto_encoder_checkbox, tiny_auto_encoder_checkbox
         )
+        offline_checkbox.change(on_change_tiny_auto_encoder_checkbox, offline_checkbox)

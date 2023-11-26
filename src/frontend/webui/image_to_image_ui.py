@@ -4,7 +4,6 @@ from backend.models.lcmdiffusion_setting import DiffusionTask
 from context import Context
 from models.interface_types import InterfaceType
 from frontend.utils import is_reshape_required
-from app_settings import AppSettings
 from constants import DEVICE
 from state import get_settings
 
@@ -20,12 +19,14 @@ previous_num_of_images = 0
 
 def generate_image_to_image(
     prompt,
+    negative_prompt,
     init_image,
     strength,
 ) -> Any:
     global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
 
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
+    app_settings.settings.lcm_diffusion_setting.negative_prompt = negative_prompt
     app_settings.settings.lcm_diffusion_setting.init_image = init_image
     app_settings.settings.lcm_diffusion_setting.strength = strength
 
@@ -79,10 +80,22 @@ def get_image_to_image_ui() -> None:
                         elem_id="generate_button",
                         scale=0,
                     )
-                strength = gr.Slider(0, 1, value=0.8, step=0.01, label="Strength")
+                negative_prompt = gr.Textbox(
+                    label="Negative prompt (Works in LCM-LoRA mode, set guidance > 1.0):",
+                    lines=1,
+                    placeholder="",
+                )
+                strength = gr.Slider(
+                    0,
+                    1,
+                    value=app_settings.settings.lcm_diffusion_setting.strength,
+                    step=0.01,
+                    label="Strength",
+                )
 
                 input_params = [
                     prompt,
+                    negative_prompt,
                     input_image,
                     strength,
                 ]

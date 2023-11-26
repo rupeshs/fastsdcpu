@@ -34,11 +34,17 @@ def get_web_ui() -> gr.Blocks:
         title="FastSD CPU",
     ) as fastsd_web_ui:
         gr.HTML("<center><H1>FastSD CPU</H1></center>")
+        current_mode = "LCM"
+        if app_settings.settings.lcm_diffusion_setting.use_openvino:
+            current_mode = "LCM-OpenVINO"
+        elif app_settings.settings.lcm_diffusion_setting.use_lcm_lora:
+            current_mode = "LCM-LoRA"
+
         mode = gr.Radio(
             ["LCM", "LCM-LoRA", "LCM-OpenVINO"],
             label="Mode",
             info="Current working mode",
-            value="LCM",
+            value=current_mode,
         )
         mode.change(change_mode, inputs=mode)
 

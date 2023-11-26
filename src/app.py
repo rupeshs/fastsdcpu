@@ -143,7 +143,7 @@ if args.version:
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
 if args.webui:
-    app_settings = get_settings(True)
+    app_settings = get_settings()
 else:
     app_settings = get_settings()
 
