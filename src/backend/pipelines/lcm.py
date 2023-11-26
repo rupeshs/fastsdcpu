@@ -8,6 +8,11 @@ from diffusers import (
 import torch
 from backend.tiny_decoder import get_tiny_decoder_vae_model
 from typing import Any
+from diffusers import (
+    LCMScheduler,
+    StableDiffusionImg2ImgPipeline,
+    StableDiffusionXLImg2ImgPipeline,
+)
 
 
 def _get_lcm_pipeline_from_base_model(
@@ -67,3 +72,17 @@ def get_lcm_model_pipeline(
         )
 
     return pipeline
+
+
+def get_image_to_image_pipeline(pipeline: Any) -> Any:
+    components = pipeline.components
+    pipeline_class = pipeline.__class__.__name__
+    if (
+        pipeline_class == "LatentConsistencyModelPipeline"
+        or pipeline_class == "StableDiffusionPipeline"
+    ):
+        return StableDiffusionImg2ImgPipeline(**components)
+    elif pipeline_class == "StableDiffusionXLPipeline":
+        return StableDiffusionXLImg2ImgPipeline(**components)
+    else:
+        raise Exception(f"Unknown pipeline {pipeline_class}")

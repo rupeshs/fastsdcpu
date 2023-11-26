@@ -142,7 +142,11 @@ if args.version:
 # parser.print_help()
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
-app_settings = get_settings()
+if args.webui:
+    app_settings = get_settings(True)
+else:
+    app_settings = get_settings()
+
 print(app_settings)
 
 print(f"Found {len(app_settings.lcm_models)} LCM models in config/lcm-models.txt")

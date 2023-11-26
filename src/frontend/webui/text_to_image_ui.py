@@ -100,10 +100,10 @@ def get_text_to_image_ui() -> None:
                     1, 25, value=4, step=1, label="Inference Steps"
                 )
                 image_height = gr.Slider(
-                    256, 768, value=512, step=256, label="Image Height"
+                    256, 1024, value=512, step=256, label="Image Height"
                 )
                 image_width = gr.Slider(
-                    256, 768, value=512, step=256, label="Image Width"
+                    256, 1024, value=512, step=256, label="Image Width"
                 )
                 num_images = gr.Slider(
                     1,

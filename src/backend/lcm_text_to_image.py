@@ -1,5 +1,5 @@
 from typing import Any
-from diffusers import LCMScheduler, StableDiffusionImg2ImgPipeline
+from diffusers import LCMScheduler
 import torch
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 import numpy as np
@@ -12,7 +12,11 @@ from backend.openvino.pipelines import (
     ov_load_taesd,
     get_ov_image_to_image_pipeline,
 )
-from backend.pipelines.lcm import get_lcm_model_pipeline, load_taesd
+from backend.pipelines.lcm import (
+    get_lcm_model_pipeline,
+    load_taesd,
+    get_image_to_image_pipeline,
+)
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from image_ops import resize_pil_image
@@ -30,6 +34,7 @@ class LCMTextToImage:
         self.previous_use_tae_sd = False
         self.previous_use_lcm_lora = False
         self.previous_ov_model_id = ""
+        self.previous_safety_checker = False
         self.torch_data_type = (
             torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
         )
@@ -91,6 +96,7 @@ class LCMTextToImage:
             or self.previous_lcm_lora_id != lcm_lora.lcm_lora_id
             or self.previous_use_lcm_lora != use_lora
             or self.previous_ov_model_id != ov_model_id
+            or self.previous_safety_checker != lcm_diffusion_setting.use_safety_checker
         ):
             if self.use_openvino and is_openvino_device():
                 if self.pipeline:
@@ -139,9 +145,8 @@ class LCMTextToImage:
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.image_to_image.value
                 ):
-                    components = self.pipeline.components
-                    self.img_to_img_pipeline = StableDiffusionImg2ImgPipeline(
-                        **components
+                    self.img_to_img_pipeline = get_image_to_image_pipeline(
+                        self.pipeline
                     )
                 self._pipeline_to_device()
 
@@ -174,7 +179,8 @@ class LCMTextToImage:
             self.previous_lcm_lora_base_id = lcm_lora.base_model_id
             self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
             self.previous_use_lcm_lora = use_lora
-            print(f"Model :{model_id}")
+            self.previous_safety_checker = lcm_diffusion_setting.use_safety_checker
+
             print(f"Pipeline : {self.pipeline}")
 
     def generate(
@@ -203,7 +209,13 @@ class LCMTextToImage:
                 self.pipeline.compile()
 
         if not lcm_diffusion_setting.use_safety_checker:
+            print("Safety checker disabled")
             self.pipeline.safety_checker = None
+            if (
+                lcm_diffusion_setting.diffusion_task
+                == DiffusionTask.image_to_image.value
+            ):
+                self.img_to_img_pipeline.safety_checker = None
 
         if (
             not lcm_diffusion_setting.use_lcm_lora

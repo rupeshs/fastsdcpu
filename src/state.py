@@ -13,9 +13,9 @@ def get_state() -> _AppState:
     return _AppState._instance
 
 
-def get_settings() -> AppSettings:
+def get_settings(skip_file: bool = False) -> AppSettings:
     state = get_state()
     if state.settings is None:
         state.settings = AppSettings()
-        state.settings.load()
+        state.settings.load(skip_file)
     return state.settings

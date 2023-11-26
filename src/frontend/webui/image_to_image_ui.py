@@ -94,7 +94,7 @@ def get_image_to_image_ui(app_settings: AppSettings) -> None:
                         scale=0,
                     )
                 input_image = gr.Image(label="Init image", type="pil")
-                strength = gr.Slider(0, 1, value=0.8, step=0.1, label="Strength")
+                strength = gr.Slider(0, 1, value=0.8, step=0.01, label="Strength")
                 num_inference_steps = gr.Slider(
                     1, 25, value=4, step=1, label="Inference Steps"
                 )
@@ -104,10 +104,10 @@ def get_image_to_image_ui(app_settings: AppSettings) -> None:
                         1.0, 2.0, value=1.0, step=0.5, label="Guidance Scale"
                     )
                     image_height = gr.Slider(
-                        256, 768, value=512, step=256, label="Image Height"
+                        256, 1024, value=512, step=256, label="Image Height"
                     )
                     image_width = gr.Slider(
-                        256, 768, value=512, step=256, label="Image Width"
+                        256, 1024, value=512, step=256, label="Image Width"
                     )
                     num_images = gr.Slider(
                         1,
