@@ -35,6 +35,8 @@ class LCMTextToImage:
         self.previous_use_lcm_lora = False
         self.previous_ov_model_id = ""
         self.previous_safety_checker = False
+        self.previous_use_openvino = False
+        self.img_to_img_pipeline = None
         self.torch_data_type = (
             torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
         )
@@ -97,6 +99,7 @@ class LCMTextToImage:
             or self.previous_use_lcm_lora != use_lora
             or self.previous_ov_model_id != ov_model_id
             or self.previous_safety_checker != lcm_diffusion_setting.use_safety_checker
+            or self.previous_use_openvino != lcm_diffusion_setting.use_openvino
         ):
             if self.use_openvino and is_openvino_device():
                 if self.pipeline:
@@ -107,7 +110,7 @@ class LCMTextToImage:
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.text_to_image.value
                 ):
-                    print(f"Text to image (OpenVINO) - {ov_model_id}")
+                    print(f"***** Init Text to image (OpenVINO) - {ov_model_id} *****")
                     self.pipeline = get_ov_text_to_image_pipeline(
                         ov_model_id,
                         use_local_model,
@@ -116,7 +119,7 @@ class LCMTextToImage:
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.image_to_image.value
                 ):
-                    print(f"Image to image (OpenVINO) - {ov_model_id}")
+                    print(f"***** Image to image (OpenVINO) - {ov_model_id} *****")
                     self.pipeline = get_ov_image_to_image_pipeline(
                         ov_model_id,
                         use_local_model,
@@ -125,9 +128,14 @@ class LCMTextToImage:
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
+                if self.img_to_img_pipeline:
+                    del self.img_to_img_pipeline
+                    self.img_to_img_pipeline = None
 
                 if use_lora:
-                    print(f"Init LCM-LoRA pipeline - {lcm_lora.base_model_id}")
+                    print(
+                        f"***** Init LCM-LoRA pipeline - {lcm_lora.base_model_id} *****"
+                    )
                     self.pipeline = get_lcm_lora_pipeline(
                         lcm_lora.base_model_id,
                         lcm_lora.lcm_lora_id,
@@ -135,7 +143,7 @@ class LCMTextToImage:
                         torch_data_type=self.torch_data_type,
                     )
                 else:
-                    print(f"Init LCM Model pipeline - {model_id}")
+                    print(f"***** Init LCM Model pipeline - {model_id} *****")
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
@@ -159,11 +167,24 @@ class LCMTextToImage:
                     )
                 else:
                     print("Using Tiny Auto Encoder")
-                    load_taesd(
-                        self.pipeline,
-                        use_local_model,
-                        self.torch_data_type,
-                    )
+                    if (
+                        lcm_diffusion_setting.diffusion_task
+                        == DiffusionTask.text_to_image.value
+                    ):
+                        load_taesd(
+                            self.pipeline,
+                            use_local_model,
+                            self.torch_data_type,
+                        )
+                    elif (
+                        lcm_diffusion_setting.diffusion_task
+                        == DiffusionTask.image_to_image.value
+                    ):
+                        load_taesd(
+                            self.img_to_img_pipeline,
+                            use_local_model,
+                            self.torch_data_type,
+                        )
 
             self.pipeline.scheduler = LCMScheduler.from_config(
                 self.pipeline.scheduler.config,
@@ -180,8 +201,20 @@ class LCMTextToImage:
             self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
             self.previous_use_lcm_lora = use_lora
             self.previous_safety_checker = lcm_diffusion_setting.use_safety_checker
-
-            print(f"Pipeline : {self.pipeline}")
+            self.previous_use_openvino = lcm_diffusion_setting.use_openvino
+            if (
+                lcm_diffusion_setting.diffusion_task
+                == DiffusionTask.text_to_image.value
+            ):
+                print(f"Pipeline : {self.pipeline}")
+            elif (
+                lcm_diffusion_setting.diffusion_task
+                == DiffusionTask.image_to_image.value
+            ):
+                if self.use_openvino and is_openvino_device():
+                    print(f"Pipeline : {self.pipeline}")
+                else:
+                    print(f"Pipeline : {self.img_to_img_pipeline}")
 
     def generate(
         self,

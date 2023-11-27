@@ -6,9 +6,13 @@ def get_tiny_decoder_vae_model(pipeline_class) -> str:
     if (
         pipeline_class == "LatentConsistencyModelPipeline"
         or pipeline_class == "StableDiffusionPipeline"
+        or pipeline_class == "StableDiffusionImg2ImgPipeline"
     ):
         return TAESD_MODEL
-    elif pipeline_class == "StableDiffusionXLPipeline":
+    elif (
+        pipeline_class == "StableDiffusionXLPipeline"
+        or pipeline_class == "StableDiffusionXLImg2ImgPipeline"
+    ):
         return TAESDXL_MODEL
     elif (
         pipeline_class == "OVStableDiffusionPipeline"
