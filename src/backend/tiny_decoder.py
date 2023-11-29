@@ -1,4 +1,9 @@
-from constants import TAESD_MODEL, TAESDXL_MODEL, TAESD_MODEL_OPENVINO
+from constants import (
+    TAESD_MODEL,
+    TAESDXL_MODEL,
+    TAESD_MODEL_OPENVINO,
+    TAESDXL_MODEL_OPENVINO,
+)
 
 
 def get_tiny_decoder_vae_model(pipeline_class) -> str:
@@ -19,5 +24,7 @@ def get_tiny_decoder_vae_model(pipeline_class) -> str:
         or pipeline_class == "OVStableDiffusionImg2ImgPipeline"
     ):
         return TAESD_MODEL_OPENVINO
+    elif pipeline_class == "OVStableDiffusionXLPipeline":
+        return TAESDXL_MODEL_OPENVINO
     else:
         raise Exception("No valid pipeline class found!")

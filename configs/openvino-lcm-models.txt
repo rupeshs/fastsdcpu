@@ -1,2 +1,3 @@
+rupeshs/sdxl-turbo-openvino-int8
 rupeshs/LCM-dreamshaper-v7-openvino
 Disty0/LCM_SoteMix

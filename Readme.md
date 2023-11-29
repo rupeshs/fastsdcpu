@@ -6,24 +6,40 @@ The following interfaces are available :
 - WebUI 
 - CLI (CommandLine Interface)
 
-Using OpenVINO, it took 7 seconds to create a single 512x512 image on a Core i7-12700.
+Using OpenVINO, it took 2.5 seconds to create a single 512x512 image on a Core i7-12700.
 
-## Fast 1 step inference (SDXL Turbo - Adversarial Diffusion Distillation)
+## Fast 1 step inference (SDXL Turbo - Adversarial Diffusion Distillation,ADD)
 Added support for ultra fast 1 step inference using [sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) model
 
 :exclamation: This model is intended for research purpose only.
 
 Text to Image -  Implemented
 
-Image to Image - Todo
+OpenVINO model - Implemented
 
-OpenVINO model - Todo
+Image to Image - Todo
 
 Tested OpenVINO model got 2x speedup, I will upload it later.
 
+
 ### Inference Speed
 
-10 seconds to generate 512x512 image on Core i7-12700.
+Tested on Core i7-12700 to generate 512x512 image(1 step).
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 10s           |
+| OpenVINO              | 5.6s          |
+| OpenVINO + TAESD      | 2.5s          |
+
+### OpenVINO SDXL Turbo model
+The SDXL Turbo model is converted to OpenVINO int8 for the fast inference on CPU. This model is intended for research purpose only.
+Also we converted TAESDXL MODEL to OpenVINO.
+
+- *SDXL TurboOpenVINO int8* - [rupeshs/sdxl-turbo-openvino-int8](https://huggingface.co/rupeshs/sdxl-turbo-openvino-int8) 
+- *TAESDXL OpenVINO* - [rupeshs/taesdxl-openvino](https://huggingface.co/rupeshs/taesdxl-openvino) 
+
+You can directly use these models in FastSD CPU. 
 
 ## Supported platforms
  - Windows

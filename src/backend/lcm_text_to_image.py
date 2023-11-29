@@ -20,6 +20,7 @@ from backend.pipelines.lcm import (
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from image_ops import resize_pil_image
+from constants import LCM_DEFAULT_MODEL_OPENVINO
 
 
 class LCMTextToImage:
@@ -37,6 +38,7 @@ class LCMTextToImage:
         self.previous_safety_checker = False
         self.previous_use_openvino = False
         self.img_to_img_pipeline = None
+        self.is_openvino_init = False
         self.torch_data_type = (
             torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
         )
@@ -105,7 +107,7 @@ class LCMTextToImage:
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
-
+                self.is_openvino_init = True
                 if (
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.text_to_image.value
@@ -185,12 +187,15 @@ class LCMTextToImage:
                             use_local_model,
                             self.torch_data_type,
                         )
-
-            self.pipeline.scheduler = LCMScheduler.from_config(
-                self.pipeline.scheduler.config,
-                beta_start=0.001,
-                beta_end=0.01,
-            )
+            if (
+                lcm_diffusion_setting.openvino_lcm_model_id
+                != LCM_DEFAULT_MODEL_OPENVINO
+            ):
+                self.pipeline.scheduler = LCMScheduler.from_config(
+                    self.pipeline.scheduler.config,
+                    beta_start=0.001,
+                    beta_end=0.01,
+                )
             if use_lora:
                 self._add_freeu()
 
@@ -232,7 +237,7 @@ class LCMTextToImage:
         is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
         if is_openvino_pipe:
             print("Using OpenVINO")
-            if reshape:
+            if reshape and not self.is_openvino_init:
                 print("Reshape and compile")
                 self.pipeline.reshape(
                     batch_size=-1,
@@ -241,6 +246,9 @@ class LCMTextToImage:
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                 )
                 self.pipeline.compile()
+
+            if self.is_openvino_init:
+                self.is_openvino_init = False
 
         if not lcm_diffusion_setting.use_safety_checker:
             self.pipeline.safety_checker = None

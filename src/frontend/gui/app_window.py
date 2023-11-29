@@ -123,6 +123,7 @@ class MainWindow(QMainWindow):
             get_valid_model_id(
                 self.config.openvino_lcm_models,
                 self.config.settings.lcm_diffusion_setting.openvino_lcm_model_id,
+                LCM_DEFAULT_MODEL_OPENVINO,
             )
         )
         self.neg_prompt.setEnabled(

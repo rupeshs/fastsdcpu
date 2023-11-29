@@ -10,6 +10,7 @@ if is_openvino_device():
     from optimum.intel.openvino.modeling_diffusion import (
         OVStableDiffusionPipeline,
         OVStableDiffusionImg2ImgPipeline,
+        OVStableDiffusionXLPipeline,
     )
     from backend.openvino.custom_ov_model_vae_decoder import CustomOVModelVaeDecoder
 
@@ -33,12 +34,21 @@ def get_ov_text_to_image_pipeline(
     model_id: str = LCM_DEFAULT_MODEL_OPENVINO,
     use_local_model: bool = False,
 ) -> Any:
-    pipeline = OVStableDiffusionPipeline.from_pretrained(
-        model_id,
-        local_files_only=use_local_model,
-        ov_config={"CACHE_DIR": ""},
-        device=DEVICE.upper(),
-    )
+    if model_id == "rupeshs/sdxl-turbo-openvino-int8":
+        pipeline = OVStableDiffusionXLPipeline.from_pretrained(
+            model_id,
+            local_files_only=use_local_model,
+            ov_config={"CACHE_DIR": ""},
+            device=DEVICE.upper(),
+        )
+    else:
+        pipeline = OVStableDiffusionPipeline.from_pretrained(
+            model_id,
+            local_files_only=use_local_model,
+            ov_config={"CACHE_DIR": ""},
+            device=DEVICE.upper(),
+        )
+
     return pipeline
 
 

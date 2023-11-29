@@ -1,8 +1,8 @@
 from os import environ
 
-APP_VERSION = "v1.0.0 beta 20"
+APP_VERSION = "v1.0.0 beta 21"
 LCM_DEFAULT_MODEL = "stabilityai/sdxl-turbo"
-LCM_DEFAULT_MODEL_OPENVINO = "rupeshs/LCM-dreamshaper-v7-openvino"
+LCM_DEFAULT_MODEL_OPENVINO = "rupeshs/sdxl-turbo-openvino-int8"
 APP_NAME = "FastSD CPU"
 APP_SETTINGS_FILE = "settings.yaml"
 RESULTS_DIRECTORY = "results"
@@ -15,3 +15,4 @@ TAESD_MODEL = "madebyollin/taesd"
 TAESDXL_MODEL = "madebyollin/taesdxl"
 TAESD_MODEL_OPENVINO = "deinferno/taesd-openvino"
 LCM_MODELS_FILE = "lcm-models.txt"
+TAESDXL_MODEL_OPENVINO = "rupeshs/taesdxl-openvino"
