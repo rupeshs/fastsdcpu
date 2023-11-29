@@ -31,7 +31,11 @@ def get_models_ui() -> None:
                 app_settings.lcm_models,
                 label="LCM model",
                 info="Diffusers LCM model ID",
-                value=LCM_DEFAULT_MODEL,
+                value=get_valid_model_id(
+                    app_settings.lcm_models,
+                    app_settings.settings.lcm_diffusion_setting.lcm_model_id,
+                    LCM_DEFAULT_MODEL,
+                ),
                 interactive=True,
             )
         with gr.Row():

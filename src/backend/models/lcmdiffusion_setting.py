@@ -30,7 +30,7 @@ class LCMDiffusionSetting(BaseModel):
     strength: Optional[float] = 0.6
     image_height: Optional[int] = 512
     image_width: Optional[int] = 512
-    inference_steps: Optional[int] = 4
+    inference_steps: Optional[int] = 1
     guidance_scale: Optional[float] = 1
     number_of_images: Optional[int] = 1
     seed: Optional[int] = 123123

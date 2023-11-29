@@ -34,12 +34,16 @@ def enable_openvino_controls() -> bool:
 def get_valid_model_id(
     models: List,
     model_id: str,
+    default_model: str = "",
 ) -> str:
     if len(models) == 0:
         print("Error: model configuration file is empty,please add some models.")
         return ""
     if model_id == "":
-        return models[0]
+        if default_model:
+            return default_model
+        else:
+            return models[0]
 
     if model_id in models:
         return model_id
