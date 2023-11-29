@@ -10,6 +10,7 @@ Using OpenVINO, it took 7 seconds to create a single 512x512 image on a Core i7-
 
 ## Fast 1 step inference (SDXL Turbo - Adversarial Diffusion Distillation)
 Added support for ultra fast 1 step inference using [sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) model
+
 :exclamation: This model is intended for research purpose only.
 
 Text to Image -  Implemented
