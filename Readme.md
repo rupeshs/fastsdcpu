@@ -14,8 +14,11 @@ Added support for ultra fast 1 step inference using [sdxl-turbo](https://hugging
 :exclamation: This model is intended for research purpose only.
 
 Text to Image -  Implemented
+
 Image to Image - Todo
+
 OpenVINO model - Todo
+
 Tested OpenVINO model got 2x speedup, I will upload it later.
 
 ### Inference Speed
