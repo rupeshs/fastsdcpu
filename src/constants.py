@@ -1,6 +1,6 @@
 from os import environ
 
-APP_VERSION = "v1.0.0 beta 19"
+APP_VERSION = "v1.0.0 beta 20"
 LCM_DEFAULT_MODEL = "stabilityai/sdxl-turbo"
 LCM_DEFAULT_MODEL_OPENVINO = "rupeshs/LCM-dreamshaper-v7-openvino"
 APP_NAME = "FastSD CPU"
