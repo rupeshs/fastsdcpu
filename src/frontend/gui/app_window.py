@@ -35,6 +35,7 @@ from context import Context
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from frontend.utils import enable_openvino_controls, get_valid_model_id
+from backend.models.lcmdiffusion_setting import DiffusionTask
 
 # DPI scale fix
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -98,6 +99,13 @@ class MainWindow(QMainWindow):
         )
         self.use_lcm_lora.setChecked(
             self.config.settings.lcm_diffusion_setting.use_lcm_lora
+        )
+        self.lcm_model.setCurrentText(
+            get_valid_model_id(
+                self.config.lcm_models,
+                self.config.settings.lcm_diffusion_setting.lcm_model_id,
+                LCM_DEFAULT_MODEL,
+            )
         )
         self.base_model_id.setCurrentText(
             get_valid_model_id(
@@ -194,6 +202,7 @@ class MainWindow(QMainWindow):
         # self.lcm_model = QLineEdit(LCM_DEFAULT_MODEL)
         self.lcm_model = QComboBox(self)
         self.lcm_model.addItems(self.config.lcm_models)
+        self.lcm_model.currentIndexChanged.connect(self.on_lcm_model_changed)
 
         self.use_lcm_lora = QCheckBox("Use LCM LoRA")
         self.use_lcm_lora.setChecked(False)
@@ -413,6 +422,10 @@ class MainWindow(QMainWindow):
         height_txt = self.height.itemText(index)
         self.config.settings.lcm_diffusion_setting.image_height = int(height_txt)
 
+    def on_lcm_model_changed(self, index):
+        model_id = self.lcm_model.itemText(index)
+        self.config.settings.lcm_diffusion_setting.lcm_model_id = model_id
+
     def on_base_model_id_changed(self, index):
         model_id = self.base_model_id.itemText(index)
         self.config.settings.lcm_diffusion_setting.lcm_lora.base_model_id = model_id
@@ -534,7 +547,9 @@ class MainWindow(QMainWindow):
                 self.previous_num_of_images,
                 self.config.settings.lcm_diffusion_setting.number_of_images,
             )
-
+        self.config.settings.lcm_diffusion_setting.diffusion_task = (
+            DiffusionTask.text_to_image.value
+        )
         images = self.context.generate_text_to_image(
             self.config.settings,
             reshape_required,

@@ -8,6 +8,19 @@ The following interfaces are available :
 
 Using OpenVINO, it took 7 seconds to create a single 512x512 image on a Core i7-12700.
 
+## Fast 1 step inference (SDXL Turbo - Adversarial Diffusion Distillation)
+Added support for ultra fast 1 step inference using [sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) model
+:exclamation: This model is intended for research purpose only.
+
+Text to Image -  Implemented
+Image to Image - Todo
+OpenVINO model - Todo
+Tested OpenVINO model got 2x speedup, I will upload it later.
+
+### Inference Speed
+
+10 seconds to generate 512x512 image on Core i7-12700.
+
 ## Supported platforms
  - Windows
  - Linux
@@ -46,6 +59,7 @@ Using OpenVINO, it took 7 seconds to create a single 512x512 image on a Core i7-
 - 5.7x speed using OpenVINO(steps: 2,tiny autoencoder)
 - Image to Image support (Use Web UI)
 - OpenVINO image to image support
+- Fast 1 step inference (SDXL Turbo)
 
 ## 2 Steps fast inference
 FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It works well with SD 1.5 models.
