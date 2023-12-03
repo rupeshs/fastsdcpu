@@ -1,4 +1,3 @@
-from constants import LCM_DEFAULT_MODEL
 from diffusers import DiffusionPipeline, LCMScheduler
 import torch
 
@@ -18,7 +17,9 @@ def get_lcm_lora_pipeline(
         lcm_lora_id,
         local_files_only=use_local_model,
     )
-    pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
+    if "lcm" in lcm_lora_id.lower():
+        print("LCM LoRA model detected so using recommended LCMScheduler")
+        pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
     pipeline.fuse_lora()
     pipeline.unet.to(memory_format=torch.channels_last)
     return pipeline

@@ -6,6 +6,10 @@ from state import get_settings
 from frontend.utils import get_valid_model_id
 
 app_settings = get_settings()
+app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id = get_valid_model_id(
+    app_settings.openvino_lcm_models,
+    app_settings.settings.lcm_diffusion_setting.openvino_lcm_model_id,
+)
 
 
 def change_lcm_model_id(model_id):

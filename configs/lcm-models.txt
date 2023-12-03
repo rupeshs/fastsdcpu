@@ -1,3 +1,4 @@
+stabilityai/sd-turbo
 stabilityai/sdxl-turbo
 SimianLuo/LCM_Dreamshaper_v7
 latent-consistency/lcm-sdxl

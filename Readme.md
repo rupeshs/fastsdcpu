@@ -6,40 +6,52 @@ The following interfaces are available :
 - WebUI 
 - CLI (CommandLine Interface)
 
-Using OpenVINO, it took 2.5 seconds to create a single 512x512 image on a Core i7-12700.
+Using __OpenVINO(SD Turbo)__, it took __1.7 seconds__ to create a single 512x512 image on a __Core i7-12700__.
 
-## Fast 1 step inference (SDXL Turbo - Adversarial Diffusion Distillation,ADD)
+## Fast 1 step inference (SD/SDXL Turbo - Adversarial Diffusion Distillation,ADD)
 Added support for ultra fast 1 step inference using [sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) model
 
-:exclamation: This model is intended for research purpose only.
+:exclamation: These SD turbo models are intended for research purpose only.
 
 Text to Image -  Implemented
 
+Image to Image - Implemented
+
 OpenVINO model - Implemented
-
-Image to Image - Todo
-
-Tested OpenVINO model got 2x speedup, I will upload it later.
-
 
 ### Inference Speed
 
 Tested on Core i7-12700 to generate 512x512 image(1 step).
 
+__SD Turbo__
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 7.8s          |
+| OpenVINO              | 5s            |
+| OpenVINO + TAESD      | 1.7s          |
+
+
+__SDXL Turbo__ 
+
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
 | Pytorch               | 10s           |
 | OpenVINO              | 5.6s          |
-| OpenVINO + TAESD      | 2.5s          |
+| OpenVINO + TAESDXL    | 2.5s          |
 
-### OpenVINO SDXL Turbo model
-The SDXL Turbo model is converted to OpenVINO int8 for the fast inference on CPU. This model is intended for research purpose only.
-Also we converted TAESDXL MODEL to OpenVINO.
 
-- *SDXL TurboOpenVINO int8* - [rupeshs/sdxl-turbo-openvino-int8](https://huggingface.co/rupeshs/sdxl-turbo-openvino-int8) 
+
+### OpenVINO SD Turbo models
+We have converted SD/SDXL Turbo models to OpenVINO for fast inference on CPU. These models are intended for research purpose only. Also we converted TAESDXL MODEL to OpenVINO and 
+- *SD Turbo OpenVINO* - [rupeshs/sd-turbo-openvino](https://huggingface.co/rupeshs/sd-turbo-openvino) 
+- *SDXL Turbo OpenVINO int8* - [rupeshs/sdxl-turbo-openvino-int8](https://huggingface.co/rupeshs/sdxl-turbo-openvino-int8) 
 - *TAESDXL OpenVINO* - [rupeshs/taesdxl-openvino](https://huggingface.co/rupeshs/taesdxl-openvino) 
 
-You can directly use these models in FastSD CPU. 
+You can directly use these models in FastSD CPU.
+
+## Know issues
+- TAESD will not work with OpenVINO image to image workflow 
 
 ## Supported platforms
  - Windows
@@ -80,6 +92,8 @@ You can directly use these models in FastSD CPU.
 - Image to Image support (Use Web UI)
 - OpenVINO image to image support
 - Fast 1 step inference (SDXL Turbo)
+- Added SD Turbo support
+- Added image to image support for Turbo models (Pytorch and OpenVINO)
 
 ## 2 Steps fast inference
 FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It works well with SD 1.5 models.
