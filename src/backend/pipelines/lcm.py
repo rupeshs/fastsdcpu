@@ -22,7 +22,9 @@ def _get_lcm_pipeline_from_base_model(
 ):
     pipeline = None
     unet = UNet2DConditionModel.from_pretrained(
-        lcm_model_id, torch_dtype=torch.float32, local_files_only=use_local_model
+        lcm_model_id,
+        torch_dtype=torch.float32,
+        local_files_only=use_local_model,
     )
     pipeline = DiffusionPipeline.from_pretrained(
         base_model_id,

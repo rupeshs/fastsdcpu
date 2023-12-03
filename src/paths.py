@@ -55,3 +55,7 @@ class FastStableDiffusionPaths:
             model_config_file,
         )
         return models_path
+
+
+def get_base_folder_name(path: str) -> str:
+    return os.path.basename(path)

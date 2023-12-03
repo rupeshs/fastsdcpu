@@ -6,7 +6,6 @@ import numpy as np
 from constants import DEVICE
 from backend.models.lcmdiffusion_setting import LCMLora
 from backend.device import is_openvino_device
-from PIL import Image
 from backend.openvino.pipelines import (
     get_ov_text_to_image_pipeline,
     ov_load_taesd,
@@ -20,7 +19,7 @@ from backend.pipelines.lcm import (
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from image_ops import resize_pil_image
-from constants import LCM_DEFAULT_MODEL_OPENVINO
+from math import ceil
 
 
 class LCMTextToImage:
@@ -54,21 +53,30 @@ class LCMTextToImage:
 
     def _add_freeu(self):
         pipeline_class = self.pipeline.__class__.__name__
-        if pipeline_class == "StableDiffusionPipeline":
-            print("Add FreeU - SD")
-            self.pipeline.enable_freeu(
-                s1=0.9,
-                s2=0.2,
-                b1=1.2,
-                b2=1.4,
-            )
-        elif pipeline_class == "StableDiffusionXLPipeline":
-            print("Add FreeU - SDXL")
-            self.pipeline.enable_freeu(
-                s1=0.6,
-                s2=0.4,
-                b1=1.1,
-                b2=1.2,
+        if isinstance(self.pipeline.scheduler, LCMScheduler):
+            if pipeline_class == "StableDiffusionPipeline":
+                print("Add FreeU - SD")
+                self.pipeline.enable_freeu(
+                    s1=0.9,
+                    s2=0.2,
+                    b1=1.2,
+                    b2=1.4,
+                )
+            elif pipeline_class == "StableDiffusionXLPipeline":
+                print("Add FreeU - SDXL")
+                self.pipeline.enable_freeu(
+                    s1=0.6,
+                    s2=0.4,
+                    b1=1.1,
+                    b2=1.2,
+                )
+
+    def _update_lcm_scheduler_params(self):
+        if isinstance(self.pipeline.scheduler, LCMScheduler):
+            self.pipeline.scheduler = LCMScheduler.from_config(
+                self.pipeline.scheduler.config,
+                beta_start=0.001,
+                beta_end=0.01,
             )
 
     def init(
@@ -187,15 +195,18 @@ class LCMTextToImage:
                             use_local_model,
                             self.torch_data_type,
                         )
+
             if (
-                lcm_diffusion_setting.openvino_lcm_model_id
-                != LCM_DEFAULT_MODEL_OPENVINO
+                lcm_diffusion_setting.diffusion_task
+                == DiffusionTask.image_to_image.value
+                and lcm_diffusion_setting.use_openvino
             ):
                 self.pipeline.scheduler = LCMScheduler.from_config(
                     self.pipeline.scheduler.config,
-                    beta_start=0.001,
-                    beta_end=0.01,
                 )
+            else:
+                self._update_lcm_scheduler_params()
+
             if use_lora:
                 self._add_freeu()
 
@@ -227,6 +238,19 @@ class LCMTextToImage:
         reshape: bool = False,
     ) -> Any:
         guidance_scale = lcm_diffusion_setting.guidance_scale
+        img_to_img_inference_steps = lcm_diffusion_setting.inference_steps
+        check_step_value = int(
+            lcm_diffusion_setting.inference_steps * lcm_diffusion_setting.strength
+        )
+        if (
+            lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value
+            and check_step_value < 1
+        ):
+            img_to_img_inference_steps = ceil(1 / lcm_diffusion_setting.strength)
+            print(
+                f"Strength: {lcm_diffusion_setting.strength},{img_to_img_inference_steps}"
+            )
+
         if lcm_diffusion_setting.use_seed:
             cur_seed = lcm_diffusion_setting.seed
             if self.use_openvino:
@@ -290,7 +314,7 @@ class LCMTextToImage:
                     strength=lcm_diffusion_setting.strength,
                     prompt=lcm_diffusion_setting.prompt,
                     negative_prompt=lcm_diffusion_setting.negative_prompt,
-                    num_inference_steps=lcm_diffusion_setting.inference_steps,
+                    num_inference_steps=img_to_img_inference_steps * 3,
                     guidance_scale=guidance_scale,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                 ).images
@@ -318,7 +342,7 @@ class LCMTextToImage:
                     strength=lcm_diffusion_setting.strength,
                     prompt=lcm_diffusion_setting.prompt,
                     negative_prompt=lcm_diffusion_setting.negative_prompt,
-                    num_inference_steps=lcm_diffusion_setting.inference_steps,
+                    num_inference_steps=img_to_img_inference_steps,
                     guidance_scale=guidance_scale,
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,

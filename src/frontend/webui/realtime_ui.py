@@ -36,7 +36,7 @@ def predict(
     seed,
 ):
     lcm_diffusion_setting = LCMDiffusionSetting()
-    lcm_diffusion_setting.lcm_model_id = LCM_DEFAULT_MODEL_OPENVINO
+    lcm_diffusion_setting.openvino_lcm_model_id = "rupeshs/LCM-dreamshaper-v7-openvino"
     lcm_diffusion_setting.prompt = prompt
     lcm_diffusion_setting.guidance_scale = 1.0
     lcm_diffusion_setting.inference_steps = steps
