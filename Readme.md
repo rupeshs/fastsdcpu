@@ -288,7 +288,7 @@ System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
 
 The fastsdcpu project is available as open source under the terms of the [MIT license](https://github.com/rupeshs/fastsdcpu/blob/main/LICENSE)
 
-### Contributors
+## Contributors
 <a href="https://github.com/rupeshs/fastsdcpu/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rupeshs/fastsdcpu" />
 </a>
