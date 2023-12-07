@@ -38,6 +38,7 @@ class LCMTextToImage:
         self.previous_use_openvino = False
         self.img_to_img_pipeline = None
         self.is_openvino_init = False
+        self.task_type = DiffusionTask.text_to_image
         self.torch_data_type = (
             torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
         )
@@ -110,6 +111,7 @@ class LCMTextToImage:
             or self.previous_ov_model_id != ov_model_id
             or self.previous_safety_checker != lcm_diffusion_setting.use_safety_checker
             or self.previous_use_openvino != lcm_diffusion_setting.use_openvino
+            or self.previous_task_type != lcm_diffusion_setting.diffusion_task
         ):
             if self.use_openvino and is_openvino_device():
                 if self.pipeline:
@@ -218,6 +220,7 @@ class LCMTextToImage:
             self.previous_use_lcm_lora = use_lora
             self.previous_safety_checker = lcm_diffusion_setting.use_safety_checker
             self.previous_use_openvino = lcm_diffusion_setting.use_openvino
+            self.previous_task_type = lcm_diffusion_setting.diffusion_task
             if (
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.text_to_image.value

@@ -6,11 +6,13 @@ from models.interface_types import InterfaceType
 from frontend.utils import is_reshape_required
 from constants import DEVICE
 from state import get_settings
+
+from state import get_settings, get_context
 from concurrent.futures import ThreadPoolExecutor
 
 app_settings = get_settings()
 
-context = Context(InterfaceType.WEBUI)
+context = get_context(InterfaceType.WEBUI)
 previous_width = 0
 previous_height = 0
 previous_model_id = ""

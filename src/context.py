@@ -5,7 +5,6 @@ from backend.lcm_text_to_image import LCMTextToImage
 from time import perf_counter
 from backend.image_saver import ImageSaver
 from pprint import pprint
-from state import get_settings
 
 
 class Context:
@@ -23,8 +22,10 @@ class Context:
         reshape: bool = False,
         device: str = "cpu",
     ) -> Any:
-        get_settings().save()
         tick = perf_counter()
+        from state import get_settings
+
+        get_settings().save()
         pprint(settings.lcm_diffusion_setting.model_dump())
         if not settings.lcm_diffusion_setting.lcm_lora:
             return None
