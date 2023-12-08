@@ -2,11 +2,11 @@ from app_settings import AppSettings
 from utils import show_system_info
 import constants
 from argparse import ArgumentParser
-from context import Context
+
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
 from constants import DEVICE
-from state import get_settings
+from state import get_settings, get_context
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -178,7 +178,7 @@ elif args.realtime:
     print("Starting realtime text to image(EXPERIMENTAL)")
     start_realtime_text_to_image(args.share)
 else:
-    context = Context(InterfaceType.CLI)
+    context = get_context(InterfaceType.CLI)
     config = app_settings.settings
 
     if args.use_openvino:

@@ -137,4 +137,4 @@ def get_generation_settings_ui() -> None:
         tiny_auto_encoder_checkbox.change(
             on_change_tiny_auto_encoder_checkbox, tiny_auto_encoder_checkbox
         )
-        offline_checkbox.change(on_change_tiny_auto_encoder_checkbox, offline_checkbox)
+        offline_checkbox.change(on_offline_checkbox, offline_checkbox)
