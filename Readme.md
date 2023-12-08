@@ -94,6 +94,7 @@ You can directly use these models in FastSD CPU.
 - Fast 1 step inference (SDXL Turbo)
 - Added SD Turbo support
 - Added image to image support for Turbo models (Pytorch and OpenVINO)
+- Added image variations support
 
 ## 2 Steps fast inference
 FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It works well with SD 1.5 models.
