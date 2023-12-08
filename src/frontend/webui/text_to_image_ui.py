@@ -1,7 +1,6 @@
 import gradio as gr
 from typing import Any
 from backend.models.lcmdiffusion_setting import DiffusionTask
-from context import Context
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from state import get_settings, get_context

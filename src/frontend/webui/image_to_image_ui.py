@@ -1,12 +1,9 @@
 from typing import Any
 import gradio as gr
 from backend.models.lcmdiffusion_setting import DiffusionTask
-from context import Context
 from models.interface_types import InterfaceType
 from frontend.utils import is_reshape_required
 from constants import DEVICE
-from state import get_settings
-
 from state import get_settings, get_context
 from concurrent.futures import ThreadPoolExecutor
 

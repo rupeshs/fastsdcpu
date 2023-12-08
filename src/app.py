@@ -8,8 +8,6 @@ from models.interface_types import InterfaceType
 from constants import DEVICE
 from state import get_settings, get_context
 
-# from context import Context
-
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
     "-s",
