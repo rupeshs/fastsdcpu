@@ -1,5 +1,7 @@
 from app_settings import AppSettings
 from utils import show_system_info
+from PIL import Image
+from backend.models.lcmdiffusion_setting import DiffusionTask
 import constants
 from argparse import ArgumentParser
 
@@ -129,9 +131,22 @@ parser.add_argument(
     help="Interactive CLI mode",
 )
 parser.add_argument(
+    "-t",
     "--use_tiny_auto_encoder",
     action="store_true",
     help="Use tiny auto encoder for SD (TAESD)",
+)
+parser.add_argument(
+    "-f",
+    "--file",
+    type=str,
+    help="Input image for img2img mode",
+    default="",
+)
+parser.add_argument(
+    "--img2img",
+    action="store_true",
+    help="img2img mode; requires input file via -f argument",
 )
 args = parser.parse_args()
 
@@ -191,12 +206,21 @@ else:
     config.lcm_diffusion_setting.image_width = args.image_width
     config.lcm_diffusion_setting.guidance_scale = args.guidance_scale
     config.lcm_diffusion_setting.number_of_images = args.number_of_images
+    config.lcm_diffusion_setting.inference_steps = args.inference_steps
     config.lcm_diffusion_setting.seed = args.seed
     config.lcm_diffusion_setting.use_openvino = args.use_openvino
     config.lcm_diffusion_setting.use_tiny_auto_encoder = args.use_tiny_auto_encoder
     config.lcm_diffusion_setting.use_lcm_lora = args.use_lcm_lora
     config.lcm_diffusion_setting.lcm_lora.base_model_id = args.base_model_id
     config.lcm_diffusion_setting.lcm_lora.lcm_lora_id = args.lcm_lora_id
+    config.lcm_diffusion_setting.diffusion_task = DiffusionTask.text_to_image.value
+
+    if args.img2img and args.file != "" :
+        config.lcm_diffusion_setting.init_image = Image.open(args.file)
+        config.lcm_diffusion_setting.diffusion_task = DiffusionTask.image_to_image.value
+    elif args.img2img and args.file == "":
+        print("You need to specify a file in img2img mode")
+        exit()
 
     if args.seed > -1:
         config.lcm_diffusion_setting.use_seed = True
