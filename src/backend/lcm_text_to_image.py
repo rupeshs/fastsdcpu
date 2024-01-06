@@ -47,10 +47,13 @@ class LCMTextToImage:
     def _pipeline_to_device(self):
         print(f"Pipeline device : {DEVICE}")
         print(f"Pipeline dtype : {self.torch_data_type}")
-        self.pipeline.to(
-            torch_device=DEVICE,
-            torch_dtype=self.torch_data_type,
-        )
+        if DEVICE == "cuda":
+            self.pipeline.enable_sequential_cpu_offload()
+        else:
+            self.pipeline.to(
+                torch_device=DEVICE,
+                torch_dtype=self.torch_data_type,
+            )
 
     def _add_freeu(self):
         pipeline_class = self.pipeline.__class__.__name__
