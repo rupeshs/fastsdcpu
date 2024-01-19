@@ -2,6 +2,7 @@ from app_settings import AppSettings
 from utils import show_system_info
 from PIL import Image
 from backend.models.lcmdiffusion_setting import DiffusionTask
+from frontend.webui.image_variations_ui import generate_image_variations
 import constants
 from argparse import ArgumentParser
 
@@ -53,6 +54,7 @@ parser.add_argument(
     "--prompt",
     type=str,
     help="Describe the image you want to generate",
+    default="",
 )
 parser.add_argument(
     "--image_height",
@@ -148,6 +150,18 @@ parser.add_argument(
     action="store_true",
     help="img2img mode; requires input file via -f argument",
 )
+parser.add_argument(
+    "--batch_count",
+    type=int,
+    help="Number of sequential generations",
+    default=1,
+)
+parser.add_argument(
+    "--strength",
+    type=float,
+    help="img2img strength",
+    default=0.3,
+)
 args = parser.parse_args()
 
 if args.version:
@@ -240,8 +254,13 @@ else:
                 device=DEVICE,
             )
 
+    # If img2img argument is set and prompt is empty, use image variations mode
+    elif args.img2img and args.prompt == "":
+        for i in range(0, args.batch_count):
+            generate_image_variations(config.lcm_diffusion_setting.init_image, args.strength)
     else:
-        context.generate_text_to_image(
-            settings=config,
-            device=DEVICE,
-        )
+        for i in range(0, args.batch_count):
+            context.generate_text_to_image(
+                settings=config,
+                device=DEVICE,
+            )
