@@ -235,14 +235,17 @@ else:
     config.lcm_diffusion_setting.lcm_lora.lcm_lora_id = args.lcm_lora_id
     config.lcm_diffusion_setting.diffusion_task = DiffusionTask.text_to_image.value
 
-    if args.img2img and args.file != "" :
+    if args.img2img and args.file != "":
         config.lcm_diffusion_setting.init_image = Image.open(args.file)
         config.lcm_diffusion_setting.diffusion_task = DiffusionTask.image_to_image.value
     elif args.img2img and args.file == "":
-        print("You need to specify a file in img2img mode")
+        print("Error : You need to specify a file in img2img mode")
         exit()
     elif args.upscale and args.file == "":
-        print("You need to specify a file in SD upscale mode")
+        print("Error : You need to specify a file in SD upscale mode")
+        exit()
+    elif args.prompt == "" and args.file == "":
+        print("Error : You need provide a prompt")
         exit()
 
     if args.seed > -1:
@@ -267,15 +270,17 @@ else:
     elif args.upscale:
         input = Image.open(args.file)
         mask = Image.open("configs/mask.png")
-        result = Image.new(mode = "RGBA", size = (input.size[0] * 2, input.size[1] * 2), color = (0, 0, 0, 0))
+        result = Image.new(
+            mode="RGBA", size=(input.size[0] * 2, input.size[1] * 2), color=(0, 0, 0, 0)
+        )
 
         args.batch_count = 1
         config.lcm_diffusion_setting.image_width = 512
         config.lcm_diffusion_setting.image_height = 512
         config.lcm_diffusion_setting.number_of_images = 1
 
-        total_cols = int(input.size[0] / 256)      # Image width / tile size
-        total_rows = int(input.size[1] / 256)      # Image height / tile size
+        total_cols = int(input.size[0] / 256)  # Image width / tile size
+        total_rows = int(input.size[1] / 256)  # Image height / tile size
         for y in range(0, total_rows):
             y_offset = y * 16
             for x in range(0, total_cols):
@@ -285,8 +290,12 @@ else:
                 x2 = x1 + 256
                 y2 = y1 + 256
                 config.lcm_diffusion_setting.init_image = input.crop((x1, y1, x2, y2))
-                output_tile = generate_image_variations(config.lcm_diffusion_setting.init_image, args.strength)[0]
-                result.paste(output_tile, (x * 512 - x_offset * 2, y * 512 - y_offset * 2), mask)
+                output_tile = generate_image_variations(
+                    config.lcm_diffusion_setting.init_image, args.strength
+                )[0]
+                result.paste(
+                    output_tile, (x * 512 - x_offset * 2, y * 512 - y_offset * 2), mask
+                )
                 output_tile.close()
                 config.lcm_diffusion_setting.init_image.close()
         result.save("results/fastSD-" + str(int(time.time())) + ".png")
@@ -294,7 +303,9 @@ else:
     # If img2img argument is set and prompt is empty, use image variations mode
     elif args.img2img and args.prompt == "":
         for i in range(0, args.batch_count):
-            generate_image_variations(config.lcm_diffusion_setting.init_image, args.strength)
+            generate_image_variations(
+                config.lcm_diffusion_setting.init_image, args.strength
+            )
     else:
         for i in range(0, args.batch_count):
             context.generate_text_to_image(
