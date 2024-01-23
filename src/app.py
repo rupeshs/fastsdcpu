@@ -2,7 +2,9 @@ from app_settings import AppSettings
 from utils import show_system_info
 from PIL import Image
 from backend.models.lcmdiffusion_setting import DiffusionTask
+from frontend.webui.image_variations_ui import generate_image_variations
 import constants
+import time
 from argparse import ArgumentParser
 
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
@@ -53,6 +55,7 @@ parser.add_argument(
     "--prompt",
     type=str,
     help="Describe the image you want to generate",
+    default="",
 )
 parser.add_argument(
     "--image_height",
@@ -104,7 +107,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--use_safety_checker",
-    action="store_false",
+    action="store_true",
     help="Use safety checker",
 )
 parser.add_argument(
@@ -147,6 +150,23 @@ parser.add_argument(
     "--img2img",
     action="store_true",
     help="img2img mode; requires input file via -f argument",
+)
+parser.add_argument(
+    "--batch_count",
+    type=int,
+    help="Number of sequential generations",
+    default=1,
+)
+parser.add_argument(
+    "--strength",
+    type=float,
+    help="img2img strength",
+    default=0.3,
+)
+parser.add_argument(
+    "--upscale",
+    action="store_true",
+    help="Tiled SD upscale",
 )
 args = parser.parse_args()
 
@@ -221,6 +241,9 @@ else:
     elif args.img2img and args.file == "":
         print("You need to specify a file in img2img mode")
         exit()
+    elif args.upscale and args.file == "":
+        print("You need to specify a file in SD upscale mode")
+        exit()
 
     if args.seed > -1:
         config.lcm_diffusion_setting.use_seed = True
@@ -240,8 +263,41 @@ else:
                 device=DEVICE,
             )
 
+    # Perform Tiled SD upscale
+    elif args.upscale:
+        input = Image.open(args.file)
+        mask = Image.open("configs/mask.png")
+        result = Image.new(mode = "RGBA", size = (input.size[0] * 2, input.size[1] * 2), color = (0, 0, 0, 0))
+
+        args.batch_count = 1
+        config.lcm_diffusion_setting.image_width = 512
+        config.lcm_diffusion_setting.image_height = 512
+        config.lcm_diffusion_setting.number_of_images = 1
+
+        total_cols = int(input.size[0] / 256)      # Image width / tile size
+        total_rows = int(input.size[1] / 256)      # Image height / tile size
+        for y in range(0, total_rows):
+            y_offset = y * 16
+            for x in range(0, total_cols):
+                x_offset = x * 16
+                x1 = x * 256 - x_offset
+                y1 = y * 256 - y_offset
+                x2 = x1 + 256
+                y2 = y1 + 256
+                config.lcm_diffusion_setting.init_image = input.crop((x1, y1, x2, y2))
+                output_tile = generate_image_variations(config.lcm_diffusion_setting.init_image, args.strength)[0]
+                result.paste(output_tile, (x * 512 - x_offset * 2, y * 512 - y_offset * 2), mask)
+                output_tile.close()
+                config.lcm_diffusion_setting.init_image.close()
+        result.save("results/fastSD-" + str(int(time.time())) + ".png")
+        exit()
+    # If img2img argument is set and prompt is empty, use image variations mode
+    elif args.img2img and args.prompt == "":
+        for i in range(0, args.batch_count):
+            generate_image_variations(config.lcm_diffusion_setting.init_image, args.strength)
     else:
-        context.generate_text_to_image(
-            settings=config,
-            device=DEVICE,
-        )
+        for i in range(0, args.batch_count):
+            context.generate_text_to_image(
+                settings=config,
+                device=DEVICE,
+            )
