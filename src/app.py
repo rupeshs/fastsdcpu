@@ -11,6 +11,7 @@ from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from state import get_settings, get_context
+from backend.upscaler import upscale_image
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -269,36 +270,8 @@ else:
     # Perform Tiled SD upscale
     elif args.upscale:
         input = Image.open(args.file)
-        mask = Image.open("configs/mask.png")
-        result = Image.new(
-            mode="RGBA", size=(input.size[0] * 2, input.size[1] * 2), color=(0, 0, 0, 0)
-        )
-
-        args.batch_count = 1
-        config.lcm_diffusion_setting.image_width = 512
-        config.lcm_diffusion_setting.image_height = 512
-        config.lcm_diffusion_setting.number_of_images = 1
-
-        total_cols = int(input.size[0] / 256)  # Image width / tile size
-        total_rows = int(input.size[1] / 256)  # Image height / tile size
-        for y in range(0, total_rows):
-            y_offset = y * 16
-            for x in range(0, total_cols):
-                x_offset = x * 16
-                x1 = x * 256 - x_offset
-                y1 = y * 256 - y_offset
-                x2 = x1 + 256
-                y2 = y1 + 256
-                config.lcm_diffusion_setting.init_image = input.crop((x1, y1, x2, y2))
-                output_tile = generate_image_variations(
-                    config.lcm_diffusion_setting.init_image, args.strength
-                )[0]
-                result.paste(
-                    output_tile, (x * 512 - x_offset * 2, y * 512 - y_offset * 2), mask
-                )
-                output_tile.close()
-                config.lcm_diffusion_setting.init_image.close()
-        result.save("results/fastSD-" + str(int(time.time())) + ".png")
+        upscale_image(input, "results/fastSD-" + str(int(time.time())) + ".png")
+        # result.save("results/fastSD-" + str(int(time.time())) + ".png")
         exit()
     # If img2img argument is set and prompt is empty, use image variations mode
     elif args.img2img and args.prompt == "":
