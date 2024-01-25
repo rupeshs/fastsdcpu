@@ -11,7 +11,8 @@ from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from state import get_settings, get_context
-from backend.upscaler import upscale_image
+
+# from backend.upscaler import upscale_image
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -267,10 +268,10 @@ else:
                 device=DEVICE,
             )
 
-    # Perform Tiled SD upscale
+    # Perform Tiled SD upscale (EXPERIMENTAL)
     elif args.upscale:
         input = Image.open(args.file)
-        upscale_image(input, "results/fastSD-" + str(int(time.time())) + ".png")
+        # upscale_image(input, "results/fastSD-" + str(int(time.time())) + ".png")
         # result.save("results/fastSD-" + str(int(time.time())) + ".png")
         exit()
     # If img2img argument is set and prompt is empty, use image variations mode
