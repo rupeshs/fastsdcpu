@@ -25,7 +25,12 @@ $PYTHON_COMMAND -m venv "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
 pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
-pip install -r "$BASEDIR/requirements.txt"
+if [[ "$1" == "--disable-gui" ]]; then
+    #! For termux , we don't need Qt based GUI
+    pip install -r "$(grep -v "^ *#\|^PyQt5" requirements.txt | grep .)"
+else
+    pip install -r "$BASEDIR/requirements.txt"
+fi
 chmod +x "start.sh"
 chmod +x "start-webui.sh"
 read -n1 -r -p "FastSD CPU installation completed,press any key to continue..." key
