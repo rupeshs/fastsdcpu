@@ -27,7 +27,9 @@ source "$BASEDIR/env/bin/activate"
 pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu
 if [[ "$1" == "--disable-gui" ]]; then
     #! For termux , we don't need Qt based GUI
-    pip install -r "$(grep -v "^ *#\|^PyQt5" requirements.txt | grep .)"
+    packages="$(grep -v "^ *#\|^PyQt5" requirements.txt | grep .)" 
+    # shellcheck disable=SC2086
+    pip install $packages
 else
     pip install -r "$BASEDIR/requirements.txt"
 fi
