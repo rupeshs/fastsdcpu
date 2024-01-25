@@ -309,6 +309,8 @@ Start CLI  `src/app.py -h`
 
 FastSD CPU running on Google Pixel 7 Pro.
 
+![FastSD CPU Android Termux Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-android-termux-pixel7.png)
+
 ### 1. Prerequisites
 
 First you have to [install Termux](https://wiki.termux.com/wiki/Installing_from_F-Droid) and [install PRoot](https://wiki.termux.com/wiki/PRoot). Then install and login to Ubuntu in PRoot.
