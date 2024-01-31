@@ -3,12 +3,15 @@ import json
 import math
 import logging
 from PIL import Image, ImageDraw, ImageFilter
+from backend.models.lcmdiffusion_setting import DiffusionTask
 import paths
 from frontend.webui.image_variations_ui import generate_image_variations
+from context import Context
+from constants import DEVICE
 
 
 
-def generate_upscaled_image(config, input_path = None, strength = 0.3, scale_factor = 2.0, tile_overlap = 16, upscale_settings = None):
+def generate_upscaled_image(config, input_path = None, strength = 0.3, scale_factor = 2.0, tile_overlap = 16, upscale_settings = None, context: Context = None):
     if config == None or (input_path == None or input_path == "" and upscale_settings == None):
         logging.error("Wrong arguments in tiled upscale function call!")
         return
@@ -74,7 +77,7 @@ def generate_upscaled_image(config, input_path = None, strength = 0.3, scale_fac
 
     # Generate the output image tiles
     for i in range(0, len(upscale_settings["tiles"])):
-        generate_upscaled_tile(config, i, upscale_settings)
+        generate_upscaled_tile(config, i, upscale_settings, context = context)
 
     # Save completed upscaled image
     output_name = "FastSD-" + str(int(time.time())) + "." + upscale_settings["target_format"];
@@ -99,7 +102,7 @@ def generate_upscaled_image(config, input_path = None, strength = 0.3, scale_fac
 # generated tile into the target image using the corresponding mask and scale 
 # factor; note that scale factor for the target image and the individual tiles 
 # can be different, this function will adjust scale factors as needed
-def generate_upscaled_tile(config, index, upscale_settings):
+def generate_upscaled_tile(config, index, upscale_settings, context: Context = None):
     if config == None or upscale_settings == None:
         logging.error("Wrong arguments in tile creation function call!")
         return
@@ -125,20 +128,22 @@ def generate_upscaled_tile(config, index, upscale_settings):
     config.lcm_diffusion_setting.init_image = source_image.crop((x, y, x + w, y + h))
 
     current_tile = None
-    if (True):
+    if (tile_prompt == None or tile_prompt == ""):
         logging.info(f"Generating tile {index + 1}/{len(upscale_settings['tiles'])} using Image variations...")
         current_tile = generate_image_variations(
             config.lcm_diffusion_setting.init_image, strength
         )[0]
-#    else:
-#        # An attempt to use img2img with low denoising strength to 
-#        # generate the tiles with the extra aid of a prompt
-#        logging.info(f"Generating tile {index + 1}/{len(upscale_settings['tiles'])} using img2img...")
-#        context = get_context(InterfaceType.CLI)
-#        current_tile = context.generate_text_to_image(
-#            settings=config,
-#            device=DEVICE,
-#        )[0]
+    else:
+        # Attempt to use img2img with low denoising strength to 
+        # generate the tiles with the extra aid of a prompt
+        logging.info(f"Generating tile {index + 1}/{len(upscale_settings['tiles'])} using img2img...")
+        # context = get_context(InterfaceType.CLI)
+        config.lcm_diffusion_setting.diffusion_task = DiffusionTask.image_to_image.value
+        config.lcm_diffusion_setting.strength = strength
+        current_tile = context.generate_text_to_image(
+            settings=config,
+            device=DEVICE,
+        )[0]
     if (math.isclose(scale_factor, tile_scale_factor)):
         target_image.paste(
             current_tile, (int(x * scale_factor), int(y * scale_factor)), mask_image
@@ -165,6 +170,11 @@ def generate_tile_mask(config, index, upscale_settings):
     tile_scale_factor = upscale_settings["tiles"][index]["scale_factor"]
     w = int(upscale_settings["tiles"][index]["w"] * tile_scale_factor)
     h = int(upscale_settings["tiles"][index]["h"] * tile_scale_factor)
+    # The Stable Diffusion pipeline automatically adjusts the output size 
+    # to multiples of 8 pixels; the mask must be created with the same 
+    # size as the output tile
+    w = w - (w % 8)
+    h = h - (h % 8)
     mask_box = upscale_settings["tiles"][index]["mask_box"]
     if mask_box == None:
         # Build a default solid mask with soft/transparent edges

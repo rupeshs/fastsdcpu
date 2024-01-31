@@ -287,7 +287,8 @@ else:
             with open(args.custom_settings) as f:
                 upscale_settings = json.load(f)
         tiled_upscale.generate_upscaled_image(
-            config, args.file, args.strength, upscale_settings = upscale_settings
+            config, args.file, args.strength, 
+            upscale_settings = upscale_settings, context = context
         )
         exit()
     # If img2img argument is set and prompt is empty, use image variations mode
