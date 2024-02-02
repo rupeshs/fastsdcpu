@@ -3,8 +3,10 @@ from utils import show_system_info
 from PIL import Image
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from frontend.webui.image_variations_ui import generate_image_variations
+import tiled_upscale
 import constants
 import time
+import json
 from argparse import ArgumentParser
 
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
@@ -162,13 +164,19 @@ parser.add_argument(
 parser.add_argument(
     "--strength",
     type=float,
-    help="img2img strength",
+    help="Denoising strength for img2img and Image variations",
     default=0.3,
 )
 parser.add_argument(
     "--upscale",
     action="store_true",
     help="Tiled SD upscale",
+)
+parser.add_argument(
+    "--custom_settings",
+    type=str,
+    help="JSON file containing custom generation settings",
+    default=None,
 )
 args = parser.parse_args()
 
@@ -229,6 +237,7 @@ else:
     config.lcm_diffusion_setting.guidance_scale = args.guidance_scale
     config.lcm_diffusion_setting.number_of_images = args.number_of_images
     config.lcm_diffusion_setting.inference_steps = args.inference_steps
+    config.lcm_diffusion_setting.strength = args.strength
     config.lcm_diffusion_setting.seed = args.seed
     config.lcm_diffusion_setting.use_openvino = args.use_openvino
     config.lcm_diffusion_setting.use_tiny_auto_encoder = args.use_tiny_auto_encoder
@@ -243,11 +252,11 @@ else:
     elif args.img2img and args.file == "":
         print("Error : You need to specify a file in img2img mode")
         exit()
-    elif args.upscale and args.file == "":
+    elif args.upscale and args.file == "" and args.custom_settings == None:
         print("Error : You need to specify a file in SD upscale mode")
         exit()
-    elif args.prompt == "" and args.file == "":
-        print("Error : You need provide a prompt")
+    elif args.prompt == "" and args.file == "" and args.custom_settings == None:
+        print("Error : You need to provide a prompt")
         exit()
 
     if args.seed > -1:
@@ -270,9 +279,17 @@ else:
 
     # Perform Tiled SD upscale (EXPERIMENTAL)
     elif args.upscale:
-        input = Image.open(args.file)
+        # input = Image.open(args.file)
         # upscale_image(input, "results/fastSD-" + str(int(time.time())) + ".png")
         # result.save("results/fastSD-" + str(int(time.time())) + ".png")
+        upscale_settings = None
+        if args.custom_settings:
+            with open(args.custom_settings) as f:
+                upscale_settings = json.load(f)
+        tiled_upscale.generate_upscaled_image(
+            config, args.file, args.strength, 
+            upscale_settings = upscale_settings, context = context
+        )
         exit()
     # If img2img argument is set and prompt is empty, use image variations mode
     elif args.img2img and args.prompt == "":
