@@ -21,6 +21,7 @@ class Context:
         settings: Settings,
         reshape: bool = False,
         device: str = "cpu",
+        save_images=True,
     ) -> Any:
         tick = perf_counter()
         from state import get_settings
@@ -38,10 +39,12 @@ class Context:
             reshape,
         )
         elapsed = perf_counter() - tick
-        ImageSaver.save_images(
-            settings.results_path,
-            images=images,
-            lcm_diffusion_setting=settings.lcm_diffusion_setting,
-        )
+
+        if save_images:
+            ImageSaver.save_images(
+                settings.results_path,
+                images=images,
+                lcm_diffusion_setting=settings.lcm_diffusion_setting,
+            )
         print(f"Latency : {elapsed:.2f} seconds")
         return images

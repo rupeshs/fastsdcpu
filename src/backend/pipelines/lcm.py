@@ -25,12 +25,14 @@ def _get_lcm_pipeline_from_base_model(
         lcm_model_id,
         torch_dtype=torch.float32,
         local_files_only=use_local_model,
+        resume_download=True,
     )
     pipeline = DiffusionPipeline.from_pretrained(
         base_model_id,
         unet=unet,
         torch_dtype=torch.float32,
         local_files_only=use_local_model,
+        resume_download=True,
     )
     pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
     return pipeline

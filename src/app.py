@@ -285,6 +285,7 @@ else:
         result = upscale_image(input, "results/fastSD-" + str(int(time())) + ".png")
     # Perform Tiled SD upscale (EXPERIMENTAL)
     elif args.sdupscale:
+        config.lcm_diffusion_setting.strength = 0.1  # keeping it close to source image
         if args.use_openvino:
             print(
                 "ERROR : At the moment Tiled upscale doesn't work with OpenVINO models"
@@ -297,9 +298,10 @@ else:
         tiled_upscale.generate_upscaled_image(
             config,
             args.file,
-            args.strength,
+            config.lcm_diffusion_setting.strength,
             upscale_settings=upscale_settings,
             context=context,
+            tile_overlap=32 if config.lcm_diffusion_setting.use_openvino else 16,
         )
         exit()
     # If img2img argument is set and prompt is empty, use image variations mode
