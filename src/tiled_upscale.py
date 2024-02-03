@@ -130,6 +130,11 @@ def get_current_tile(
 ):
     config.lcm_diffusion_setting.strength = strength
     config.lcm_diffusion_setting.diffusion_task = DiffusionTask.image_to_image.value
+    if (
+        config.lcm_diffusion_setting.use_tiny_auto_encoder
+        and config.lcm_diffusion_setting.use_openvino
+    ):
+        config.lcm_diffusion_setting.use_tiny_auto_encoder = False
     current_tile = context.generate_text_to_image(
         settings=config,
         reshape=True,

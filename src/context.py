@@ -23,6 +23,13 @@ class Context:
         device: str = "cpu",
         save_images=True,
     ) -> Any:
+        if (
+            settings.lcm_diffusion_setting.use_tiny_auto_encoder
+            and settings.lcm_diffusion_setting.use_openvino
+        ):
+            print(
+                "WARNING: Tiny AutoEncoder is not supported in Image to image mode (OpenVINO)"
+            )
         tick = perf_counter()
         from state import get_settings
 
