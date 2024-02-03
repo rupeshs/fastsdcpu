@@ -282,6 +282,9 @@ else:
         # input = Image.open(args.file)
         # upscale_image(input, "results/fastSD-" + str(int(time.time())) + ".png")
         # result.save("results/fastSD-" + str(int(time.time())) + ".png")
+        if args.use_openvino:
+            print("ERROR : At the moment Tiled upscale doesn't work with OpenVINO models")
+            exit()
         upscale_settings = None
         if args.custom_settings:
             with open(args.custom_settings) as f:
