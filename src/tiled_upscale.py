@@ -3,8 +3,7 @@ import math
 import logging
 from PIL import Image, ImageDraw, ImageFilter
 from backend.models.lcmdiffusion_setting import DiffusionTask
-import paths
-from frontend.webui.image_variations_ui import generate_image_variations
+from paths import FastStableDiffusionPaths, get_file_name
 from context import Context
 from constants import DEVICE
 
@@ -30,7 +29,7 @@ def generate_upscaled_image(
         upscale_settings = {
             "source_file": input_path,
             "target_file": None,
-            "target_format": "jpg",
+            "target_format": "png",
             "strength": strength,
             "scale_factor": scale_factor,
             "tile_overlap": tile_overlap,
@@ -106,13 +105,13 @@ def generate_upscaled_image(
         )
 
     # Save completed upscaled image
-    output_name = (
-        "FastSD-" + str(int(time.time())) + "." + upscale_settings["target_format"]
+    file_name = get_file_name(input_path)
+    output_path = FastStableDiffusionPaths.get_upscale_filepath(
+        file_name,
+        scale_factor,
+        "png",
     )
-    output_path = paths.join_paths(
-        paths.FastStableDiffusionPaths.get_results_path(), output_name
-    )
-    logging.info("Saving " + output_path + "...")
+    print(f"Saving upscaled image {output_path}")
     if upscale_settings["target_format"] == "jpg":
         result_rgb = result.convert("RGB")
         result.close()

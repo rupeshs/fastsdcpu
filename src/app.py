@@ -7,6 +7,7 @@ import constants
 import json
 from time import time
 from argparse import ArgumentParser
+from paths import FastStableDiffusionPaths, get_file_name
 
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
@@ -281,8 +282,14 @@ else:
             )
 
     elif args.upscale:
-        input = Image.open(args.file)
-        result = upscale_image(input, "results/fastSD-" + str(int(time())) + ".png")
+        image = Image.open(args.file)
+        file_name = get_file_name(args.file)
+        output_path = FastStableDiffusionPaths.get_upscale_filepath(
+            file_name,
+            2,
+            "png",
+        )
+        result = upscale_image(image, output_path)
     # Perform Tiled SD upscale (EXPERIMENTAL)
     elif args.sdupscale:
         config.lcm_diffusion_setting.strength = 0.3 if args.use_openvino else 0.1

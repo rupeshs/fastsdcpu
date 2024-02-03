@@ -1,5 +1,7 @@
 import os
 import constants
+from pathlib import Path
+from time import time
 
 
 def join_paths(
@@ -7,6 +9,10 @@ def join_paths(
     second_path: str,
 ) -> str:
     return os.path.join(first_path, second_path)
+
+
+def get_file_name(file_path: str) -> str:
+    return Path(file_path).stem
 
 
 def get_app_path() -> str:
@@ -55,6 +61,18 @@ class FastStableDiffusionPaths:
             model_config_file,
         )
         return models_path
+
+    @staticmethod
+    def get_upscale_filepath(
+        file_name_src: str,
+        scale_factor: int,
+        extension: str,
+    ) -> str:
+        upscaled_filepath = join_paths(
+            FastStableDiffusionPaths.get_results_path(),
+            f"{file_name_src}_{int(scale_factor)}x_upscale_{int(time())}.{extension}",
+        )
+        return upscaled_filepath
 
 
 def get_base_folder_name(path: str) -> str:
