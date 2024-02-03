@@ -1,20 +1,18 @@
-from app_settings import AppSettings
 from utils import show_system_info
 from PIL import Image
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from frontend.webui.image_variations_ui import generate_image_variations
 import tiled_upscale
 import constants
-import time
 import json
+from time import time
 from argparse import ArgumentParser
 
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from state import get_settings, get_context
-
-# from backend.upscaler import upscale_image
+from backend.upscaler import upscale_image
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -168,9 +166,14 @@ parser.add_argument(
     default=0.3,
 )
 parser.add_argument(
+    "--sdupscale",
+    action="store_true",
+    help="Tiled SD upscale,works only for the resolution 512x512,scale upto 2X (no OpenVINO support)",
+)
+parser.add_argument(
     "--upscale",
     action="store_true",
-    help="Tiled SD upscale",
+    help="EDSR SD upscale ",
 )
 parser.add_argument(
     "--custom_settings",
@@ -277,21 +280,26 @@ else:
                 device=DEVICE,
             )
 
-    # Perform Tiled SD upscale (EXPERIMENTAL)
     elif args.upscale:
-        # input = Image.open(args.file)
-        # upscale_image(input, "results/fastSD-" + str(int(time.time())) + ".png")
-        # result.save("results/fastSD-" + str(int(time.time())) + ".png")
+        input = Image.open(args.file)
+        result = upscale_image(input, "results/fastSD-" + str(int(time())) + ".png")
+    # Perform Tiled SD upscale (EXPERIMENTAL)
+    elif args.sdupscale:
         if args.use_openvino:
-            print("ERROR : At the moment Tiled upscale doesn't work with OpenVINO models")
+            print(
+                "ERROR : At the moment Tiled upscale doesn't work with OpenVINO models"
+            )
             exit()
         upscale_settings = None
         if args.custom_settings:
             with open(args.custom_settings) as f:
                 upscale_settings = json.load(f)
         tiled_upscale.generate_upscaled_image(
-            config, args.file, args.strength, 
-            upscale_settings = upscale_settings, context = context
+            config,
+            args.file,
+            args.strength,
+            upscale_settings=upscale_settings,
+            context=context,
         )
         exit()
     # If img2img argument is set and prompt is empty, use image variations mode

@@ -1,4 +1,4 @@
-from super_image import EdsrModel, ImageLoader
+from backend.super_image import EdsrModel, ImageLoader
 from PIL import Image
 
 UPSCALE_MODEL = "eugenesiow/edsr-base"
