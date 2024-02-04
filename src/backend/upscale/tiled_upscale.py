@@ -174,19 +174,14 @@ def generate_upscaled_tile(
     config.lcm_diffusion_setting.init_image = source_image.crop((x, y, x + w, y + h))
 
     current_tile = None
+    print(f"[SD Upscale] Generating tile {index + 1}/{len(upscale_settings['tiles'])} ")
     if tile_prompt == None or tile_prompt == "":
-        logging.info(
-            f"Generating tile {index + 1}/{len(upscale_settings['tiles'])} using Image variations..."
-        )
         config.lcm_diffusion_setting.prompt = ""
         config.lcm_diffusion_setting.negative_prompt = ""
         current_tile = get_current_tile(config, context, strength)
     else:
         # Attempt to use img2img with low denoising strength to
         # generate the tiles with the extra aid of a prompt
-        logging.info(
-            f"Generating tile {index + 1}/{len(upscale_settings['tiles'])} using img2img..."
-        )
         # context = get_context(InterfaceType.CLI)
         current_tile = get_current_tile(config, context, strength)
 
