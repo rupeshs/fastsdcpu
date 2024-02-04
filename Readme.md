@@ -98,6 +98,8 @@ You can directly use these models in FastSD CPU.
 - Added SD Turbo support
 - Added image to image support for Turbo models (Pytorch and OpenVINO)
 - Added image variations support
+- Added 2x upscaler (EDSR and SD upscale (experimental)),thanks [monstruosoft](https://github.com/monstruosoft) for SD upscale
+- Works on Android + Termux + PRoot
 
 ## 2 Steps fast inference
 
@@ -319,11 +321,17 @@ First you have to [install Termux](https://wiki.termux.com/wiki/Installing_from_
 
 Run the following command to install without Qt GUI.
 
+ `proot-distro login ubuntu`
+
  `./install.sh --disable-gui`
 
  After the installation you can use WebUi.
 
   `./start-webui.sh`
+
+  Note : If you get `libgl.so.1` import error run `apt-get install ffmpeg`.
+
+  Thanks [patienx](https://github.com/patientx) for this guide  [Step by step guide to installing FASTSDCPU on ANDROID](https://github.com/rupeshs/fastsdcpu/discussions/123)
 
 ## Raspberry PI 4 support
 
