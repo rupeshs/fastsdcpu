@@ -2,18 +2,17 @@ from utils import show_system_info
 from PIL import Image
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from frontend.webui.image_variations_ui import generate_image_variations
-import tiled_upscale
+from backend.upscale.tiled_upscale import generate_upscaled_image
 import constants
 import json
-from time import time
 from argparse import ArgumentParser
-from paths import FastStableDiffusionPaths, get_file_name
+from paths import FastStableDiffusionPaths
 
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
 from constants import DEVICE
 from state import get_settings, get_context
-from backend.upscaler import upscale_image
+from backend.upscale.upscaler import upscale_image
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -288,7 +287,12 @@ else:
             2,
             "png",
         )
-        result = upscale_image(image, output_path)
+        result = upscale_image(
+            context,
+            image,
+            output_path,
+            2,
+        )
     # Perform Tiled SD upscale (EXPERIMENTAL)
     elif args.sdupscale:
         config.lcm_diffusion_setting.strength = 0.3 if args.use_openvino else 0.1
@@ -301,7 +305,8 @@ else:
         if args.custom_settings:
             with open(args.custom_settings) as f:
                 upscale_settings = json.load(f)
-        tiled_upscale.generate_upscaled_image(
+
+        generate_upscaled_image(
             config,
             Image.open(args.file),
             config.lcm_diffusion_setting.strength,

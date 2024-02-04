@@ -107,7 +107,6 @@ def generate_upscaled_image(
         )
 
     # Save completed upscaled image
-    print(f"Saving upscaled image {output_path}")
     if upscale_settings["target_format"] == "jpg":
         result_rgb = result.convert("RGB")
         result.close()
