@@ -3,7 +3,6 @@ import math
 import logging
 from PIL import Image, ImageDraw, ImageFilter
 from backend.models.lcmdiffusion_setting import DiffusionTask
-from paths import FastStableDiffusionPaths, get_file_name
 from context import Context
 from constants import DEVICE
 
@@ -134,6 +133,7 @@ def get_current_tile(
         reshape=True,
         device=DEVICE,
         save_images=False,
+        save_config=False,
     )[0]
     return current_tile
 

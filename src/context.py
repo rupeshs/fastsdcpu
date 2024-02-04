@@ -13,7 +13,7 @@ class Context:
         interface_type: InterfaceType,
         device="cpu",
     ):
-        self.interface_type = interface_type
+        self.interface_type = interface_type.value
         self.lcm_text_to_image = LCMTextToImage(device)
 
     def generate_text_to_image(
@@ -22,6 +22,7 @@ class Context:
         reshape: bool = False,
         device: str = "cpu",
         save_images=True,
+        save_config=True,
     ) -> Any:
         if (
             settings.lcm_diffusion_setting.use_tiny_auto_encoder
@@ -33,7 +34,9 @@ class Context:
         tick = perf_counter()
         from state import get_settings
 
-        get_settings().save()
+        if save_config:
+            get_settings().save()
+
         pprint(settings.lcm_diffusion_setting.model_dump())
         if not settings.lcm_diffusion_setting.lcm_lora:
             return None

@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pprint import pprint
 
 app_settings = get_settings()
-context = get_context(InterfaceType.WEBUI)
+
 previous_width = 0
 previous_height = 0
 previous_model_id = ""
@@ -20,6 +20,7 @@ def generate_text_to_image(
     prompt,
     neg_prompt,
 ) -> Any:
+    context = get_context(InterfaceType.WEBUI)
     global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
     app_settings.settings.lcm_diffusion_setting.negative_prompt = neg_prompt

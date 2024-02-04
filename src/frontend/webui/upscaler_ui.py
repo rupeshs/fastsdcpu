@@ -1,7 +1,6 @@
 from typing import Any
 import gradio as gr
 from models.interface_types import InterfaceType
-from constants import DEVICE
 from state import get_settings, get_context
 from backend.upscale.upscaler import upscale_image
 from backend.models.upscale import UpscaleMode
@@ -10,17 +9,18 @@ from time import time
 
 app_settings = get_settings()
 
-context = get_context(InterfaceType.WEBUI)
+
 previous_width = 0
 previous_height = 0
 previous_model_id = ""
 previous_num_of_images = 0
 
 
-def generate_image_to_image(
+def create_upscaled_image(
     source_image,
     upscale_mode,
 ) -> Any:
+    context = get_context(InterfaceType.WEBUI)
     scale_factor = 2
     extension = "png"
     if upscale_mode == "SD":
@@ -75,7 +75,7 @@ def get_upscaler_ui() -> None:
                 )
 
     generate_btn.click(
-        fn=generate_image_to_image,
+        fn=create_upscaled_image,
         inputs=input_params,
         outputs=output,
     )

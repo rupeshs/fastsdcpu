@@ -27,6 +27,7 @@ class AppSettings:
         self._lcm_models = get_models_from_text_file(
             FastStableDiffusionPaths().get_models_config_path(LCM_MODELS_FILE)
         )
+        self._config = None
 
     @property
     def settings(self):
@@ -52,7 +53,7 @@ class AppSettings:
         if skip_file:
             print("Skipping config file")
             settings_dict = self._load_default()
-            self._config = Settings.parse_obj(settings_dict)
+            self._config = Settings.model_validate(settings_dict)
         else:
             if not path.exists(self.config_path):
                 base_dir = path.dirname(self.config_path)
@@ -71,7 +72,7 @@ class AppSettings:
             try:
                 with open(self.config_path) as file:
                     settings_dict = yaml.safe_load(file)
-                    self._config = Settings.parse_obj(settings_dict)
+                    self._config = Settings.model_validate(settings_dict)
             except Exception as ex:
                 print(f"Error in loading settings : {ex}")
 
@@ -80,10 +81,10 @@ class AppSettings:
             with open(self.config_path, "w") as file:
                 tmp_cfg = deepcopy(self._config)
                 tmp_cfg.lcm_diffusion_setting.init_image = None
-                yaml.dump(tmp_cfg.dict(), file)
+                yaml.dump(tmp_cfg.model_dump(), file)
         except Exception as ex:
             print(f"Error in saving settings : {ex}")
 
     def _load_default(self) -> dict:
         defult_config = Settings()
-        return defult_config.dict()
+        return defult_config.model_dump()

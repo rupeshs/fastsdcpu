@@ -7,9 +7,9 @@ from constants import DEVICE
 from state import get_settings, get_context
 from concurrent.futures import ThreadPoolExecutor
 
+
 app_settings = get_settings()
 
-context = get_context(InterfaceType.WEBUI)
 previous_width = 0
 previous_height = 0
 previous_model_id = ""
@@ -22,6 +22,7 @@ def generate_image_to_image(
     init_image,
     strength,
 ) -> Any:
+    context = get_context(InterfaceType.WEBUI)
     global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
 
     app_settings.settings.lcm_diffusion_setting.prompt = prompt

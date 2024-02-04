@@ -74,8 +74,8 @@ parser.add_argument(
 parser.add_argument(
     "--inference_steps",
     type=int,
-    help="Number of steps,default : 4",
-    default=4,
+    help="Number of steps,default : 1",
+    default=1,
 )
 parser.add_argument(
     "--guidance_scale",
