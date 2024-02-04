@@ -5,6 +5,7 @@ from frontend.webui.image_to_image_ui import get_image_to_image_ui
 from frontend.webui.generation_settings_ui import get_generation_settings_ui
 from frontend.webui.models_ui import get_models_ui
 from frontend.webui.image_variations_ui import get_image_variations_ui
+from frontend.webui.upscaler_ui import get_upscaler_ui
 from paths import FastStableDiffusionPaths
 from state import get_settings
 
@@ -56,6 +57,8 @@ def get_web_ui() -> gr.Blocks:
                 get_image_to_image_ui()
             with gr.TabItem("Image Variations"):
                 get_image_variations_ui()
+            with gr.TabItem("Upscaler"):
+                get_upscaler_ui()
             with gr.TabItem("Generation Settings"):
                 get_generation_settings_ui()
             with gr.TabItem("Models"):

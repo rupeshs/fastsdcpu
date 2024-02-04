@@ -64,10 +64,11 @@ class FastStableDiffusionPaths:
 
     @staticmethod
     def get_upscale_filepath(
-        file_name_src: str,
+        file_path_src: str,
         scale_factor: int,
         extension: str,
     ) -> str:
+        file_name_src = get_file_name(file_path_src)
         upscaled_filepath = join_paths(
             FastStableDiffusionPaths.get_results_path(),
             f"{file_name_src}_{int(scale_factor)}x_upscale_{int(time())}.{extension}",

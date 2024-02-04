@@ -283,9 +283,8 @@ else:
 
     elif args.upscale:
         image = Image.open(args.file)
-        file_name = get_file_name(args.file)
         output_path = FastStableDiffusionPaths.get_upscale_filepath(
-            file_name,
+            args.file,
             2,
             "png",
         )
@@ -294,16 +293,22 @@ else:
     elif args.sdupscale:
         config.lcm_diffusion_setting.strength = 0.3 if args.use_openvino else 0.1
         upscale_settings = None
+        output_path = FastStableDiffusionPaths.get_upscale_filepath(
+            args.file,
+            2,
+            "png",
+        )
         if args.custom_settings:
             with open(args.custom_settings) as f:
                 upscale_settings = json.load(f)
         tiled_upscale.generate_upscaled_image(
             config,
-            args.file,
+            Image.open(args.file),
             config.lcm_diffusion_setting.strength,
             upscale_settings=upscale_settings,
             context=context,
             tile_overlap=32 if config.lcm_diffusion_setting.use_openvino else 16,
+            output_path=output_path,
         )
         exit()
     # If img2img argument is set and prompt is empty, use image variations mode

@@ -10,15 +10,16 @@ from constants import DEVICE
 
 def generate_upscaled_image(
     config,
-    input_path=None,
+    input_image=None,
     strength=0.3,
     scale_factor=2.0,
     tile_overlap=16,
     upscale_settings=None,
     context: Context = None,
+    output_path=None,
 ):
     if config == None or (
-        input_path == None or input_path == "" and upscale_settings == None
+        input_image == None or input_image == "" and upscale_settings == None
     ):
         logging.error("Wrong arguments in tiled upscale function call!")
         return
@@ -27,7 +28,7 @@ def generate_upscaled_image(
     # upscale_settings dict using the function arguments and default values
     if upscale_settings == None:
         upscale_settings = {
-            "source_file": input_path,
+            "source_file": input_image,
             "target_file": None,
             "target_format": "png",
             "strength": strength,
@@ -36,9 +37,10 @@ def generate_upscaled_image(
             "tile_size": 256,
             "tiles": [],
         }
+        source_image = input_image  # PIL image
+    else:
+        source_image = Image.open(upscale_settings["source_file"])
 
-    # Open/create input and output images
-    source_image = Image.open(upscale_settings["source_file"])
     upscale_settings["source_image"] = source_image
 
     if upscale_settings["target_file"]:
@@ -105,12 +107,6 @@ def generate_upscaled_image(
         )
 
     # Save completed upscaled image
-    file_name = get_file_name(input_path)
-    output_path = FastStableDiffusionPaths.get_upscale_filepath(
-        file_name,
-        scale_factor,
-        "png",
-    )
     print(f"Saving upscaled image {output_path}")
     if upscale_settings["target_format"] == "jpg":
         result_rgb = result.convert("RGB")
