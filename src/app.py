@@ -168,7 +168,7 @@ parser.add_argument(
 parser.add_argument(
     "--sdupscale",
     action="store_true",
-    help="Tiled SD upscale,works only for the resolution 512x512,scale upto 2X (no OpenVINO support)",
+    help="Tiled SD upscale,works only for the resolution 512x512,(2x upscale)",
 )
 parser.add_argument(
     "--upscale",

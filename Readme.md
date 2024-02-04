@@ -99,7 +99,7 @@ You can directly use these models in FastSD CPU.
 - Added SD Turbo support
 - Added image to image support for Turbo models (Pytorch and OpenVINO)
 - Added image variations support
-- Added 2x upscaler (EDSR and SD upscale (experimental)),thanks [monstruosoft](https://github.com/monstruosoft) for SD upscale
+- Added 2x upscaler (EDSR and Tiled SD upscale (experimental)),thanks [monstruosoft](https://github.com/monstruosoft) for SD upscale
 - Works on Android + Termux + PRoot
 
 ## 2 Steps fast inference
