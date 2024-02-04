@@ -180,7 +180,6 @@ def generate_upscaled_tile(
         )
         config.lcm_diffusion_setting.prompt = ""
         config.lcm_diffusion_setting.negative_prompt = ""
-        print("promptt", config.lcm_diffusion_setting.prompt)
         current_tile = get_current_tile(config, context, strength)
     else:
         # Attempt to use img2img with low denoising strength to

@@ -1,6 +1,7 @@
 from typing import Any
 from app_settings import Settings
 from models.interface_types import InterfaceType
+from backend.models.lcmdiffusion_setting import DiffusionTask
 from backend.lcm_text_to_image import LCMTextToImage
 from time import perf_counter
 from backend.image_saver import ImageSaver
@@ -33,6 +34,12 @@ class Context:
             )
         tick = perf_counter()
         from state import get_settings
+
+        if (
+            settings.lcm_diffusion_setting.diffusion_task
+            == DiffusionTask.text_to_image.value
+        ):
+            settings.lcm_diffusion_setting.init_image = None
 
         if save_config:
             get_settings().save()
