@@ -68,6 +68,7 @@ class FastStableDiffusionPaths:
         scale_factor: int,
         extension: str,
     ) -> str:
+        print(extension)
         file_name_src = get_file_name(file_path_src)
         upscaled_filepath = join_paths(
             FastStableDiffusionPaths.get_results_path(),

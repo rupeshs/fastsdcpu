@@ -48,6 +48,11 @@ def on_offline_checkbox(offline_checkbox):
     app_settings.settings.lcm_diffusion_setting.use_offline_model = offline_checkbox
 
 
+def on_change_image_format(image_format):
+    app_settings.settings.generated_images.format = image_format
+    app_settings.save()
+
+
 def get_generation_settings_ui() -> None:
     with gr.Blocks():
         with gr.Row():
@@ -123,6 +128,12 @@ def get_generation_settings_ui() -> None:
                     value=app_settings.settings.lcm_diffusion_setting.use_offline_model,
                     interactive=True,
                 )
+                img_format = gr.Radio(
+                    label="Output image format",
+                    choices=["PNG", "JPEG"],
+                    value=app_settings.settings.generated_images.format.upper(),
+                    interactive=True,
+                )
 
         num_inference_steps.change(on_change_inference_steps, num_inference_steps)
         image_height.change(on_change_image_height, image_height)
@@ -138,3 +149,4 @@ def get_generation_settings_ui() -> None:
             on_change_tiny_auto_encoder_checkbox, tiny_auto_encoder_checkbox
         )
         offline_checkbox.change(on_offline_checkbox, offline_checkbox)
+        img_format.change(on_change_image_format, img_format)

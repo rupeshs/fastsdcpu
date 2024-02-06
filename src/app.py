@@ -285,7 +285,7 @@ else:
         output_path = FastStableDiffusionPaths.get_upscale_filepath(
             args.file,
             2,
-            "png",
+            config.generated_images.format,
         )
         result = upscale_image(
             context,
@@ -300,7 +300,7 @@ else:
         output_path = FastStableDiffusionPaths.get_upscale_filepath(
             args.file,
             2,
-            "png",
+            config.generated_images.format,
         )
         if args.custom_settings:
             with open(args.custom_settings) as f:

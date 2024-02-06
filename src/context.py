@@ -62,6 +62,7 @@ class Context:
                 settings.results_path,
                 images=images,
                 lcm_diffusion_setting=settings.lcm_diffusion_setting,
+                format=settings.generated_images.format,
             )
         print(f"Latency : {elapsed:.2f} seconds")
         return images

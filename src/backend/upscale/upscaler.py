@@ -49,6 +49,7 @@ def upscale_image(
                 32 if config.settings.lcm_diffusion_setting.use_openvino else 16
             ),
             output_path=dst_image_path,
+            image_format=config.settings.generated_images.format,
         )
         print(f"Upscaled image saved {dst_image_path}")
 
