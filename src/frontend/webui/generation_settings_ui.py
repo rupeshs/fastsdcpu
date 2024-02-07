@@ -1,5 +1,6 @@
 import gradio as gr
 from state import get_settings
+from backend.models.gen_images import ImageFormat
 
 app_settings = get_settings()
 
@@ -49,7 +50,11 @@ def on_offline_checkbox(offline_checkbox):
 
 
 def on_change_image_format(image_format):
-    app_settings.settings.generated_images.format = image_format
+    if image_format == "PNG":
+        app_settings.settings.generated_images.format = ImageFormat.PNG.value.upper()
+    else:
+        app_settings.settings.generated_images.format = ImageFormat.JPEG.value.upper()
+
     app_settings.save()
 
 
@@ -131,7 +136,7 @@ def get_generation_settings_ui() -> None:
                 img_format = gr.Radio(
                     label="Output image format",
                     choices=["PNG", "JPEG"],
-                    value=app_settings.settings.generated_images.format.upper(),
+                    value=app_settings.settings.generated_images.format,
                     interactive=True,
                 )
 
