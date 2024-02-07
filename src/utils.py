@@ -1,6 +1,5 @@
 import platform
 from typing import List
-from backend.models.gen_images import ImageFormat
 
 
 def show_system_info():
@@ -23,7 +22,7 @@ def get_models_from_text_file(file_path: str) -> List:
 
 
 def get_image_file_extension(image_format: str) -> str:
-    if image_format == ImageFormat.JPEG.value.upper():
+    if image_format == "JPEG":
         return ".jpg"
-    elif image_format == ImageFormat.PNG.value.upper():
+    elif image_format == "PNG":
         return ".png"
