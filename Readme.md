@@ -4,7 +4,7 @@ FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Cons
 [Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/).
 The following interfaces are available :
 
-- Desktop GUI (Qt)
+- Desktop GUI (Qt,faster)
 - WebUI
 - CLI (CommandLine Interface)
 
@@ -52,15 +52,12 @@ We have converted SD/SDXL Turbo models to OpenVINO for fast inference on CPU. Th
 
 You can directly use these models in FastSD CPU.
 
-## Know issues
-
-- TAESD will not work with OpenVINO image to image workflow
-
 ## Supported platforms
 
 - Windows
 - Linux
 - Mac
+- Android + Termux
 - Raspberry PI 4
 
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
@@ -338,6 +335,10 @@ Run the following command to install without Qt GUI.
 
 Thanks WGNW_MGM for Raspberry PI 4 testing.FastSD CPU worked without problems.
 System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
+
+## Know issues
+
+- TAESD will not work with OpenVINO image to image workflow
 
 ### License
 
