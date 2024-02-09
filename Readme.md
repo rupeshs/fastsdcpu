@@ -1,16 +1,25 @@
-# FastSD CPU :sparkles:
+# FastSD CPU :sparkles: [![Mentioned in Awesome OpenVINO](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/openvinotoolkit/awesome-openvino)
 
 FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) and
 [Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/).
+
 The following interfaces are available :
 
 - Desktop GUI (Qt,faster)
 - WebUI
 - CLI (CommandLine Interface)
 
-Using __OpenVINO(SD Turbo)__, it took __1.7 seconds__ to create a single 512x512 image on a __Core i7-12700__.
+🚀 Using __OpenVINO(SD Turbo)__, it took __1.7 seconds__ to create a single 512x512 image on a __Core i7-12700__.
 
-## Fast 1 step inference (SD/SDXL Turbo - Adversarial Diffusion Distillation,ADD)
+## Supported platforms⚡️
+
+- Windows
+- Linux
+- Mac
+- Android + Termux
+- Raspberry PI 4
+
+## 🚀 Fast 1 step inference (SD/SDXL Turbo - Adversarial Diffusion Distillation,ADD)
 
 Added support for ultra fast 1 step inference using [sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) model
 
@@ -51,14 +60,6 @@ We have converted SD/SDXL Turbo models to OpenVINO for fast inference on CPU. Th
 - *TAESDXL OpenVINO* - [rupeshs/taesdxl-openvino](https://huggingface.co/rupeshs/taesdxl-openvino)
 
 You can directly use these models in FastSD CPU.
-
-## Supported platforms
-
-- Windows
-- Linux
-- Mac
-- Android + Termux
-- Raspberry PI 4
 
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
