@@ -16,6 +16,7 @@ def generate_upscaled_image(
     upscale_settings=None,
     context: Context = None,
     output_path=None,
+    image_format="PNG",
 ):
     if config == None or (
         input_image == None or input_image == "" and upscale_settings == None
@@ -29,7 +30,6 @@ def generate_upscaled_image(
         upscale_settings = {
             "source_file": input_image,
             "target_file": None,
-            "target_format": "png",
             "strength": strength,
             "scale_factor": scale_factor,
             "tile_overlap": tile_overlap,
@@ -106,7 +106,7 @@ def generate_upscaled_image(
         )
 
     # Save completed upscaled image
-    if upscale_settings["target_format"] == "jpg":
+    if image_format == "JPEG":
         result_rgb = result.convert("RGB")
         result.close()
         result = result_rgb

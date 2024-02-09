@@ -2,6 +2,7 @@ import os
 import constants
 from pathlib import Path
 from time import time
+from utils import get_image_file_extension
 
 
 def join_paths(
@@ -66,9 +67,10 @@ class FastStableDiffusionPaths:
     def get_upscale_filepath(
         file_path_src: str,
         scale_factor: int,
-        extension: str,
+        format: str,
     ) -> str:
         file_name_src = get_file_name(file_path_src)
+        extension = get_image_file_extension(format)
         upscaled_filepath = join_paths(
             FastStableDiffusionPaths.get_results_path(),
             f"{file_name_src}_{int(scale_factor)}x_upscale_{int(time())}.{extension}",

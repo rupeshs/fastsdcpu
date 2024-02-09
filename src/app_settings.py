@@ -81,7 +81,9 @@ class AppSettings:
             with open(self.config_path, "w") as file:
                 tmp_cfg = deepcopy(self._config)
                 tmp_cfg.lcm_diffusion_setting.init_image = None
-                configurations = tmp_cfg.model_dump()
+                configurations = tmp_cfg.model_dump(
+                    exclude=["init_image"],
+                )
                 if configurations:
                     yaml.dump(configurations, file)
         except Exception as ex:

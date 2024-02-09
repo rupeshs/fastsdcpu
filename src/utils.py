@@ -19,3 +19,10 @@ def get_models_from_text_file(file_path: str) -> List:
         if repo_id.strip() != "":
             models.append(repo_id.strip())
     return models
+
+
+def get_image_file_extension(image_format: str) -> str:
+    if image_format == "JPEG":
+        return ".jpg"
+    elif image_format == "PNG":
+        return ".png"

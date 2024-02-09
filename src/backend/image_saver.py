@@ -1,8 +1,9 @@
+import json
 from os import path, mkdir
 from typing import Any
 from uuid import uuid4
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
-import json
+from utils import get_image_file_extension
 
 
 class ImageSaver:
@@ -11,7 +12,7 @@ class ImageSaver:
         output_path: str,
         images: Any,
         folder_name: str = "",
-        format: str = ".png",
+        format: str = "PNG",
         lcm_diffusion_setting: LCMDiffusionSetting = None,
     ) -> None:
         gen_id = uuid4()
@@ -30,11 +31,17 @@ class ImageSaver:
 
             if not path.exists(out_path):
                 mkdir(out_path)
-            image.save(path.join(out_path, f"{gen_id}-{index+1}{format}"))
+            image_extension = get_image_file_extension(format)
+            image.save(path.join(out_path, f"{gen_id}-{index+1}{image_extension}"))
         if lcm_diffusion_setting:
             with open(path.join(out_path, f"{gen_id}.json"), "w") as json_file:
                 json.dump(
-                    lcm_diffusion_setting.model_dump(exclude="init_image"),
+                    lcm_diffusion_setting.model_dump(
+                        exclude=[
+                            "init_image",
+                            "generated_images",
+                        ],
+                    ),
                     json_file,
                     indent=4,
                 )

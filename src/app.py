@@ -1,6 +1,7 @@
 from utils import show_system_info
 from PIL import Image
 from backend.models.lcmdiffusion_setting import DiffusionTask
+from backend.models.gen_images import ImageFormat
 from frontend.webui.image_variations_ui import generate_image_variations
 from backend.upscale.tiled_upscale import generate_upscaled_image
 import constants
@@ -50,8 +51,8 @@ group.add_argument(
 parser.add_argument(
     "--lcm_model_id",
     type=str,
-    help="Model ID or path,Default SimianLuo/LCM_Dreamshaper_v7",
-    default="SimianLuo/LCM_Dreamshaper_v7",
+    help="Model ID or path,Default stabilityai/sd-turbo",
+    default="stabilityai/sd-turbo",
 )
 parser.add_argument(
     "--prompt",
@@ -181,6 +182,11 @@ parser.add_argument(
     help="JSON file containing custom generation settings",
     default=None,
 )
+parser.add_argument(
+    "--usejpeg",
+    action="store_true",
+    help="Images will be saved as JPEG format",
+)
 args = parser.parse_args()
 
 if args.version:
@@ -248,6 +254,8 @@ else:
     config.lcm_diffusion_setting.lcm_lora.base_model_id = args.base_model_id
     config.lcm_diffusion_setting.lcm_lora.lcm_lora_id = args.lcm_lora_id
     config.lcm_diffusion_setting.diffusion_task = DiffusionTask.text_to_image.value
+    if args.usejpeg:
+        config.generated_images.format = ImageFormat.JPEG.value.upper()
 
     if args.img2img and args.file != "":
         config.lcm_diffusion_setting.init_image = Image.open(args.file)
@@ -285,7 +293,7 @@ else:
         output_path = FastStableDiffusionPaths.get_upscale_filepath(
             args.file,
             2,
-            "png",
+            config.generated_images.format,
         )
         result = upscale_image(
             context,
@@ -300,7 +308,7 @@ else:
         output_path = FastStableDiffusionPaths.get_upscale_filepath(
             args.file,
             2,
-            "png",
+            config.generated_images.format,
         )
         if args.custom_settings:
             with open(args.custom_settings) as f:

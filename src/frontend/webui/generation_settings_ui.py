@@ -1,5 +1,6 @@
 import gradio as gr
 from state import get_settings
+from backend.models.gen_images import ImageFormat
 
 app_settings = get_settings()
 
@@ -46,6 +47,15 @@ def on_change_tiny_auto_encoder_checkbox(tiny_auto_encoder_checkbox):
 
 def on_offline_checkbox(offline_checkbox):
     app_settings.settings.lcm_diffusion_setting.use_offline_model = offline_checkbox
+
+
+def on_change_image_format(image_format):
+    if image_format == "PNG":
+        app_settings.settings.generated_images.format = ImageFormat.PNG.value.upper()
+    else:
+        app_settings.settings.generated_images.format = ImageFormat.JPEG.value.upper()
+
+    app_settings.save()
 
 
 def get_generation_settings_ui() -> None:
@@ -123,6 +133,12 @@ def get_generation_settings_ui() -> None:
                     value=app_settings.settings.lcm_diffusion_setting.use_offline_model,
                     interactive=True,
                 )
+                img_format = gr.Radio(
+                    label="Output image format",
+                    choices=["PNG", "JPEG"],
+                    value=app_settings.settings.generated_images.format,
+                    interactive=True,
+                )
 
         num_inference_steps.change(on_change_inference_steps, num_inference_steps)
         image_height.change(on_change_image_height, image_height)
@@ -138,3 +154,4 @@ def get_generation_settings_ui() -> None:
             on_change_tiny_auto_encoder_checkbox, tiny_auto_encoder_checkbox
         )
         offline_checkbox.change(on_offline_checkbox, offline_checkbox)
+        img_format.change(on_change_image_format, img_format)
