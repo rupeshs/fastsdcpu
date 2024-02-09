@@ -337,7 +337,7 @@ Run the following command to install without Qt GUI.
 Thanks WGNW_MGM for Raspberry PI 4 testing.FastSD CPU worked without problems.
 System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
 
-## Know issues
+## Known issues
 
 - TAESD will not work with OpenVINO image to image workflow
 
