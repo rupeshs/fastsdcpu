@@ -60,7 +60,7 @@ class MainWindow(QMainWindow):
         self.init_ui_values()
         self.gen_images = []
         self.image_index = 0
-        print(f"Output path : {  self.config.settings.results_path}")
+        print(f"Output path : {  self.config.settings.generated_images.path}")
 
     def init_ui_values(self):
         self.lcm_model.setEnabled(
@@ -90,7 +90,7 @@ class MainWindow(QMainWindow):
         self.use_local_model_folder.setChecked(
             self.config.settings.lcm_diffusion_setting.use_offline_model
         )
-        self.results_path.setText(self.config.settings.results_path)
+        self.results_path.setText(self.config.settings.generated_images.path)
         self.num_images.setValue(
             self.config.settings.lcm_diffusion_setting.number_of_images
         )
@@ -390,7 +390,9 @@ class MainWindow(QMainWindow):
                 self.next_img_btn.setEnabled(False)
 
     def on_open_results_folder(self):
-        QDesktopServices.openUrl(QUrl.fromLocalFile(self.config.settings.results_path))
+        QDesktopServices.openUrl(
+            QUrl.fromLocalFile(self.config.settings.generated_images.path)
+        )
 
     def on_show_previous_image(self):
         if self.image_index != 0:
@@ -401,7 +403,7 @@ class MainWindow(QMainWindow):
                 self.previous_img_btn.setEnabled(False)
 
     def on_path_changed(self, text):
-        self.config.settings.results_path = text
+        self.config.settings.generated_images.path = text
 
     def on_browse_folder(self):
         options = QFileDialog.Options()
@@ -412,7 +414,7 @@ class MainWindow(QMainWindow):
         )
 
         if folder_path:
-            self.config.settings.results_path = folder_path
+            self.config.settings.generated_images.path = folder_path
             self.results_path.setText(folder_path)
 
     def on_width_changed(self, index):

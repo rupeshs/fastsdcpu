@@ -59,7 +59,7 @@ class Context:
 
         if save_images:
             ImageSaver.save_images(
-                settings.results_path,
+                settings.generated_images.path,
                 images=images,
                 lcm_diffusion_setting=settings.lcm_diffusion_setting,
                 format=settings.generated_images.format,
