@@ -187,6 +187,11 @@ parser.add_argument(
     action="store_true",
     help="Images will be saved as JPEG format",
 )
+parser.add_argument(
+    "--noimagesave",
+    action="store_true",
+    help="Disable image saving",
+)
 args = parser.parse_args()
 
 if args.version:
@@ -211,6 +216,12 @@ print(
 print(
     f"Found {len(app_settings.openvino_lcm_models)} OpenVINO LCM models in config/openvino-lcm-models.txt"
 )
+
+if args.noimagesave:
+    app_settings.settings.generated_images.save_image = False
+else:
+    app_settings.settings.generated_images.save_image = True
+
 if args.gui:
     from frontend.gui.ui import start_gui
 

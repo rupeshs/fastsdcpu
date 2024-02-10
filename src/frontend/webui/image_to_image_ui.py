@@ -58,11 +58,7 @@ def generate_image_to_image(
             DEVICE,
         )
         images = future.result()
-    # images = context.generate_text_to_image(
-    #     app_settings.settings,
-    #     reshape,
-    #     DEVICE,
-    # )
+
     previous_width = image_width
     previous_height = image_height
     previous_model_id = model_id

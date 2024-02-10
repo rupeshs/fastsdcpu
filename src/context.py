@@ -57,7 +57,7 @@ class Context:
         )
         elapsed = perf_counter() - tick
 
-        if save_images:
+        if save_images and settings.generated_images.save_image:
             ImageSaver.save_images(
                 settings.generated_images.path,
                 images=images,
