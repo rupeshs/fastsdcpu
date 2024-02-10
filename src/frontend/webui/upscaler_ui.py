@@ -45,7 +45,7 @@ def get_upscaler_ui() -> None:
     with gr.Blocks():
         with gr.Row():
             with gr.Column():
-                input_image = gr.Image(label="Image", type="pil")
+                input_image = gr.Image(label="Image", type="filepath")
                 with gr.Row():
                     upscale_mode = gr.Radio(
                         ["EDSR", "SD"],
