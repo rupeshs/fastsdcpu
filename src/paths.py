@@ -69,11 +69,15 @@ class FastStableDiffusionPaths:
         scale_factor: int,
         format: str,
     ) -> str:
-        file_name_src = get_file_name(file_path_src)
+        if file_path_src:
+            file_name_src = get_file_name(file_path_src)
+        else:
+            file_name_src = "fastsdcpu"
+
         extension = get_image_file_extension(format)
         upscaled_filepath = join_paths(
             FastStableDiffusionPaths.get_results_path(),
-            f"{file_name_src}_{int(scale_factor)}x_upscale_{int(time())}.{extension}",
+            f"{file_name_src}_{int(scale_factor)}x_upscale_{int(time())}{extension}",
         )
         return upscaled_filepath
 

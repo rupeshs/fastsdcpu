@@ -22,15 +22,15 @@ def create_upscaled_image(
 ) -> Any:
     context = get_context(InterfaceType.WEBUI)
     scale_factor = 2
-    extension = app_settings.settings.generated_images.format
     if upscale_mode == "SD":
         mode = UpscaleMode.sd_upscale.value
     else:
         mode = UpscaleMode.normal.value
 
-    upscaled_filepath = join_paths(
-        FastStableDiffusionPaths.get_results_path(),
-        f"fastsdcpu_{int(scale_factor)}x_upscale_{int(time())}.{extension.lower()}",
+    upscaled_filepath = FastStableDiffusionPaths.get_upscale_filepath(
+        None,
+        scale_factor,
+        app_settings.settings.generated_images.format,
     )
     image = upscale_image(
         context=context,
