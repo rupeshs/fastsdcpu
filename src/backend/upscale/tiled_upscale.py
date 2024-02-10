@@ -9,7 +9,7 @@ from constants import DEVICE
 
 def generate_upscaled_image(
     config,
-    input_image=None,
+    input_path=None,
     strength=0.3,
     scale_factor=2.0,
     tile_overlap=16,
@@ -19,7 +19,7 @@ def generate_upscaled_image(
     image_format="PNG",
 ):
     if config == None or (
-        input_image == None or input_image == "" and upscale_settings == None
+        input_path == None or input_path == "" and upscale_settings == None
     ):
         logging.error("Wrong arguments in tiled upscale function call!")
         return
@@ -28,15 +28,17 @@ def generate_upscaled_image(
     # upscale_settings dict using the function arguments and default values
     if upscale_settings == None:
         upscale_settings = {
-            "source_file": input_image,
+            "source_file": input_path,
             "target_file": None,
+            "target_format": image_format,
             "strength": strength,
             "scale_factor": scale_factor,
+            "prompt": config.lcm_diffusion_setting.prompt,
             "tile_overlap": tile_overlap,
             "tile_size": 256,
             "tiles": [],
         }
-        source_image = input_image  # PIL image
+        source_image = Image.open(input_path)  # PIL image
     else:
         source_image = Image.open(upscale_settings["source_file"])
 
@@ -91,7 +93,7 @@ def generate_upscaled_image(
                         "w": w,
                         "h": h,
                         "mask_box": mask_box,
-                        "prompt": None,
+                        "prompt": upscale_settings["prompt"],  # Use top level prompt if available
                         "scale_factor": scale_factor,
                     }
                 )
@@ -106,7 +108,7 @@ def generate_upscaled_image(
         )
 
     # Save completed upscaled image
-    if image_format == "JPEG":
+    if upscale_settings["target_format"].upper() == "JPEG":
         result_rgb = result.convert("RGB")
         result.close()
         result = result_rgb

@@ -303,20 +303,26 @@ else:
         )
     # Perform Tiled SD upscale (EXPERIMENTAL)
     elif args.sdupscale:
-        config.lcm_diffusion_setting.strength = 0.3 if args.use_openvino else 0.1
+        if args.use_openvino:
+            config.lcm_diffusion_setting.strength = 0.3
         upscale_settings = None
-        output_path = FastStableDiffusionPaths.get_upscale_filepath(
-            args.file,
-            2,
-            config.generated_images.format,
-        )
         if args.custom_settings:
             with open(args.custom_settings) as f:
                 upscale_settings = json.load(f)
+        filepath = args.file
+        output_format = config.generated_images.format
+        if upscale_settings:
+            filepath = upscale_settings["source_file"]
+            output_format = upscale_settings["target_format"].upper()
+        output_path = FastStableDiffusionPaths.get_upscale_filepath(
+            filepath,
+            2,
+            output_format,
+        )
 
         generate_upscaled_image(
             config,
-            Image.open(args.file),
+            filepath,
             config.lcm_diffusion_setting.strength,
             upscale_settings=upscale_settings,
             context=context,

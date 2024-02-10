@@ -73,7 +73,7 @@ class FastStableDiffusionPaths:
         extension = get_image_file_extension(format)
         upscaled_filepath = join_paths(
             FastStableDiffusionPaths.get_results_path(),
-            f"{file_name_src}_{int(scale_factor)}x_upscale_{int(time())}.{extension}",
+            f"{file_name_src}_{int(scale_factor)}x_upscale_{int(time())}{extension}",
         )
         return upscaled_filepath
 
