@@ -34,7 +34,7 @@ def create_upscaled_image(
     )
     image = upscale_image(
         context=context,
-        src_image=source_image,
+        src_image_path=source_image,
         dst_image_path=upscaled_filepath,
         upscale_mode=mode,
     )

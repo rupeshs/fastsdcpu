@@ -22,12 +22,13 @@ def edsr_upscale(
 
 def upscale_image(
     context: Context,
-    src_image: Image,
+    src_image_path: str,
     dst_image_path: str,
     scale_factor: int = 2,
     upscale_mode: UpscaleMode = UpscaleMode.normal.value,
 ):
     if upscale_mode == UpscaleMode.normal.value:
+        src_image = Image.open(src_image_path)
         upcaled = edsr_upscale(src_image, scale_factor)
         ImageLoader.save_image(upcaled, dst_image_path)
         print(f"Upscaled image saved {dst_image_path}")
@@ -41,7 +42,7 @@ def upscale_image(
 
         generate_upscaled_image(
             config.settings,
-            src_image,
+            src_image_path,
             config.settings.lcm_diffusion_setting.strength,
             upscale_settings=None,
             context=context,
