@@ -8,6 +8,7 @@ import constants
 import json
 from argparse import ArgumentParser
 from paths import FastStableDiffusionPaths
+from frontend.cli_interactive import interactive_mode
 
 from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
 from models.interface_types import InterfaceType
@@ -267,7 +268,19 @@ else:
     config.lcm_diffusion_setting.diffusion_task = DiffusionTask.text_to_image.value
     if args.usejpeg:
         config.generated_images.format = ImageFormat.JPEG.value.upper()
+    if args.seed > -1:
+        config.lcm_diffusion_setting.use_seed = True
+    else:
+        config.lcm_diffusion_setting.use_seed = False
+    config.lcm_diffusion_setting.use_offline_model = args.use_offline_model
+    config.lcm_diffusion_setting.use_safety_checker = args.use_safety_checker
 
+    # Interactive mode
+    if args.interactive:
+        # wrapper(interactive_mode, config, context)
+        interactive_mode(config, context)
+
+    # Start of non-interactive CLI image generation
     if args.img2img and args.file != "":
         config.lcm_diffusion_setting.init_image = Image.open(args.file)
         config.lcm_diffusion_setting.diffusion_task = DiffusionTask.image_to_image.value
@@ -281,26 +294,8 @@ else:
         print("Error : You need to provide a prompt")
         exit()
 
-    if args.seed > -1:
-        config.lcm_diffusion_setting.use_seed = True
-    else:
-        config.lcm_diffusion_setting.use_seed = False
-    config.lcm_diffusion_setting.use_offline_model = args.use_offline_model
-    config.lcm_diffusion_setting.use_safety_checker = args.use_safety_checker
-
-    if args.interactive:
-        while True:
-            user_input = input(">>")
-            if user_input == "exit":
-                break
-            config.lcm_diffusion_setting.prompt = user_input
-            context.generate_text_to_image(
-                settings=config,
-                device=DEVICE,
-            )
-
-    elif args.upscale:
-        image = Image.open(args.file)
+    if args.upscale:
+        # image = Image.open(args.file)
         output_path = FastStableDiffusionPaths.get_upscale_filepath(
             args.file,
             2,
@@ -308,7 +303,7 @@ else:
         )
         result = upscale_image(
             context,
-            image,
+            args.file,
             output_path,
             2,
         )
@@ -339,6 +334,7 @@ else:
             context=context,
             tile_overlap=32 if config.lcm_diffusion_setting.use_openvino else 16,
             output_path=output_path,
+            image_format=output_format,
         )
         exit()
     # If img2img argument is set and prompt is empty, use image variations mode
