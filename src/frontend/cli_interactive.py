@@ -1,4 +1,3 @@
-import curses
 from PIL import Image
 from typing import Any
 
