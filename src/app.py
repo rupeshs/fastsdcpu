@@ -319,7 +319,7 @@ else:
         output_format = config.generated_images.format
         if upscale_settings:
             filepath = upscale_settings["source_file"]
-            output_format = upscale_settings["target_format"].upper()
+            output_format = upscale_settings["output_format"].upper()
         output_path = FastStableDiffusionPaths.get_upscale_filepath(
             filepath,
             2,

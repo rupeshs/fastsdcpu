@@ -30,7 +30,7 @@ def generate_upscaled_image(
         upscale_settings = {
             "source_file": input_path,
             "target_file": None,
-            "target_format": image_format,
+            "output_format": image_format,
             "strength": strength,
             "scale_factor": scale_factor,
             "prompt": config.lcm_diffusion_setting.prompt,
@@ -108,7 +108,7 @@ def generate_upscaled_image(
         )
 
     # Save completed upscaled image
-    if upscale_settings["target_format"].upper() == "JPEG":
+    if upscale_settings["output_format"].upper() == "JPEG":
         result_rgb = result.convert("RGB")
         result.close()
         result = result_rgb
