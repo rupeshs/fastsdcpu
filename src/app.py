@@ -192,6 +192,12 @@ parser.add_argument(
     action="store_true",
     help="Disable image saving",
 )
+parser.add_argument(
+    "--lora",
+    type=str,
+    help="LoRA model",
+    default=None,
+)
 args = parser.parse_args()
 
 if args.version:
@@ -265,6 +271,7 @@ else:
     config.lcm_diffusion_setting.lcm_lora.base_model_id = args.base_model_id
     config.lcm_diffusion_setting.lcm_lora.lcm_lora_id = args.lcm_lora_id
     config.lcm_diffusion_setting.diffusion_task = DiffusionTask.text_to_image.value
+    config.lcm_diffusion_setting.lora_path = args.lora
     if args.usejpeg:
         config.generated_images.format = ImageFormat.JPEG.value.upper()
 

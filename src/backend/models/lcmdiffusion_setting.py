@@ -37,3 +37,4 @@ class LCMDiffusionSetting(BaseModel):
     use_seed: bool = False
     use_safety_checker: bool = False
     diffusion_task: str = DiffusionTask.text_to_image.value
+    lora_path: Any = None
