@@ -1,6 +1,7 @@
 from typing import Any
 from diffusers import LCMScheduler
 import torch
+import os.path
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 import numpy as np
 from constants import DEVICE
@@ -153,6 +154,7 @@ class LCMTextToImage:
                         lcm_lora.lcm_lora_id,
                         use_local_model,
                         torch_data_type=self.torch_data_type,
+                        lcm_diffusion_setting=lcm_diffusion_setting,
                     )
                 else:
                     print(f"***** Init LCM Model pipeline - {model_id} *****")
@@ -160,6 +162,22 @@ class LCMTextToImage:
                         model_id,
                         use_local_model,
                     )
+                    if lcm_diffusion_setting.lora_path:
+                        lora_dir = os.path.dirname(lcm_diffusion_setting.lora_path)
+                        lora_name = os.path.basename(lcm_diffusion_setting.lora_path)
+                        adapter_name = os.path.splitext(lora_name)[0]
+                        self.pipeline.load_lora_weights(
+                            lora_dir,
+                            weight_name=lora_name,
+                            local_files_only=True,
+                            adapter_name=adapter_name,
+                        )
+                        self.pipeline.set_adapters(
+                            [adapter_name],
+                            adapter_weights=[lcm_diffusion_setting.lora_weight],
+                        )
+                        if lcm_diffusion_setting.fuse_lora:
+                            self.pipeline.fuse_lora()
 
                 if (
                     lcm_diffusion_setting.diffusion_task
