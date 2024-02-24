@@ -258,7 +258,7 @@ else:
     context = get_context(InterfaceType.CLI)
     config = app_settings.settings
 
-    if not config.lcm_diffusion_setting.lora.path:
+    if config.lcm_diffusion_setting.lora.path:
         config.lcm_diffusion_setting.lora.enabled = True
 
     if args.use_openvino:

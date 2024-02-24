@@ -62,11 +62,11 @@ def get_valid_lora_model(
     cur_model: str,
     lora_models_dir: str,
 ) -> str:
-    if cur_model == "":
+    if cur_model == "" or cur_model is None:
         print(
             f"No lora models found, please add lora models to {lora_models_dir} directory"
         )
-        return cur_model
+        return ""
     else:
         if path.exists(cur_model):
             return get_file_name(cur_model)

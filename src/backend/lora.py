@@ -8,7 +8,7 @@ def load_lora_weight(
     pipeline,
     lcm_diffusion_setting,
 ):
-    if lcm_diffusion_setting.lora.path == "":
+    if not lcm_diffusion_setting.lora.path:
         raise Exception("Empty lora model path")
 
     if not path.exists(lcm_diffusion_setting.lora.path):
