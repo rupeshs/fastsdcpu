@@ -1,7 +1,10 @@
-from constants import DEVICE
-from typing import List
 import platform
+from os import path
+from typing import List
+
 from backend.device import is_openvino_device
+from constants import DEVICE
+from paths import get_file_name
 
 
 def is_reshape_required(
@@ -52,3 +55,28 @@ def get_valid_model_id(
             f"Error:{model_id} Model not found in configuration file,so using first model : {models[0]}"
         )
         return models[0]
+
+
+def get_valid_lora_model(
+    models: List,
+    cur_model: str,
+    lora_models_dir: str,
+) -> str:
+    if cur_model == "":
+        print(
+            f"No lora models found, please add lora models to {lora_models_dir} directory"
+        )
+        return cur_model
+    else:
+        if path.exists(cur_model):
+            return get_file_name(cur_model)
+        else:
+            print(f"Lora model {cur_model} not found")
+            if len(models) > 0:
+                print(f"Fallback model - {models[0]}")
+                return get_file_name(models[0])
+            else:
+                print(
+                    f"No lora models found, please add lora models to {lora_models_dir} directory"
+                )
+                return ""
