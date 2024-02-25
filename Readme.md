@@ -99,6 +99,9 @@ You can directly use these models in FastSD CPU.
 - Added image variations support
 - Added 2x upscaler (EDSR and Tiled SD upscale (experimental)),thanks [monstruosoft](https://github.com/monstruosoft) for SD upscale
 - Works on Android + Termux + PRoot
+- Added interactive CLI,thanks [monstruosoft](https://github.com/monstruosoft)
+- Added basic lora support to CLI and WebUI
+- ONNX EDSR 2x upscale
 
 ## 2 Steps fast inference
 
@@ -204,6 +207,12 @@ latent-consistency/lcm-lora-ssd-1b
 
 - Open the app and select the newly added local folder in the combo box menu.
 - That's all!
+
+### How to use Lora models
+
+Place your lora models in "lora_models" folder. Use LCM or LCM-Lora mode.
+You can download lora model (.safetensors/Safetensor) from [Civitai](https://civitai.com/) or [Hugging Face](https://huggingface.co/)
+E.g: [cutecartoonredmond](https://civitai.com/models/207984/cutecartoonredmond-15v-cute-cartoon-lora-for-liberteredmond-sd-15?modelVersionId=234192)
 
 ## FastSD CPU on Windows
 
