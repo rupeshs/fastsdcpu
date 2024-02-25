@@ -250,9 +250,12 @@ class LCMTextToImage:
                     print(f"Pipeline : {self.pipeline}")
                 else:
                     print(f"Pipeline : {self.img_to_img_pipeline}")
-
-            adapters = self.pipeline.get_active_adapters()
-            print(f"Active adapters : {adapters}")
+            if self.use_openvino:
+                if lcm_diffusion_setting.lora.enabled:
+                    print("Warning: Lora models not supported on OpenVINO mode")
+            else:
+                adapters = self.pipeline.get_active_adapters()
+                print(f"Active adapters : {adapters}")
 
     def generate(
         self,

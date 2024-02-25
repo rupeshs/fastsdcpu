@@ -16,7 +16,6 @@ def load_lora_weight(
 
     if lcm_diffusion_setting.lora.enabled:
         adapter_name = get_file_name(lcm_diffusion_setting.lora.path)
-        print(get_lora_models(lcm_diffusion_setting.lora.path))
         print(f"LoRA adapter name : {adapter_name}")
         pipeline.load_lora_weights(
             lcm_diffusion_setting.lora.path,

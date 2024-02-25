@@ -25,12 +25,6 @@ Added support for ultra fast 1 step inference using [sdxl-turbo](https://hugging
 
 :exclamation: These SD turbo models are intended for research purpose only.
 
-Text to Image -  Implemented
-
-Image to Image - Implemented
-
-OpenVINO model - Implemented
-
 ### Inference Speed
 
 Tested on Core i7-12700 to generate 512x512 image(1 step).
@@ -51,15 +45,19 @@ __SDXL Turbo__
 | OpenVINO              | 5.6s          |
 | OpenVINO + TAESDXL    | 2.5s          |
 
-### OpenVINO SD Turbo models
+### Memory requirements
 
-We have converted SD/SDXL Turbo models to OpenVINO for fast inference on CPU. These models are intended for research purpose only. Also we converted TAESDXL MODEL to OpenVINO and
+Mininum system RAM requirment for FastSD CPU.
+Model (LCM,OpenVINO): SD Turbo, 1 step, 512 x 512
+Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
 
-- *SD Turbo OpenVINO* - [rupeshs/sd-turbo-openvino](https://huggingface.co/rupeshs/sd-turbo-openvino)
-- *SDXL Turbo OpenVINO int8* - [rupeshs/sdxl-turbo-openvino-int8](https://huggingface.co/rupeshs/sdxl-turbo-openvino-int8)
-- *TAESDXL OpenVINO* - [rupeshs/taesdxl-openvino](https://huggingface.co/rupeshs/taesdxl-openvino)
+| Mode                  | Min RAM       |
+| --------------------- | ------------- |
+| LCM                   | 2 GB          |
+| LCM-LoRA              | 4 GB          |
+| OpenVINO              | 11 GB         |
 
-You can directly use these models in FastSD CPU.
+:exclamation: Please note that guidance scale >1 increases RAM usage and slow inference speed.
 
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
@@ -114,6 +112,16 @@ FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It work
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
 We can get 2x speed improvement when using OpenVINO.
 Thanks [Disty0](https://github.com/Disty0) for the conversion script.
+
+### OpenVINO SD Turbo models
+
+We have converted SD/SDXL Turbo models to OpenVINO for fast inference on CPU. These models are intended for research purpose only. Also we converted TAESDXL MODEL to OpenVINO and
+
+- *SD Turbo OpenVINO* - [rupeshs/sd-turbo-openvino](https://huggingface.co/rupeshs/sd-turbo-openvino)
+- *SDXL Turbo OpenVINO int8* - [rupeshs/sdxl-turbo-openvino-int8](https://huggingface.co/rupeshs/sdxl-turbo-openvino-int8)
+- *TAESDXL OpenVINO* - [rupeshs/taesdxl-openvino](https://huggingface.co/rupeshs/taesdxl-openvino)
+
+You can directly use these models in FastSD CPU.
 
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
