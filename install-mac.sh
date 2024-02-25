@@ -25,7 +25,6 @@ $PYTHON_COMMAND -m venv "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
 pip install torch==2.0.1 
-pip install torchvision==0.15.2 
 pip install -r "$BASEDIR/requirements.txt"
 chmod +x "start.sh"
 chmod +x "start-webui.sh"

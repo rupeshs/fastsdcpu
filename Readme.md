@@ -229,7 +229,7 @@ You can run in desktop GUI mode or web UI mode.
 
 ## FastSD CPU on Linux
 
-Ensure that you have Python 3.8 or higher version installed.
+Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.
 
 - Clone/download this repo
 - In the terminal, enter into fastsdcpu directory
@@ -253,7 +253,7 @@ Ensure that you have Python 3.8 or higher version installed.
 
 ### Installation
 
-Ensure that you have Python 3.8 or higher version installed.
+Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.
 
 - Clone/download this repo
 - In the terminal, enter into fastsdcpu directory
