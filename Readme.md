@@ -47,8 +47,10 @@ __SDXL Turbo__
 
 ### Memory requirements
 
-Mininum system RAM requirment for FastSD CPU.
+Minimum system RAM requirment for FastSD CPU.
+
 Model (LCM,OpenVINO): SD Turbo, 1 step, 512 x 512
+
 Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
 
 | Mode                  | Min RAM       |
