@@ -1,20 +1,19 @@
-from utils import show_system_info
-from PIL import Image
-from backend.models.lcmdiffusion_setting import DiffusionTask
-from backend.models.gen_images import ImageFormat
-from frontend.webui.image_variations_ui import generate_image_variations
-from backend.upscale.tiled_upscale import generate_upscaled_image
-import constants
 import json
 from argparse import ArgumentParser
-from paths import FastStableDiffusionPaths
-from frontend.cli_interactive import interactive_mode
 
-from constants import APP_VERSION, LCM_DEFAULT_MODEL_OPENVINO
-from models.interface_types import InterfaceType
-from constants import DEVICE
-from state import get_settings, get_context
+import constants
+from backend.models.gen_images import ImageFormat
+from backend.models.lcmdiffusion_setting import DiffusionTask
+from backend.upscale.tiled_upscale import generate_upscaled_image
 from backend.upscale.upscaler import upscale_image
+from constants import APP_VERSION, DEVICE, LCM_DEFAULT_MODEL_OPENVINO
+from frontend.cli_interactive import interactive_mode
+from frontend.webui.image_variations_ui import generate_image_variations
+from models.interface_types import InterfaceType
+from paths import FastStableDiffusionPaths
+from PIL import Image
+from state import get_context, get_settings
+from utils import show_system_info
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -196,13 +195,13 @@ parser.add_argument(
 parser.add_argument(
     "--lora",
     type=str,
-    help="LoRA model",
+    help="LoRA model full path e.g D:\lora_models\CuteCartoon15V-LiberteRedmodModel-Cartoon-CuteCartoonAF.safetensors",
     default=None,
 )
 parser.add_argument(
     "--lora_weight",
     type=float,
-    help="LoRA weight",
+    help="LoRA adapter weight [0 to 1.0]",
     default=0.5,
 )
 args = parser.parse_args()
@@ -259,6 +258,9 @@ else:
     context = get_context(InterfaceType.CLI)
     config = app_settings.settings
 
+    if config.lcm_diffusion_setting.lora.path:
+        config.lcm_diffusion_setting.lora.enabled = True
+
     if args.use_openvino:
         config.lcm_diffusion_setting.lcm_model_id = LCM_DEFAULT_MODEL_OPENVINO
     else:
@@ -278,9 +280,9 @@ else:
     config.lcm_diffusion_setting.lcm_lora.base_model_id = args.base_model_id
     config.lcm_diffusion_setting.lcm_lora.lcm_lora_id = args.lcm_lora_id
     config.lcm_diffusion_setting.diffusion_task = DiffusionTask.text_to_image.value
-    config.lcm_diffusion_setting.lora_path = args.lora
-    config.lcm_diffusion_setting.lora_weight = args.lora_weight
-    config.lcm_diffusion_setting.fuse_lora = True
+    config.lcm_diffusion_setting.lora.path = args.lora
+    config.lcm_diffusion_setting.lora.weight = args.lora_weight
+    config.lcm_diffusion_setting.lora.fuse = True
     if args.usejpeg:
         config.generated_images.format = ImageFormat.JPEG.value.upper()
     if args.seed > -1:

@@ -25,12 +25,6 @@ Added support for ultra fast 1 step inference using [sdxl-turbo](https://hugging
 
 :exclamation: These SD turbo models are intended for research purpose only.
 
-Text to Image -  Implemented
-
-Image to Image - Implemented
-
-OpenVINO model - Implemented
-
 ### Inference Speed
 
 Tested on Core i7-12700 to generate 512x512 image(1 step).
@@ -51,15 +45,21 @@ __SDXL Turbo__
 | OpenVINO              | 5.6s          |
 | OpenVINO + TAESDXL    | 2.5s          |
 
-### OpenVINO SD Turbo models
+### Memory requirements
 
-We have converted SD/SDXL Turbo models to OpenVINO for fast inference on CPU. These models are intended for research purpose only. Also we converted TAESDXL MODEL to OpenVINO and
+Minimum system RAM requirment for FastSD CPU.
 
-- *SD Turbo OpenVINO* - [rupeshs/sd-turbo-openvino](https://huggingface.co/rupeshs/sd-turbo-openvino)
-- *SDXL Turbo OpenVINO int8* - [rupeshs/sdxl-turbo-openvino-int8](https://huggingface.co/rupeshs/sdxl-turbo-openvino-int8)
-- *TAESDXL OpenVINO* - [rupeshs/taesdxl-openvino](https://huggingface.co/rupeshs/taesdxl-openvino)
+Model (LCM,OpenVINO): SD Turbo, 1 step, 512 x 512
 
-You can directly use these models in FastSD CPU.
+Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
+
+| Mode                  | Min RAM       |
+| --------------------- | ------------- |
+| LCM                   | 2 GB          |
+| LCM-LoRA              | 4 GB          |
+| OpenVINO              | 11 GB         |
+
+:exclamation: Please note that guidance scale >1 increases RAM usage and slow inference speed.
 
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
@@ -99,6 +99,9 @@ You can directly use these models in FastSD CPU.
 - Added image variations support
 - Added 2x upscaler (EDSR and Tiled SD upscale (experimental)),thanks [monstruosoft](https://github.com/monstruosoft) for SD upscale
 - Works on Android + Termux + PRoot
+- Added interactive CLI,thanks [monstruosoft](https://github.com/monstruosoft)
+- Added basic lora support to CLI and WebUI
+- ONNX EDSR 2x upscale
 
 ## 2 Steps fast inference
 
@@ -111,6 +114,16 @@ FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It work
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
 We can get 2x speed improvement when using OpenVINO.
 Thanks [Disty0](https://github.com/Disty0) for the conversion script.
+
+### OpenVINO SD Turbo models
+
+We have converted SD/SDXL Turbo models to OpenVINO for fast inference on CPU. These models are intended for research purpose only. Also we converted TAESDXL MODEL to OpenVINO and
+
+- *SD Turbo OpenVINO* - [rupeshs/sd-turbo-openvino](https://huggingface.co/rupeshs/sd-turbo-openvino)
+- *SDXL Turbo OpenVINO int8* - [rupeshs/sdxl-turbo-openvino-int8](https://huggingface.co/rupeshs/sdxl-turbo-openvino-int8)
+- *TAESDXL OpenVINO* - [rupeshs/taesdxl-openvino](https://huggingface.co/rupeshs/taesdxl-openvino)
+
+You can directly use these models in FastSD CPU.
 
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
@@ -205,6 +218,12 @@ latent-consistency/lcm-lora-ssd-1b
 - Open the app and select the newly added local folder in the combo box menu.
 - That's all!
 
+### How to use Lora models
+
+Place your lora models in "lora_models" folder. Use LCM or LCM-Lora mode.
+You can download lora model (.safetensors/Safetensor) from [Civitai](https://civitai.com/) or [Hugging Face](https://huggingface.co/)
+E.g: [cutecartoonredmond](https://civitai.com/models/207984/cutecartoonredmond-15v-cute-cartoon-lora-for-liberteredmond-sd-15?modelVersionId=234192)
+
 ## FastSD CPU on Windows
 
 :exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
@@ -229,7 +248,7 @@ You can run in desktop GUI mode or web UI mode.
 
 ## FastSD CPU on Linux
 
-Ensure that you have Python 3.8 or higher version installed.
+Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.
 
 - Clone/download this repo
 - In the terminal, enter into fastsdcpu directory
@@ -253,7 +272,7 @@ Ensure that you have Python 3.8 or higher version installed.
 
 ### Installation
 
-Ensure that you have Python 3.8 or higher version installed.
+Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.
 
 - Clone/download this repo
 - In the terminal, enter into fastsdcpu directory

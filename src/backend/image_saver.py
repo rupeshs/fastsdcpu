@@ -35,12 +35,17 @@ class ImageSaver:
             image.save(path.join(out_path, f"{gen_id}-{index+1}{image_extension}"))
         if lcm_diffusion_setting:
             with open(path.join(out_path, f"{gen_id}.json"), "w") as json_file:
+                exclude_keys = {
+                    "init_image": True,
+                    "generated_images": True,
+                    "lora": {
+                        "models_dir": True,
+                        "path": True,
+                    },
+                }
                 json.dump(
                     lcm_diffusion_setting.model_dump(
-                        exclude=[
-                            "init_image",
-                            "generated_images",
-                        ],
+                        exclude=exclude_keys,
                     ),
                     json_file,
                     indent=4,

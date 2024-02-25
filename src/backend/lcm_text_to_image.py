@@ -1,26 +1,29 @@
+from math import ceil
 from typing import Any
-from diffusers import LCMScheduler
-import torch
-import os.path
-from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
+
 import numpy as np
-from constants import DEVICE
-from backend.models.lcmdiffusion_setting import LCMLora
+import torch
 from backend.device import is_openvino_device
+from backend.lora import load_lora_weight
+from backend.models.lcmdiffusion_setting import (
+    DiffusionTask,
+    LCMDiffusionSetting,
+    LCMLora,
+)
 from backend.openvino.pipelines import (
+    get_ov_image_to_image_pipeline,
     get_ov_text_to_image_pipeline,
     ov_load_taesd,
-    get_ov_image_to_image_pipeline,
 )
 from backend.pipelines.lcm import (
+    get_image_to_image_pipeline,
     get_lcm_model_pipeline,
     load_taesd,
-    get_image_to_image_pipeline,
 )
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
-from backend.models.lcmdiffusion_setting import DiffusionTask
+from constants import DEVICE
+from diffusers import LCMScheduler
 from image_ops import resize_pil_image
-from math import ceil
 
 
 class LCMTextToImage:
@@ -39,6 +42,7 @@ class LCMTextToImage:
         self.previous_use_openvino = False
         self.img_to_img_pipeline = None
         self.is_openvino_init = False
+        self.previous_lora = None
         self.task_type = DiffusionTask.text_to_image
         self.torch_data_type = (
             torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
@@ -113,6 +117,7 @@ class LCMTextToImage:
             or self.previous_safety_checker != lcm_diffusion_setting.use_safety_checker
             or self.previous_use_openvino != lcm_diffusion_setting.use_openvino
             or self.previous_task_type != lcm_diffusion_setting.diffusion_task
+            or self.previous_lora != lcm_diffusion_setting.lora
         ):
             if self.use_openvino and is_openvino_device():
                 if self.pipeline:
@@ -154,30 +159,14 @@ class LCMTextToImage:
                         lcm_lora.lcm_lora_id,
                         use_local_model,
                         torch_data_type=self.torch_data_type,
-                        lcm_diffusion_setting=lcm_diffusion_setting,
                     )
+
                 else:
                     print(f"***** Init LCM Model pipeline - {model_id} *****")
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
                     )
-                    if lcm_diffusion_setting.lora_path:
-                        lora_dir = os.path.dirname(lcm_diffusion_setting.lora_path)
-                        lora_name = os.path.basename(lcm_diffusion_setting.lora_path)
-                        adapter_name = os.path.splitext(lora_name)[0]
-                        self.pipeline.load_lora_weights(
-                            lora_dir,
-                            weight_name=lora_name,
-                            local_files_only=True,
-                            adapter_name=adapter_name,
-                        )
-                        self.pipeline.set_adapters(
-                            [adapter_name],
-                            adapter_weights=[lcm_diffusion_setting.lora_weight],
-                        )
-                        if lcm_diffusion_setting.fuse_lora:
-                            self.pipeline.fuse_lora()
 
                 if (
                     lcm_diffusion_setting.diffusion_task
@@ -186,6 +175,14 @@ class LCMTextToImage:
                     self.img_to_img_pipeline = get_image_to_image_pipeline(
                         self.pipeline
                     )
+
+                # Load LoRA weight for pytorch pipeline (.safetensors)
+                if lcm_diffusion_setting.lora.enabled:
+                    load_lora_weight(
+                        self.pipeline,
+                        lcm_diffusion_setting,
+                    )
+
                 self._pipeline_to_device()
 
             if use_tiny_auto_encoder:
@@ -239,6 +236,7 @@ class LCMTextToImage:
             self.previous_safety_checker = lcm_diffusion_setting.use_safety_checker
             self.previous_use_openvino = lcm_diffusion_setting.use_openvino
             self.previous_task_type = lcm_diffusion_setting.diffusion_task
+            self.previous_lora = lcm_diffusion_setting.lora.model_copy(deep=True)
             if (
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.text_to_image.value
@@ -252,6 +250,12 @@ class LCMTextToImage:
                     print(f"Pipeline : {self.pipeline}")
                 else:
                     print(f"Pipeline : {self.img_to_img_pipeline}")
+            if self.use_openvino:
+                if lcm_diffusion_setting.lora.enabled:
+                    print("Warning: Lora models not supported on OpenVINO mode")
+            else:
+                adapters = self.pipeline.get_active_adapters()
+                print(f"Active adapters : {adapters}")
 
     def generate(
         self,
@@ -369,5 +373,4 @@ class LCMTextToImage:
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                 ).images
-
         return result_images

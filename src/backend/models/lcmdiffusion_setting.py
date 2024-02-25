@@ -1,7 +1,9 @@
-from typing import Optional, Any
 from enum import Enum
-from pydantic import BaseModel
+from typing import Any, Optional
+
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
+from paths import FastStableDiffusionPaths
+from pydantic import BaseModel
 
 
 class LCMLora(BaseModel):
@@ -14,6 +16,14 @@ class DiffusionTask(str, Enum):
 
     text_to_image = "text_to_image"
     image_to_image = "image_to_image"
+
+
+class Lora(BaseModel):
+    models_dir: str = FastStableDiffusionPaths.get_lora_models_path()
+    path: Optional[Any] = None
+    weight: Optional[float] = 0.5
+    fuse: bool = True
+    enabled: bool = False
 
 
 class LCMDiffusionSetting(BaseModel):
@@ -37,6 +47,4 @@ class LCMDiffusionSetting(BaseModel):
     use_seed: bool = False
     use_safety_checker: bool = False
     diffusion_task: str = DiffusionTask.text_to_image.value
-    lora_path: Optional[Any] = None
-    lora_weight: Optional[float] = 0.5
-    fuse_lora: bool = True
+    lora: Optional[Lora] = Lora()

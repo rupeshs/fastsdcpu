@@ -81,6 +81,11 @@ class FastStableDiffusionPaths:
         )
         return upscaled_filepath
 
+    @staticmethod
+    def get_lora_models_path() -> str:
+        lora_models_path = join_paths(get_app_path(), constants.LORA_DIRECTORY)
+        return lora_models_path
+
 
 def get_base_folder_name(path: str) -> str:
     return os.path.basename(path)

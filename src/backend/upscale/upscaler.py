@@ -1,23 +1,13 @@
-from backend.upscale.super_image import EdsrModel, ImageLoader
-from PIL import Image
-from backend.models.upscale import UpscaleMode
-from state import get_settings
-from backend.upscale.tiled_upscale import generate_upscaled_image
 from backend.models.lcmdiffusion_setting import DiffusionTask
+from backend.models.upscale import UpscaleMode
+from backend.upscale.edsr_upscale_onnx import upscale_edsr_2x
+from backend.upscale.tiled_upscale import generate_upscaled_image
 from context import Context
+from PIL import Image
+from state import get_settings
 
-UPSCALE_MODEL = "eugenesiow/edsr-base"
+
 config = get_settings()
-
-
-def edsr_upscale(
-    src_image: Image,
-    scale_factor: int = 2,
-):
-    model = EdsrModel.from_pretrained(UPSCALE_MODEL, scale=scale_factor)
-    inputs = ImageLoader.load_image(src_image)
-    preds = model(inputs)
-    return preds
 
 
 def upscale_image(
@@ -28,9 +18,9 @@ def upscale_image(
     upscale_mode: UpscaleMode = UpscaleMode.normal.value,
 ):
     if upscale_mode == UpscaleMode.normal.value:
-        src_image = Image.open(src_image_path)
-        upcaled = edsr_upscale(src_image, scale_factor)
-        ImageLoader.save_image(upcaled, dst_image_path)
+
+        upscaled_img = upscale_edsr_2x(src_image_path)
+        upscaled_img.save(dst_image_path)
         print(f"Upscaled image saved {dst_image_path}")
     else:
         config.settings.lcm_diffusion_setting.strength = (
