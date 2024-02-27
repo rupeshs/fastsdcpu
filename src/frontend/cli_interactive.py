@@ -1,12 +1,22 @@
+from os import path
 from PIL import Image
 from typing import Any
 
 from constants import DEVICE
 from paths import FastStableDiffusionPaths
 from backend.upscale.upscaler import upscale_image
-from backend.models.lcmdiffusion_setting import DiffusionTask
 from backend.upscale.tiled_upscale import generate_upscaled_image
 from frontend.webui.image_variations_ui import generate_image_variations
+from backend.lora import (
+    get_active_lora_weights,
+    update_lora_weights,
+    load_lora_weight,
+)
+from backend.models.lcmdiffusion_setting import (
+    DiffusionTask,
+    LCMDiffusionSetting,
+)
+
 
 _batch_count = 1
 
@@ -30,52 +40,118 @@ def interactive_mode(
     print("=============================================")
     print("Welcome to FastSD CPU Interactive CLI")
     print("=============================================")
-    print("> 1. Text to Image")
-    print("> 2. Image to Image")
-    print("> 3. Image Variations")
-    print("> 4. EDSR Upscale")
-    print("> 5. SD Upscale")
+    while True:
+        print("> 1. Text to Image")
+        print("> 2. Image to Image")
+        print("> 3. Image Variations")
+        print("> 4. EDSR Upscale")
+        print("> 5. SD Upscale")
+        print("> 6. Edit default generation settings")
+        print("> 7. Edit LoRA settings")
+        print("> 8. Quit")
+        option = user_value(
+            int,
+            "Enter a Diffusion Task number (1): ",
+            1,
+        )
+        if option not in range(1, 9):
+            print("Wrong Diffusion Task number!")
+            exit()
+
+        if option == 1:
+            interactive_txt2img(
+                config,
+                context,
+            )
+        elif option == 2:
+            interactive_img2img(
+                config,
+                context,
+            )
+        elif option == 3:
+            interactive_variations(
+                config,
+                context,
+            )
+        elif option == 4:
+            interactive_edsr(
+                config,
+                context,
+            )
+        elif option == 5:
+            interactive_sdupscale(
+                config,
+                context,
+            )
+        elif option == 6:
+            interactive_settings(
+                config,
+                context,
+            )
+        elif option == 7:
+            interactive_lora(
+                config,
+                context,
+            )
+        elif option == 8:
+            exit()
+
+
+def interactive_lora(
+    config,
+    context,
+):
+    if context == None or context.lcm_text_to_image.pipeline == None:
+        print("Diffusion pipeline not initialized, please run a generation task first!")
+        return
+
+    print("> 1. Change LoRA weights")
+    print("> 2. Load new LoRA model")
     option = user_value(
         int,
-        "Enter a Diffusion Task number (1): ",
+        "Enter a LoRA option (1): ",
         1,
     )
-    if option not in range(1, 6):
-        print("Wrong Diffusion Task number!")
-        exit()
-
-    edit_settings = input("Edit default generation settings? (y/N): ")
-    if edit_settings.upper() == "Y":
-        interactive_settings(
-            config,
-            context,
-        )
+    if option not in range(1, 3):
+        print("Wrong LoRA option!")
+        return
 
     if option == 1:
-        interactive_txt2img(
-            config,
-            context,
-        )
+        update_weights = []
+        active_weights = get_active_lora_weights()
+        for lora in active_weights:
+            weight = user_value(
+                float,
+                f"Enter a new LoRA weight for {lora[0]} ({lora[1]}): ",
+                lora[1],
+            )
+            update_weights.append(
+                (
+                    lora[0],
+                    weight,
+                )
+            )
+        if len(update_weights) > 0:
+            update_lora_weights(
+                context.lcm_text_to_image.pipeline,
+                config.lcm_diffusion_setting,
+                update_weights,
+            )
     elif option == 2:
-        interactive_img2img(
-            config,
-            context,
+        # Load a new LoRA
+        dummy_settings = LCMDiffusionSetting()
+        dummy_settings.lora.fuse = False
+        dummy_settings.lora.enabled = True
+        dummy_settings.lora.path = input("Enter LoRA model path: ")
+        dummy_settings.lora.weight = user_value(
+            float,
+            "Enter a LoRA weight (0.5): ",
+            0.5,
         )
-    elif option == 3:
-        interactive_variations(
-            config,
-            context,
-        )
-    elif option == 4:
-        interactive_edsr(
-            config,
-            context,
-        )
-    elif option == 5:
-        interactive_sdupscale(
-            config,
-            context,
-        )
+        if not path.exists(dummy_settings.lora.path):
+            print("Invalid LoRA model path!")
+            return
+        load_lora_weight(context.lcm_text_to_image.pipeline, dummy_settings)
 
 
 def interactive_settings(
@@ -94,8 +170,8 @@ def interactive_settings(
         1,
     )
     if option not in range(1, 4):
-        print("Wrong inference model option!")
-        exit()
+        print("Wrong inference model option! Falling back to defaults")
+        return
 
     settings.use_lcm_lora = False
     settings.use_openvino = False
@@ -170,7 +246,9 @@ def interactive_txt2img(
     user_input = input("Write a prompt (write 'exit' to quit): ")
     while True:
         if user_input == "exit":
-            exit()
+            return
+        elif user_input == "":
+            user_input = config.lcm_diffusion_setting.prompt
         config.lcm_diffusion_setting.prompt = user_input
         for i in range(0, _batch_count):
             context.generate_text_to_image(
@@ -191,7 +269,7 @@ def interactive_img2img(
     source_path = input("Image path: ")
     if source_path == "":
         print("Error : You need to provide a file in img2img mode")
-        exit()
+        return
     settings.strength = user_value(
         float,
         f"img2img strength ({settings.strength}): ",
@@ -201,7 +279,7 @@ def interactive_img2img(
     user_input = input("Write a prompt (write 'exit' to quit): ")
     while True:
         if user_input == "exit":
-            exit()
+            return
         settings.init_image = Image.open(source_path)
         settings.prompt = user_input
         for i in range(0, _batch_count):
@@ -232,7 +310,7 @@ def interactive_variations(
     source_path = input("Image path: ")
     if source_path == "":
         print("Error : You need to provide a file in Image variations mode")
-        exit()
+        return
     settings.strength = user_value(
         float,
         f"Image variations strength ({settings.strength}): ",
@@ -249,7 +327,7 @@ def interactive_variations(
             )
         user_input = input("Continue in Image variations mode? (Y/n): ")
         if user_input.upper() == "N":
-            exit()
+            return
         new_path = input(f"Image path ({source_path}): ")
         if new_path != "":
             source_path = new_path
@@ -268,7 +346,7 @@ def interactive_edsr(
     source_path = input("Image path: ")
     if source_path == "":
         print("Error : You need to provide a file in EDSR mode")
-        exit()
+        return
     while True:
         output_path = FastStableDiffusionPaths.get_upscale_filepath(
             source_path,
@@ -283,7 +361,7 @@ def interactive_edsr(
         )
         user_input = input("Continue in EDSR upscale mode? (Y/n): ")
         if user_input.upper() == "N":
-            exit()
+            return
         new_path = input(f"Image path ({source_path}): ")
         if new_path != "":
             source_path = new_path
@@ -301,7 +379,7 @@ def interactive_sdupscale_settings(config):
     )
     if option not in range(1, 3):
         print("Wrong SD Upscale option!")
-        exit()
+        return
 
     # custom_settings["source_file"] = args.file
     custom_settings["source_file"] = ""
@@ -310,7 +388,7 @@ def interactive_sdupscale_settings(config):
         custom_settings["source_file"] = new_path
     if custom_settings["source_file"] == "":
         print("Error : You need to provide a file in SD Upscale mode")
-        exit()
+        return
     custom_settings["target_file"] = None
     if option == 2:
         custom_settings["target_file"] = input("Image to patch: ")
@@ -419,6 +497,8 @@ def interactive_sdupscale(
         if option.upper() == "Y":
             config.lcm_diffusion_setting.inference_steps = steps
             custom_upscale_settings = interactive_sdupscale_settings(config)
+            if not custom_upscale_settings:
+                return
             source_path = custom_upscale_settings["source_file"]
         else:
             new_path = input(f"Image path ({source_path}): ")
@@ -426,7 +506,7 @@ def interactive_sdupscale(
                 source_path = new_path
             if source_path == "":
                 print("Error : You need to provide a file in SD Upscale mode")
-                exit()
+                return
             settings.strength = user_value(
                 float,
                 f"SD Upscale strength ({settings.strength}): ",
@@ -451,4 +531,4 @@ def interactive_sdupscale(
         )
         user_input = input("Continue in SD Upscale mode? (Y/n): ")
         if user_input.upper() == "N":
-            exit()
+            return
