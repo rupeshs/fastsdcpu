@@ -279,6 +279,7 @@ def interactive_img2img(
     user_input = input("Write a prompt (write 'exit' to quit): ")
     while True:
         if user_input == "exit":
+            settings.inference_steps = steps
             return
         settings.init_image = Image.open(source_path)
         settings.prompt = user_input
@@ -327,6 +328,7 @@ def interactive_variations(
             )
         user_input = input("Continue in Image variations mode? (Y/n): ")
         if user_input.upper() == "N":
+            settings.inference_steps = steps
             return
         new_path = input(f"Image path ({source_path}): ")
         if new_path != "":
@@ -531,4 +533,5 @@ def interactive_sdupscale(
         )
         user_input = input("Continue in SD Upscale mode? (Y/n): ")
         if user_input.upper() == "N":
+            settings.inference_steps = steps
             return
