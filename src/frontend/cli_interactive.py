@@ -19,6 +19,7 @@ from backend.models.lcmdiffusion_setting import (
 
 
 _batch_count = 1
+_edit_lora_settings = False
 
 
 def user_value(
@@ -92,15 +93,17 @@ def interactive_mode(
             interactive_lora(
                 config,
                 context,
+                True,
             )
         elif option == 8:
             exit()
 
 
-def interactive_lora(
-    config,
-    context,
-):
+def interactive_lora(config, context, menu_flag=False):
+    """
+    @param menu_flag: Indicates whether this function was called from the main
+        interactive CLI menu; _True_ if called from the main menu, _False_ otherwise
+    """
     if context == None or context.lcm_text_to_image.pipeline == None:
         print("Diffusion pipeline not initialized, please run a generation task first!")
         return
@@ -152,6 +155,13 @@ def interactive_lora(
             print("Invalid LoRA model path!")
             return
         load_lora_weight(context.lcm_text_to_image.pipeline, dummy_settings)
+
+    if menu_flag:
+        global _edit_lora_settings
+        _edit_lora_settings = False
+        option = input("Edit LoRA settings after every generation? (y/N): ")
+        if option.upper() == "Y":
+            _edit_lora_settings = True
 
 
 def interactive_settings(
@@ -255,6 +265,11 @@ def interactive_txt2img(
                 settings=config,
                 device=DEVICE,
             )
+        if _edit_lora_settings:
+            interactive_lora(
+                config,
+                context,
+            )
         user_input = input("Write a prompt: ")
 
 
@@ -296,6 +311,11 @@ def interactive_img2img(
             f"img2img strength ({settings.strength}): ",
             settings.strength,
         )
+        if _edit_lora_settings:
+            interactive_lora(
+                config,
+                context,
+            )
         settings.inference_steps = int(steps / settings.strength + 1)
         user_input = input("Write a prompt: ")
 
@@ -325,6 +345,11 @@ def interactive_variations(
             generate_image_variations(
                 settings.init_image,
                 settings.strength,
+            )
+        if _edit_lora_settings:
+            interactive_lora(
+                config,
+                context,
             )
         user_input = input("Continue in Image variations mode? (Y/n): ")
         if user_input.upper() == "N":
