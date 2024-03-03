@@ -1,4 +1,5 @@
 stabilityai/sd-turbo
+rupeshs/SDXL-Lightning-2steps
 stabilityai/sdxl-turbo
 SimianLuo/LCM_Dreamshaper_v7
 latent-consistency/lcm-sdxl

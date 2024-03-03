@@ -27,7 +27,7 @@ Added support for ultra fast 1 step inference using [sdxl-turbo](https://hugging
 
 ### Inference Speed
 
-Tested on Core i7-12700 to generate 512x512 image(1 step).
+Tested on Core i7-12700 to generate __512x512__ image(1 step).
 
 __SD Turbo__
 
@@ -45,7 +45,23 @@ __SDXL Turbo__
 | OpenVINO              | 5.6s          |
 | OpenVINO + TAESDXL    | 2.5s          |
 
-### Memory requirements
+## 🚀 Fast 2 step inference (SDXL-Lightning - Adversarial Diffusion Distillation)
+
+Tested on Core i7-12700 to generate __768x768__ image(2 steps).
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 18s           |
+| OpenVINO              | 12s           |
+| OpenVINO + TAESDXL    | 10s           |
+
+- *SDXL-Lightning* - [rupeshs/SDXL-Lightning-2steps](https://huggingface.co/rupeshs/SDXL-Lightning-2steps)
+
+- *SDXL-Lightning OpenVINO* - [rupeshs/SDXL-Lightning-2steps-openvino-int8](https://huggingface.co/rupeshs/SDXL-Lightning-2steps-openvino-int8)
+
+You can select these models from app settings.
+
+## Memory requirements
 
 Minimum system RAM requirment for FastSD CPU.
 
@@ -58,6 +74,8 @@ Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
 | LCM                   | 2 GB          |
 | LCM-LoRA              | 4 GB          |
 | OpenVINO              | 11 GB         |
+
+If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example in OpenVINO mode memory usage will become 9GB.
 
 :exclamation: Please note that guidance scale >1 increases RAM usage and slow inference speed.
 
@@ -102,8 +120,10 @@ Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
 - Added interactive CLI,thanks [monstruosoft](https://github.com/monstruosoft)
 - Added basic lora support to CLI and WebUI
 - ONNX EDSR 2x upscale
+- Add SDXL-Lightning support
+- Add SDXL-Lightning OpenVINO support (int8)
 
-## 2 Steps fast inference
+## 2 Steps fast inference (LCM)
 
 FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It works well with SD 1.5 models.
 

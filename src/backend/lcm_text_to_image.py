@@ -1,3 +1,4 @@
+import gc
 from math import ceil
 from typing import Any
 
@@ -123,6 +124,7 @@ class LCMTextToImage:
                 if self.pipeline:
                     del self.pipeline
                     self.pipeline = None
+                    gc.collect()
                 self.is_openvino_init = True
                 if (
                     lcm_diffusion_setting.diffusion_task
