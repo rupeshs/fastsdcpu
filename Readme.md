@@ -380,9 +380,13 @@ System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
 
 - TAESD will not work with OpenVINO image to image workflow
 
-### License
+## License
 
 The fastsdcpu project is available as open source under the terms of the [MIT license](https://github.com/rupeshs/fastsdcpu/blob/main/LICENSE)
+
+## Disclaimer
+
+Users are granted the freedom to create images using this tool, but they are obligated to comply with local laws and utilize it responsibly. The developers will not assume any responsibility for potential misuse by users.
 
 ## Contributors
 
