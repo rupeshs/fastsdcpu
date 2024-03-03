@@ -1,28 +1,89 @@
 import gradio as gr
-from backend.lora import get_lora_models
-from state import get_settings
+from os import path
+from backend.lora import (
+    get_lora_models,
+    get_active_lora_weights,
+    update_lora_weights,
+    load_lora_weight,
+)
+from state import get_settings, get_context
 from frontend.utils import get_valid_lora_model
+from models.interface_types import InterfaceType
+from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
+
+
+_MAX_LORA_WEIGHTS = 5
+
+_custom_lora_sliders = []
+_custom_lora_buttons = []
+_custom_lora_rows = []
 
 app_settings = get_settings()
 
 
-def change_lora_model(lora_name):
+def on_click_update_weight(*lora_weights):
+    update_weights = []
+    active_weights = get_active_lora_weights()
+    for idx, lora in enumerate(active_weights):
+        update_weights.append(
+            (
+                lora[0],
+                lora_weights[idx],
+            )
+        )
+    if len(update_weights) > 0:
+        update_lora_weights(
+            get_context(InterfaceType.WEBUI).lcm_text_to_image.pipeline,
+            app_settings.settings.lcm_diffusion_setting,
+            update_weights,
+        )
+
+
+def on_click_load_lora(lora_name, lora_weight):
+    if app_settings.settings.lcm_diffusion_setting.use_openvino:
+        gr.Warning("Currently LoRA is not supported in OpenVINO.")
+        return
     lora_models_map = get_lora_models(
         app_settings.settings.lcm_diffusion_setting.lora.models_dir
     )
-    app_settings.settings.lcm_diffusion_setting.lora.path = lora_models_map[lora_name]
 
+    # Load a new LoRA
+    dummy_settings = LCMDiffusionSetting()
+    dummy_settings.lora.fuse = False
+    dummy_settings.lora.enabled = True
+    dummy_settings.lora.path = lora_models_map[lora_name]
+    dummy_settings.lora.weight = lora_weight
+    if not path.exists(dummy_settings.lora.path):
+        gr.Warning("Invalid LoRA model path!")
+        return
+    pipeline = get_context(InterfaceType.WEBUI).lcm_text_to_image.pipeline
+    if not pipeline:
+        gr.Warning("Pipeline not initialized. Please generate an image first.")
+        return
+    load_lora_weight(
+        get_context(InterfaceType.WEBUI).lcm_text_to_image.pipeline,
+        dummy_settings,
+    )
 
-def on_change_use_lora_checkbox(use_lora_checkbox):
-    app_settings.settings.lcm_diffusion_setting.lora.enabled = use_lora_checkbox
-
-
-def on_change_lora_weight(lora_weight):
-    app_settings.settings.lcm_diffusion_setting.lora.weight = lora_weight
+    # Update Gradio LoRA UI
+    global _MAX_LORA_WEIGHTS
+    values = []
+    labels = []
+    rows = []
+    active_weights = get_active_lora_weights()
+    for idx, lora in enumerate(active_weights):
+        labels.append(f"Update {lora[0]} weight")
+        values.append(lora[1])
+        rows.append(gr.Row.update(visible=True))
+    for i in range(len(active_weights), _MAX_LORA_WEIGHTS):
+        labels.append(f"Update weight")
+        values.append(0.0)
+        rows.append(gr.Row.update(visible=False))
+    return values + labels + rows
 
 
 def get_lora_models_ui() -> None:
-    with gr.Blocks():
+    with gr.Blocks() as ui:
 
         with gr.Row():
             with gr.Column():
@@ -43,12 +104,6 @@ def get_lora_models_ui() -> None:
                     else:
                         app_settings.settings.lcm_diffusion_setting.lora.path = ""
 
-                    use_lora_checkbox = gr.Checkbox(
-                        label="Use LoRA model",
-                        value=app_settings.settings.lcm_diffusion_setting.lora.enabled,
-                        interactive=True,
-                    )
-
                     lora_model = gr.Dropdown(
                         lora_models_map.keys(),
                         label="LoRA model",
@@ -56,16 +111,53 @@ def get_lora_models_ui() -> None:
                         value=valid_model,
                         interactive=True,
                     )
+                    lora_weight = gr.Slider(
+                        0.0,
+                        1.0,
+                        value=app_settings.settings.lcm_diffusion_setting.lora.weight,
+                        step=0.05,
+                        label="Lora weight",
+                        interactive=True,
+                    )
+                    load_lora_btn = gr.Button(
+                        "Load selected LoRA",
+                        elem_id="load_lora_button",
+                        scale=0,
+                    )
 
-                lora_weight = gr.Slider(
-                    0.0,
-                    1.0,
-                    value=app_settings.settings.lcm_diffusion_setting.lora.weight,
-                    step=0.1,
-                    label="Lora weight",
-                    interactive=True,
-                )
+                global _MAX_LORA_WEIGHTS
+                global _custom_lora_sliders
+                global _custom_lora_buttons
+                global _custom_lora_rows
+                for i in range(0, _MAX_LORA_WEIGHTS):
+                    new_row = gr.Row(visible=False)
+                    _custom_lora_rows.append(new_row)
+                    with new_row:
+                        lora_slider = gr.Slider(
+                            0.0,
+                            1.0,
+                            step=0.05,
+                            label="LoRA weight",
+                            interactive=True,
+                            visible=True,
+                        )
+                        lora_button = gr.Button("Update weight")
+                        _custom_lora_sliders.append(lora_slider)
+                        _custom_lora_buttons.append(lora_button)
 
-        lora_model.change(change_lora_model, lora_model)
-        use_lora_checkbox.change(on_change_use_lora_checkbox, use_lora_checkbox)
-        lora_weight.change(on_change_lora_weight, lora_weight)
+    load_lora_btn.click(
+        fn=on_click_load_lora,
+        inputs=[lora_model, lora_weight],
+        outputs=[
+            *_custom_lora_sliders,
+            *_custom_lora_buttons,
+            *_custom_lora_rows,
+        ],
+    )
+
+    for button in _custom_lora_buttons:
+        button.click(
+            fn=on_click_update_weight,
+            inputs=[*_custom_lora_sliders],
+            outputs=None,
+        )

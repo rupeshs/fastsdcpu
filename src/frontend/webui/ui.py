@@ -76,4 +76,5 @@ def start_webui(
     share: bool = False,
 ):
     webui = get_web_ui()
+    webui.queue()
     webui.launch(share=share)
