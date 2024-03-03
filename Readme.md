@@ -47,6 +47,8 @@ __SDXL Turbo__
 
 ## 🚀 Fast 2 step inference (SDXL-Lightning - Adversarial Diffusion Distillation)
 
+SDXL-Lightning works with LCM and LCM-OpenVINO mode.You can select these models from app settings.
+
 Tested on Core i7-12700 to generate __768x768__ image(2 steps).
 
 | Diffusion Pipeline    | Latency       |
@@ -58,8 +60,6 @@ Tested on Core i7-12700 to generate __768x768__ image(2 steps).
 - *SDXL-Lightning* - [rupeshs/SDXL-Lightning-2steps](https://huggingface.co/rupeshs/SDXL-Lightning-2steps)
 
 - *SDXL-Lightning OpenVINO* - [rupeshs/SDXL-Lightning-2steps-openvino-int8](https://huggingface.co/rupeshs/SDXL-Lightning-2steps-openvino-int8)
-
-You can select these models from app settings.
 
 ## Memory requirements
 
