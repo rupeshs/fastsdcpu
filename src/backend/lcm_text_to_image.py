@@ -3,6 +3,7 @@ from typing import Any
 
 import numpy as np
 import torch
+import logging
 from backend.device import is_openvino_device
 from backend.lora import load_lora_weight
 from backend.models.lcmdiffusion_setting import (
@@ -22,7 +23,7 @@ from backend.pipelines.lcm import (
 )
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from constants import DEVICE
-from diffusers import LCMScheduler
+from diffusers import LCMScheduler, ControlNetModel
 from image_ops import resize_pil_image
 
 
@@ -163,9 +164,22 @@ class LCMTextToImage:
 
                 else:
                     print(f"***** Init LCM Model pipeline - {model_id} *****")
+                    pipeline_args = {}
+                    if (
+                        lcm_diffusion_setting.controlnet
+                        and lcm_diffusion_setting.controlnet.enabled
+                    ):
+                        logging.info("Loading ControlNet adapter")
+                        controlnet_adapter = ControlNetModel.from_single_file(
+                            lcm_diffusion_setting.controlnet.path,
+                            local_files_only=True,
+                            use_safetensors=True,
+                        )
+                        pipeline_args["controlnet"] = controlnet_adapter
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
+                        pipeline_args,
                     )
 
                 if (
@@ -357,6 +371,7 @@ class LCMTextToImage:
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    image=lcm_diffusion_setting.init_image,
                 ).images
             elif (
                 lcm_diffusion_setting.diffusion_task

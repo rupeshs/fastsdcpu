@@ -12,6 +12,8 @@ def get_tiny_decoder_vae_model(pipeline_class) -> str:
         pipeline_class == "LatentConsistencyModelPipeline"
         or pipeline_class == "StableDiffusionPipeline"
         or pipeline_class == "StableDiffusionImg2ImgPipeline"
+        or pipeline_class == "StableDiffusionControlNetPipeline"
+        or pipeline_class == "StableDiffusionControlNetImg2ImgPipeline"
     ):
         return TAESD_MODEL
     elif (

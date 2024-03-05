@@ -12,6 +12,9 @@ from diffusers import (
     LCMScheduler,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionXLImg2ImgPipeline,
+    AutoPipelineForText2Image,
+    AutoPipelineForImage2Image,
+    StableDiffusionControlNetPipeline,
 )
 
 
@@ -54,6 +57,7 @@ def load_taesd(
 def get_lcm_model_pipeline(
     model_id: str = LCM_DEFAULT_MODEL,
     use_local_model: bool = False,
+    pipeline_args={},
 ):
     pipeline = None
     if model_id == "latent-consistency/lcm-sdxl":
@@ -70,9 +74,11 @@ def get_lcm_model_pipeline(
             use_local_model,
         )
     else:
-        pipeline = DiffusionPipeline.from_pretrained(
+        # pipeline = DiffusionPipeline.from_pretrained(
+        pipeline = AutoPipelineForText2Image.from_pretrained(
             model_id,
             local_files_only=use_local_model,
+            **pipeline_args,
         )
 
     return pipeline
@@ -86,6 +92,8 @@ def get_image_to_image_pipeline(pipeline: Any) -> Any:
         or pipeline_class == "StableDiffusionPipeline"
     ):
         return StableDiffusionImg2ImgPipeline(**components)
+    elif pipeline_class == "StableDiffusionControlNetPipeline":
+        return AutoPipelineForImage2Image.from_pipe(pipeline)
     elif pipeline_class == "StableDiffusionXLPipeline":
         return StableDiffusionXLImg2ImgPipeline(**components)
     else:

@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
 from paths import FastStableDiffusionPaths
@@ -26,6 +26,12 @@ class Lora(BaseModel):
     enabled: bool = False
 
 
+class ControlNetSetting(BaseModel):
+    path: Optional[str] = None
+    weight: float = 0.5
+    enabled: bool = False
+
+
 class LCMDiffusionSetting(BaseModel):
     lcm_model_id: str = LCM_DEFAULT_MODEL
     openvino_lcm_model_id: str = LCM_DEFAULT_MODEL_OPENVINO
@@ -48,3 +54,4 @@ class LCMDiffusionSetting(BaseModel):
     use_safety_checker: bool = False
     diffusion_task: str = DiffusionTask.text_to_image.value
     lora: Optional[Lora] = Lora()
+    controlnet: Optional[Union[ControlNetSetting, list[ControlNetSetting]]] = None
