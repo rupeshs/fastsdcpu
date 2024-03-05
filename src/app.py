@@ -300,15 +300,25 @@ else:
 
     # Basic ControlNet settings; if ControlNet is enabled, an image is
     # required even in txt2img mode, currently uses CLI argument _file_
-    if "controlnet" in custom_settings and custom_settings["controlnet"] != None:
+    if (
+        "controlnet" in custom_settings
+        and custom_settings["controlnet"] != None
+        and len(custom_settings["controlnet"]) > 0
+    ):
         controlnet = ControlNetSetting()
         controlnet.enabled = custom_settings["controlnet"][0]["enabled"]
         controlnet.weight = custom_settings["controlnet"][0]["weight"]
         controlnet.path = custom_settings["controlnet"][0]["adapter_path"]
-        if args.file == "":
-            controlnet.enabled = False
-        else:
-            config.lcm_diffusion_setting.init_image = Image.open(args.file)
+        if controlnet.enabled:
+            if args.file == "":
+                args.file = input("Enter an image path for ControlNet: ")
+            try:
+                config.lcm_diffusion_setting.init_image = Image.open(args.file)
+            except (AttributeError, FileNotFoundError) as e:
+                pass
+            if config.lcm_diffusion_setting.init_image == None:
+                print("No valid ControlNet image provided, disabling ControlNet")
+                controlnet.enabled = False
         config.lcm_diffusion_setting.controlnet = controlnet
 
     # Interactive mode
