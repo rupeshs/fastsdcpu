@@ -1,4 +1,5 @@
 from enum import Enum
+from PIL import Image
 from typing import Any, Optional, Union
 
 from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
@@ -27,9 +28,10 @@ class Lora(BaseModel):
 
 
 class ControlNetSetting(BaseModel):
-    path: Optional[str] = None
+    path: Optional[str] = None  # ControlNet adapter path
     weight: float = 0.5
     enabled: bool = False
+    _image: Image = None        # Control image, PIL image
 
 
 class LCMDiffusionSetting(BaseModel):

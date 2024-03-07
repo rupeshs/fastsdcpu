@@ -332,6 +332,25 @@ class LCMTextToImage:
             print("Not using LCM-LoRA so setting guidance_scale 1.0")
             guidance_scale = 1.0
 
+        pipeline_args = {}
+        if (
+            lcm_diffusion_setting.controlnet
+            and lcm_diffusion_setting.controlnet.enabled
+        ):
+            pipeline_args["controlnet_conditioning_scale"] = (
+                lcm_diffusion_setting.controlnet.weight
+            )
+            if (
+                lcm_diffusion_setting.diffusion_task
+                == DiffusionTask.text_to_image.value
+            ):
+                pipeline_args["image"] = lcm_diffusion_setting.controlnet._image
+            elif (
+                lcm_diffusion_setting.diffusion_task
+                == DiffusionTask.image_to_image.value
+            ):
+                pipeline_args["control_image"] = lcm_diffusion_setting.controlnet._image
+
         if lcm_diffusion_setting.use_openvino:
             if (
                 lcm_diffusion_setting.diffusion_task
@@ -373,7 +392,7 @@ class LCMTextToImage:
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-                    image=lcm_diffusion_setting.init_image,
+                    **pipeline_args,
                 ).images
             elif (
                 lcm_diffusion_setting.diffusion_task
@@ -389,5 +408,6 @@ class LCMTextToImage:
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    **pipeline_args,
                 ).images
         return result_images
