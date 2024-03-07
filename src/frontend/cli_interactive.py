@@ -142,19 +142,20 @@ def interactive_lora(config, context, menu_flag=False):
             )
     elif option == 2:
         # Load a new LoRA
-        dummy_settings = LCMDiffusionSetting()
-        dummy_settings.lora.fuse = False
-        dummy_settings.lora.enabled = True
-        dummy_settings.lora.path = input("Enter LoRA model path: ")
-        dummy_settings.lora.weight = user_value(
+        settings = config.lcm_diffusion_setting
+        settings.lora.fuse = False
+        settings.lora.enabled = False
+        settings.lora.path = input("Enter LoRA model path: ")
+        settings.lora.weight = user_value(
             float,
             "Enter a LoRA weight (0.5): ",
             0.5,
         )
-        if not path.exists(dummy_settings.lora.path):
+        if not path.exists(settings.lora.path):
             print("Invalid LoRA model path!")
             return
-        load_lora_weight(context.lcm_text_to_image.pipeline, dummy_settings)
+        settings.lora.enabled = True
+        load_lora_weight(context.lcm_text_to_image.pipeline, settings)
 
     if menu_flag:
         global _edit_lora_settings

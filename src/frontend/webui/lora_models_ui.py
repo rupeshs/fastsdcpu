@@ -48,21 +48,22 @@ def on_click_load_lora(lora_name, lora_weight):
     )
 
     # Load a new LoRA
-    dummy_settings = LCMDiffusionSetting()
-    dummy_settings.lora.fuse = False
-    dummy_settings.lora.enabled = True
-    dummy_settings.lora.path = lora_models_map[lora_name]
-    dummy_settings.lora.weight = lora_weight
-    if not path.exists(dummy_settings.lora.path):
+    settings = app_settings.settings.lcm_diffusion_setting
+    settings.lora.fuse = False
+    settings.lora.enabled = False
+    settings.lora.path = lora_models_map[lora_name]
+    settings.lora.weight = lora_weight
+    if not path.exists(settings.lora.path):
         gr.Warning("Invalid LoRA model path!")
         return
     pipeline = get_context(InterfaceType.WEBUI).lcm_text_to_image.pipeline
     if not pipeline:
         gr.Warning("Pipeline not initialized. Please generate an image first.")
         return
+    settings.lora.enabled = True
     load_lora_weight(
         get_context(InterfaceType.WEBUI).lcm_text_to_image.pipeline,
-        dummy_settings,
+        settings,
     )
 
     # Update Gradio LoRA UI
