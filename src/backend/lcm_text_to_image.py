@@ -153,6 +153,20 @@ class LCMTextToImage:
                     del self.img_to_img_pipeline
                     self.img_to_img_pipeline = None
 
+                # Load ControlNet model
+                pipeline_args = {}
+                if (
+                    lcm_diffusion_setting.controlnet
+                    and lcm_diffusion_setting.controlnet.enabled
+                ):
+                    logging.info("Loading ControlNet adapter")
+                    controlnet_adapter = ControlNetModel.from_single_file(
+                        lcm_diffusion_setting.controlnet.path,
+                        local_files_only=True,
+                        use_safetensors=True,
+                    )
+                    pipeline_args["controlnet"] = controlnet_adapter
+
                 if use_lora:
                     print(
                         f"***** Init LCM-LoRA pipeline - {lcm_lora.base_model_id} *****"
@@ -162,22 +176,11 @@ class LCMTextToImage:
                         lcm_lora.lcm_lora_id,
                         use_local_model,
                         torch_data_type=self.torch_data_type,
+                        pipeline_args=pipeline_args,
                     )
 
                 else:
                     print(f"***** Init LCM Model pipeline - {model_id} *****")
-                    pipeline_args = {}
-                    if (
-                        lcm_diffusion_setting.controlnet
-                        and lcm_diffusion_setting.controlnet.enabled
-                    ):
-                        logging.info("Loading ControlNet adapter")
-                        controlnet_adapter = ControlNetModel.from_single_file(
-                            lcm_diffusion_setting.controlnet.path,
-                            local_files_only=True,
-                            use_safetensors=True,
-                        )
-                        pipeline_args["controlnet"] = controlnet_adapter
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,

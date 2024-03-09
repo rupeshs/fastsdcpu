@@ -1,5 +1,5 @@
 import torch
-from diffusers import DiffusionPipeline, LCMScheduler
+from diffusers import DiffusionPipeline, LCMScheduler, AutoPipelineForText2Image
 
 
 def load_lcm_weights(
@@ -23,11 +23,14 @@ def get_lcm_lora_pipeline(
     lcm_lora_id: str,
     use_local_model: bool,
     torch_data_type: torch.dtype,
+    pipeline_args={},
 ):
-    pipeline = DiffusionPipeline.from_pretrained(
+    # pipeline = DiffusionPipeline.from_pretrained(
+    pipeline = AutoPipelineForText2Image.from_pretrained(
         base_model_id,
         torch_dtype=torch_data_type,
         local_files_only=use_local_model,
+        **pipeline_args,
     )
 
     load_lcm_weights(
