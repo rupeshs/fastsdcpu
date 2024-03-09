@@ -117,8 +117,13 @@ class LCMTextToImage:
             or self.previous_ov_model_id != ov_model_id
             or self.previous_safety_checker != lcm_diffusion_setting.use_safety_checker
             or self.previous_use_openvino != lcm_diffusion_setting.use_openvino
-            or self.previous_task_type != lcm_diffusion_setting.diffusion_task
-            or self.previous_lora != lcm_diffusion_setting.lora
+            or (
+                self.use_openvino
+                and (
+                    self.previous_task_type != lcm_diffusion_setting.diffusion_task
+                    or self.previous_lora != lcm_diffusion_setting.lora
+                )
+            )
         ):
             if self.use_openvino and is_openvino_device():
                 if self.pipeline:
@@ -170,13 +175,12 @@ class LCMTextToImage:
                         use_local_model,
                     )
 
-                if (
-                    lcm_diffusion_setting.diffusion_task
-                    == DiffusionTask.image_to_image.value
-                ):
-                    self.img_to_img_pipeline = get_image_to_image_pipeline(
-                        self.pipeline
-                    )
+                # if (
+                #     lcm_diffusion_setting.diffusion_task
+                #     == DiffusionTask.image_to_image.value
+                # ):
+                # Always create both, txt2img and img2img pipelines
+                self.img_to_img_pipeline = get_image_to_image_pipeline(self.pipeline)
 
                 # Load LoRA weight for pytorch pipeline (.safetensors)
                 if lcm_diffusion_setting.lora.enabled:
@@ -196,24 +200,24 @@ class LCMTextToImage:
                     )
                 else:
                     print("Using Tiny Auto Encoder")
-                    if (
-                        lcm_diffusion_setting.diffusion_task
-                        == DiffusionTask.text_to_image.value
-                    ):
-                        load_taesd(
-                            self.pipeline,
-                            use_local_model,
-                            self.torch_data_type,
-                        )
-                    elif (
-                        lcm_diffusion_setting.diffusion_task
-                        == DiffusionTask.image_to_image.value
-                    ):
-                        load_taesd(
-                            self.img_to_img_pipeline,
-                            use_local_model,
-                            self.torch_data_type,
-                        )
+                    # if (
+                    #     lcm_diffusion_setting.diffusion_task
+                    #     == DiffusionTask.text_to_image.value
+                    # ):
+                    load_taesd(
+                        self.pipeline,
+                        use_local_model,
+                        self.torch_data_type,
+                    )
+                    # elif (
+                    #     lcm_diffusion_setting.diffusion_task
+                    #     == DiffusionTask.image_to_image.value
+                    # ):
+                    load_taesd(
+                        self.img_to_img_pipeline,
+                        use_local_model,
+                        self.torch_data_type,
+                    )
 
             if (
                 lcm_diffusion_setting.diffusion_task

@@ -32,6 +32,11 @@ def get_web_ui() -> gr.Blocks:
         elif mode == "LCM-OpenVINO":
             app_settings.settings.lcm_diffusion_setting.use_openvino = True
 
+        # Disable app settings LoRA model from being loaded by default when
+        # the diffusion pipeline is created; LoRAs must be loaded from the WebUI
+        if app_settings.settings.lcm_diffusion_setting.lora:
+            app_settings.settings.lcm_diffusion_setting.lora.enabled = False
+
     with gr.Blocks(
         css=FastStableDiffusionPaths.get_css_path(),
         title="FastSD CPU",
@@ -76,4 +81,5 @@ def start_webui(
     share: bool = False,
 ):
     webui = get_web_ui()
+    webui.queue()
     webui.launch(share=share)
