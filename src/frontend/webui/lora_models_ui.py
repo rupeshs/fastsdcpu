@@ -129,15 +129,17 @@ def get_lora_models_ui() -> None:
                         elem_id="load_lora_button",
                         scale=0,
                     )
-                update_lora_weights_btn = gr.Button(
-                    "Update LoRA weights",
-                    elem_id="load_lora_button",
-                    scale=0,
-                )
-                gr.Label(
-                    "Loaded LoRA models",
-                    show_label=False,
-                )
+
+                with gr.Row():
+                    gr.Markdown(
+                        "## Loaded LoRA models",
+                        show_label=False,
+                    )
+                    update_lora_weights_btn = gr.Button(
+                        "Update LoRA weights",
+                        elem_id="load_lora_button",
+                        scale=0,
+                    )
 
                 global _MAX_LORA_WEIGHTS
                 global _custom_lora_sliders
