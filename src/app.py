@@ -258,9 +258,6 @@ else:
     context = get_context(InterfaceType.CLI)
     config = app_settings.settings
 
-    if config.lcm_diffusion_setting.lora.path:
-        config.lcm_diffusion_setting.lora.enabled = True
-
     if args.use_openvino:
         config.lcm_diffusion_setting.lcm_model_id = LCM_DEFAULT_MODEL_OPENVINO
     else:
@@ -280,9 +277,12 @@ else:
     config.lcm_diffusion_setting.lcm_lora.base_model_id = args.base_model_id
     config.lcm_diffusion_setting.lcm_lora.lcm_lora_id = args.lcm_lora_id
     config.lcm_diffusion_setting.diffusion_task = DiffusionTask.text_to_image.value
+    config.lcm_diffusion_setting.lora.enabled = False
     config.lcm_diffusion_setting.lora.path = args.lora
     config.lcm_diffusion_setting.lora.weight = args.lora_weight
     config.lcm_diffusion_setting.lora.fuse = True
+    if config.lcm_diffusion_setting.lora.path:
+        config.lcm_diffusion_setting.lora.enabled = True
     if args.usejpeg:
         config.generated_images.format = ImageFormat.JPEG.value.upper()
     if args.seed > -1:
@@ -329,6 +329,7 @@ else:
     # Interactive mode
     if args.interactive:
         # wrapper(interactive_mode, config, context)
+        config.lcm_diffusion_setting.lora.fuse = False
         interactive_mode(config, context)
 
     # Start of non-interactive CLI image generation
