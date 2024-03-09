@@ -130,3 +130,5 @@ def update_lora_weights(
         adapter_names,
         adapter_weights=adapter_weights,
     )
+    adapater_weights = zip(adapter_names, adapter_weights)
+    print(f"Adapters  : {list(adapater_weights)}")

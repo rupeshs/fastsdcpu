@@ -117,7 +117,7 @@ def get_lora_models_ui() -> None:
                         1.0,
                         value=app_settings.settings.lcm_diffusion_setting.lora.weight,
                         step=0.05,
-                        label="Lora weight",
+                        label="Initial Lora weight",
                         interactive=True,
                     )
                     load_lora_btn = gr.Button(

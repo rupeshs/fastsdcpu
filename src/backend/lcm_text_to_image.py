@@ -183,11 +183,11 @@ class LCMTextToImage:
                 self.img_to_img_pipeline = get_image_to_image_pipeline(self.pipeline)
 
                 # Load LoRA weight for pytorch pipeline (.safetensors)
-                if lcm_diffusion_setting.lora.enabled:
-                    load_lora_weight(
-                        self.pipeline,
-                        lcm_diffusion_setting,
-                    )
+                # if lcm_diffusion_setting.lora.enabled:
+                #     load_lora_weight(
+                #         self.pipeline,
+                #         lcm_diffusion_setting,
+                #     )
 
                 self._pipeline_to_device()
 
