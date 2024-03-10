@@ -15,8 +15,8 @@ from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 _MAX_LORA_WEIGHTS = 5
 
 _custom_lora_sliders = []
-_custom_lora_buttons = []
-_custom_lora_rows = []
+_custom_lora_names = []
+_custom_lora_columns = []
 
 app_settings = get_settings()
 
@@ -24,6 +24,9 @@ app_settings = get_settings()
 def on_click_update_weight(*lora_weights):
     update_weights = []
     active_weights = get_active_lora_weights()
+    if not len(active_weights):
+        gr.Warning("No active LoRAs, first you need to load LoRA model")
+        return
     for idx, lora in enumerate(active_weights):
         update_weights.append(
             (
@@ -73,14 +76,14 @@ def on_click_load_lora(lora_name, lora_weight):
     rows = []
     active_weights = get_active_lora_weights()
     for idx, lora in enumerate(active_weights):
-        labels.append(f"Update {lora[0]} weight")
+        labels.append(f"{lora[0]}: ")
         values.append(lora[1])
         rows.append(gr.Row.update(visible=True))
     for i in range(len(active_weights), _MAX_LORA_WEIGHTS):
         labels.append(f"Update weight")
         values.append(0.0)
         rows.append(gr.Row.update(visible=False))
-    return values + labels + rows
+    return labels + values + rows
 
 
 def get_lora_models_ui() -> None:
@@ -112,6 +115,7 @@ def get_lora_models_ui() -> None:
                         value=valid_model,
                         interactive=True,
                     )
+
                     lora_weight = gr.Slider(
                         0.0,
                         1.0,
@@ -126,14 +130,29 @@ def get_lora_models_ui() -> None:
                         scale=0,
                     )
 
+                with gr.Row():
+                    gr.Markdown(
+                        "## Loaded LoRA models",
+                        show_label=False,
+                    )
+                    update_lora_weights_btn = gr.Button(
+                        "Update LoRA weights",
+                        elem_id="load_lora_button",
+                        scale=0,
+                    )
+
                 global _MAX_LORA_WEIGHTS
                 global _custom_lora_sliders
-                global _custom_lora_buttons
-                global _custom_lora_rows
+                global _custom_lora_names
+                global _custom_lora_columns
                 for i in range(0, _MAX_LORA_WEIGHTS):
-                    new_row = gr.Row(visible=False)
-                    _custom_lora_rows.append(new_row)
+                    new_row = gr.Column(visible=False)
+                    _custom_lora_columns.append(new_row)
                     with new_row:
+                        lora_name = gr.Markdown(
+                            "Lora Name",
+                            show_label=True,
+                        )
                         lora_slider = gr.Slider(
                             0.0,
                             1.0,
@@ -142,23 +161,22 @@ def get_lora_models_ui() -> None:
                             interactive=True,
                             visible=True,
                         )
-                        lora_button = gr.Button("Update weight")
+
+                        _custom_lora_names.append(lora_name)
                         _custom_lora_sliders.append(lora_slider)
-                        _custom_lora_buttons.append(lora_button)
 
     load_lora_btn.click(
         fn=on_click_load_lora,
         inputs=[lora_model, lora_weight],
         outputs=[
+            *_custom_lora_names,
             *_custom_lora_sliders,
-            *_custom_lora_buttons,
-            *_custom_lora_rows,
+            *_custom_lora_columns,
         ],
     )
 
-    for button in _custom_lora_buttons:
-        button.click(
-            fn=on_click_update_weight,
-            inputs=[*_custom_lora_sliders],
-            outputs=None,
-        )
+    update_lora_weights_btn.click(
+        fn=on_click_update_weight,
+        inputs=[*_custom_lora_sliders],
+        outputs=None,
+    )
