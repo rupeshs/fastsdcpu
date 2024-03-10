@@ -339,6 +339,7 @@ class LCMTextToImage:
             print("Not using LCM-LoRA so setting guidance_scale 1.0")
             guidance_scale = 1.0
 
+        # Prepare ControlNet pipeline arguments
         pipeline_args = {}
         if (
             lcm_diffusion_setting.controlnet

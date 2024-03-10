@@ -299,7 +299,7 @@ else:
             custom_settings = json.load(f)
 
     # Basic ControlNet settings; if ControlNet is enabled, an image is
-    # required even in txt2img mode, currently uses CLI argument _file_
+    # required even in txt2img mode
     config.lcm_diffusion_setting.controlnet = None
     if (
         "controlnet" in custom_settings
