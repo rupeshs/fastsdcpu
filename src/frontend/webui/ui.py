@@ -32,10 +32,12 @@ def get_web_ui() -> gr.Blocks:
         elif mode == "LCM-OpenVINO":
             app_settings.settings.lcm_diffusion_setting.use_openvino = True
 
-        # Disable app settings LoRA model from being loaded by default when
-        # the diffusion pipeline is created; LoRAs must be loaded from the WebUI
-        if app_settings.settings.lcm_diffusion_setting.lora:
-            app_settings.settings.lcm_diffusion_setting.lora.enabled = False
+    # Prevent saved LoRA and ControlNet settings from being used by
+    # default; in WebUI mode, the user must explicitly enable those
+    if app_settings.settings.lcm_diffusion_setting.lora:
+        app_settings.settings.lcm_diffusion_setting.lora.enabled = False
+    if app_settings.settings.lcm_diffusion_setting.controlnet:
+        app_settings.settings.lcm_diffusion_setting.controlnet.enabled = False
 
     with gr.Blocks(
         css=FastStableDiffusionPaths.get_css_path(),

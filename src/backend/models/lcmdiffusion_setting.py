@@ -28,10 +28,10 @@ class Lora(BaseModel):
 
 
 class ControlNetSetting(BaseModel):
-    path: Optional[str] = None  # ControlNet adapter path
-    weight: float = 0.5
+    adapter_path: Optional[str] = None  # ControlNet adapter path
+    conditioning_scale: float = 0.5
     enabled: bool = False
-    _image: Image = None        # Control image, PIL image
+    _control_image: Image = None  # Control image, PIL image
 
 
 class LCMDiffusionSetting(BaseModel):

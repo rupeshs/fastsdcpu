@@ -3,9 +3,10 @@ from argparse import ArgumentParser
 
 import constants
 from backend.models.gen_images import ImageFormat
-from backend.models.lcmdiffusion_setting import DiffusionTask, ControlNetSetting
+from backend.models.lcmdiffusion_setting import DiffusionTask
 from backend.upscale.tiled_upscale import generate_upscaled_image
 from backend.upscale.upscaler import upscale_image
+from backend.controlnet import controlnet_settings_from_dict
 from constants import APP_VERSION, DEVICE, LCM_DEFAULT_MODEL_OPENVINO
 from frontend.cli_interactive import interactive_mode
 from frontend.webui.image_variations_ui import generate_image_variations
@@ -301,30 +302,10 @@ else:
     # Basic ControlNet settings; if ControlNet is enabled, an image is
     # required even in txt2img mode
     config.lcm_diffusion_setting.controlnet = None
-    if (
-        "controlnet" in custom_settings
-        and custom_settings["controlnet"] != None
-        and len(custom_settings["controlnet"]) > 0
-    ):
-        controlnet = ControlNetSetting()
-        controlnet.enabled = custom_settings["controlnet"][0]["enabled"]
-        controlnet.weight = custom_settings["controlnet"][0]["weight"]
-        controlnet.path = custom_settings["controlnet"][0]["path"]
-        controlnet._image = None
-        image_path = custom_settings["controlnet"][0]["image"]
-        if controlnet.enabled:
-            if image_path == None:
-                image_path = input("Enter a control image path for ControlNet: ")
-            try:
-                controlnet._image = Image.open(image_path)
-            except (AttributeError, FileNotFoundError) as e:
-                pass
-            if controlnet._image == None:
-                print(
-                    "No valid control image for ControlNet provided, disabling ControlNet"
-                )
-                controlnet.enabled = False
-        config.lcm_diffusion_setting.controlnet = controlnet
+    controlnet_settings_from_dict(
+        config.lcm_diffusion_setting,
+        custom_settings,
+    )
 
     # Interactive mode
     if args.interactive:
@@ -363,7 +344,9 @@ else:
     elif args.sdupscale:
         if args.use_openvino:
             config.lcm_diffusion_setting.strength = 0.3
-        upscale_settings = custom_settings
+        upscale_settings = None
+        if custom_settings != {}:
+            upscale_settings = custom_settings
         filepath = args.file
         output_format = config.generated_images.format
         if upscale_settings:

@@ -7,6 +7,10 @@ import torch
 import logging
 from backend.device import is_openvino_device
 from backend.lora import load_lora_weight
+from backend.controlnet import (
+    load_controlnet_adapters,
+    update_controlnet_arguments,
+)
 from backend.models.lcmdiffusion_setting import (
     DiffusionTask,
     LCMDiffusionSetting,
@@ -24,7 +28,7 @@ from backend.pipelines.lcm import (
 )
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from constants import DEVICE
-from diffusers import LCMScheduler, ControlNetModel
+from diffusers import LCMScheduler
 from image_ops import resize_pil_image
 
 
@@ -158,20 +162,7 @@ class LCMTextToImage:
                     del self.img_to_img_pipeline
                     self.img_to_img_pipeline = None
 
-                # Load ControlNet model
-                pipeline_args = {}
-                if (
-                    lcm_diffusion_setting.controlnet
-                    and lcm_diffusion_setting.controlnet.enabled
-                ):
-                    logging.info("Loading ControlNet adapter")
-                    controlnet_adapter = ControlNetModel.from_single_file(
-                        lcm_diffusion_setting.controlnet.path,
-                        local_files_only=True,
-                        use_safetensors=True,
-                    )
-                    pipeline_args["controlnet"] = controlnet_adapter
-
+                controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
                 if use_lora:
                     print(
                         f"***** Init LCM-LoRA pipeline - {lcm_lora.base_model_id} *****"
@@ -181,7 +172,7 @@ class LCMTextToImage:
                         lcm_lora.lcm_lora_id,
                         use_local_model,
                         torch_data_type=self.torch_data_type,
-                        pipeline_args=pipeline_args,
+                        pipeline_args=controlnet_args,
                     )
 
                 else:
@@ -189,23 +180,10 @@ class LCMTextToImage:
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
-                        pipeline_args,
+                        controlnet_args,
                     )
 
-                # if (
-                #     lcm_diffusion_setting.diffusion_task
-                #     == DiffusionTask.image_to_image.value
-                # ):
-                # Always create both, txt2img and img2img pipelines
                 self.img_to_img_pipeline = get_image_to_image_pipeline(self.pipeline)
-
-                # Load LoRA weight for pytorch pipeline (.safetensors)
-                # if lcm_diffusion_setting.lora.enabled:
-                #     load_lora_weight(
-                #         self.pipeline,
-                #         lcm_diffusion_setting,
-                #     )
-
                 self._pipeline_to_device()
 
             if use_tiny_auto_encoder:
@@ -217,19 +195,11 @@ class LCMTextToImage:
                     )
                 else:
                     print("Using Tiny Auto Encoder")
-                    # if (
-                    #     lcm_diffusion_setting.diffusion_task
-                    #     == DiffusionTask.text_to_image.value
-                    # ):
                     load_taesd(
                         self.pipeline,
                         use_local_model,
                         self.torch_data_type,
                     )
-                    # elif (
-                    #     lcm_diffusion_setting.diffusion_task
-                    #     == DiffusionTask.image_to_image.value
-                    # ):
                     load_taesd(
                         self.img_to_img_pipeline,
                         use_local_model,
@@ -339,26 +309,7 @@ class LCMTextToImage:
             print("Not using LCM-LoRA so setting guidance_scale 1.0")
             guidance_scale = 1.0
 
-        # Prepare ControlNet pipeline arguments
-        pipeline_args = {}
-        if (
-            lcm_diffusion_setting.controlnet
-            and lcm_diffusion_setting.controlnet.enabled
-        ):
-            pipeline_args["controlnet_conditioning_scale"] = (
-                lcm_diffusion_setting.controlnet.weight
-            )
-            if (
-                lcm_diffusion_setting.diffusion_task
-                == DiffusionTask.text_to_image.value
-            ):
-                pipeline_args["image"] = lcm_diffusion_setting.controlnet._image
-            elif (
-                lcm_diffusion_setting.diffusion_task
-                == DiffusionTask.image_to_image.value
-            ):
-                pipeline_args["control_image"] = lcm_diffusion_setting.controlnet._image
-
+        controlnet_args = update_controlnet_arguments(lcm_diffusion_setting)
         if lcm_diffusion_setting.use_openvino:
             if (
                 lcm_diffusion_setting.diffusion_task
@@ -400,7 +351,7 @@ class LCMTextToImage:
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-                    **pipeline_args,
+                    **controlnet_args,
                 ).images
             elif (
                 lcm_diffusion_setting.diffusion_task
@@ -416,6 +367,6 @@ class LCMTextToImage:
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-                    **pipeline_args,
+                    **controlnet_args,
                 ).images
         return result_images

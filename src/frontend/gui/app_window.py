@@ -46,6 +46,12 @@ class MainWindow(QMainWindow):
     def __init__(self, config: AppSettings):
         super().__init__()
         self.config = config
+        # Prevent saved LoRA and ControlNet settings from being used by
+        # default; in GUI mode, the user must explicitly enable those
+        if self.config.settings.lcm_diffusion_setting.lora:
+            self.config.settings.lcm_diffusion_setting.lora.enabled = False
+        if self.config.settings.lcm_diffusion_setting.controlnet:
+            self.config.settings.lcm_diffusion_setting.controlnet.enabled = False
         self.setWindowTitle(APP_NAME)
         self.setFixedSize(QSize(600, 670))
         self.init_ui()
