@@ -57,3 +57,8 @@ class LCMDiffusionSetting(BaseModel):
     diffusion_task: str = DiffusionTask.text_to_image.value
     lora: Optional[Lora] = Lora()
     controlnet: Optional[Union[ControlNetSetting, list[ControlNetSetting]]] = None
+    dirs: dict = {
+        "controlnet": FastStableDiffusionPaths.get_lora_models_path(),
+        "lora": FastStableDiffusionPaths.get_lora_models_path(),
+    }
+    rebuild_pipeline: bool = False

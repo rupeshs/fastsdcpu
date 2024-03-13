@@ -7,6 +7,7 @@ from frontend.webui.models_ui import get_models_ui
 from frontend.webui.image_variations_ui import get_image_variations_ui
 from frontend.webui.upscaler_ui import get_upscaler_ui
 from frontend.webui.lora_models_ui import get_lora_models_ui
+from frontend.webui.controlnet_ui import get_controlnet_ui
 from paths import FastStableDiffusionPaths
 from state import get_settings
 
@@ -73,6 +74,8 @@ def get_web_ui() -> gr.Blocks:
                 get_models_ui()
             with gr.TabItem("Lora Models"):
                 get_lora_models_ui()
+            with gr.TabItem("ControlNet"):
+                get_controlnet_ui()
 
         gr.HTML(_get_footer_message())
 

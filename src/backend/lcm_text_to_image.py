@@ -129,6 +129,7 @@ class LCMTextToImage:
                     or self.previous_lora != lcm_diffusion_setting.lora
                 )
             )
+            or lcm_diffusion_setting.rebuild_pipeline
         ):
             if self.use_openvino and is_openvino_device():
                 if self.pipeline:
@@ -230,6 +231,7 @@ class LCMTextToImage:
             self.previous_use_openvino = lcm_diffusion_setting.use_openvino
             self.previous_task_type = lcm_diffusion_setting.diffusion_task
             self.previous_lora = lcm_diffusion_setting.lora.model_copy(deep=True)
+            lcm_diffusion_setting.rebuild_pipeline = False
             if (
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.text_to_image.value
