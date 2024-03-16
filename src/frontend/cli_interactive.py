@@ -16,6 +16,7 @@ from backend.lora import (
 from backend.models.lcmdiffusion_setting import (
     DiffusionTask,
     LCMDiffusionSetting,
+    ControlNetSetting,
 )
 
 
@@ -116,47 +117,50 @@ def interactive_controlnet(
     @param menu_flag: Indicates whether this function was called from the main
         interactive CLI menu; _True_ if called from the main menu, _False_ otherwise
     """
-    controlnet_settings = {"controlnet": [{}]}
-    if context == None or context.lcm_text_to_image.pipeline == None:
-        # ControlNet can be enabled/disabled here prior to the pipeline creation
-        print("Diffusion pipeline not initialized")
-        option = input("Do you want to enable ControlNet for the new pipeline? (y/N): ")
-        if option.upper() == "Y":
-            controlnet_settings["controlnet"][0]["enabled"] = True
-            controlnet_settings["controlnet"][0]["adapter_path"] = input(
-                "Enter ControlNet adapter path: "
-            )
-            controlnet_settings["controlnet"][0]["conditioning_scale"] = user_value(
-                float, f"Enter ControlNet conditioning scale (0.5): ", 0.5
-            )
-            controlnet_settings["controlnet"][0]["control_image"] = input(
-                "Enter ControlNet control image path: "
-            )
-            controlnet_settings_from_dict(
-                config.lcm_diffusion_setting, controlnet_settings
-            )
-        return
-    elif context.lcm_text_to_image.pipeline != None and (
-        config.lcm_diffusion_setting.controlnet == None
-        or config.lcm_diffusion_setting.controlnet.enabled == False
-    ):
-        print("ControlNet is disabled on the current diffusion pipeline")
-        return
-
     settings = config.lcm_diffusion_setting
-    settings.controlnet.conditioning_scale = user_value(
-        float,
-        f"Enter ControlNet conditioning scale ({settings.controlnet.conditioning_scale}): ",
-        settings.controlnet.conditioning_scale,
-    )
-    option = input(
-        f"Enter ControlNet control image path (leave empty to reuse current image): "
-    )
-    try:
-        new_image = Image.open(option)
-        settings.controlnet._control_image = new_image
-    except (AttributeError, FileNotFoundError) as e:
-        print("Wrong ControlNet control image!")
+    if not settings.controlnet:
+        settings.controlnet = ControlNetSetting()
+
+    current_enabled = settings.controlnet.enabled
+    current_adapter_path = settings.controlnet.adapter_path
+    current_conditioning_scale = settings.controlnet.conditioning_scale
+    current_control_image = settings.controlnet._control_image
+
+    option = input("Enable ControlNet? (y/N): ")
+    settings.controlnet.enabled = True if option.upper() == "Y" else False
+    if settings.controlnet.enabled:
+        option = input(
+            f"Enter ControlNet adapter path ({settings.controlnet.adapter_path}): "
+        )
+        if option != "":
+            settings.controlnet.adapter_path = option
+        settings.controlnet.conditioning_scale = user_value(
+            float,
+            f"Enter ControlNet conditioning scale ({settings.controlnet.conditioning_scale}): ",
+            settings.controlnet.conditioning_scale,
+        )
+        option = input(
+            f"Enter ControlNet control image path (Leave empty to reuse current): "
+        )
+        if option != "":
+            try:
+                new_image = Image.open(option)
+                settings.controlnet._control_image = new_image
+            except (AttributeError, FileNotFoundError) as e:
+                settings.controlnet._control_image = None
+        if (
+            not settings.controlnet.adapter_path
+            or not path.exists(settings.controlnet.adapter_path)
+            or not settings.controlnet._control_image
+        ):
+            print("Invalid ControlNet settings! Disabling ControlNet")
+            settings.controlnet.enabled = False
+
+    if (
+        settings.controlnet.enabled != current_enabled
+        or settings.controlnet.adapter_path != current_adapter_path
+    ):
+        settings.rebuild_pipeline = True
 
 
 def interactive_lora(

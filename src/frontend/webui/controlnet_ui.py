@@ -9,15 +9,20 @@ from backend.models.lcmdiffusion_setting import LCMDiffusionSetting, ControlNetS
 
 _controlnet_models_map = None
 _controlnet_enabled = False
+_adapter_path = None
 
 app_settings = get_settings()
 
 
 def on_user_input(
-    enable: bool, adapter_name: str, conditioning_scale: float, control_image: Image
+    enable: bool,
+    adapter_name: str,
+    conditioning_scale: float,
+    control_image: Image,
 ):
-    if app_settings.settings.lcm_diffusion_setting.controlnet == None:
-        app_settings.settings.lcm_diffusion_setting.controlnet = ControlNetSetting()
+    settings = app_settings.settings.lcm_diffusion_setting
+    if settings.controlnet == None:
+        settings.controlnet = ControlNetSetting()
 
     if enable and (adapter_name == None or adapter_name == ""):
         gr.Warning("Please select a valid ControlNet adapter")
@@ -27,26 +32,26 @@ def on_user_input(
         return gr.Checkbox.update(value=False)
 
     if enable == False:
-        app_settings.settings.lcm_diffusion_setting.controlnet.enabled = False
+        settings.controlnet.enabled = False
     else:
-        app_settings.settings.lcm_diffusion_setting.controlnet.enabled = True
-        app_settings.settings.lcm_diffusion_setting.controlnet.adapter_path = (
-            _controlnet_models_map[adapter_name]
-        )
-        app_settings.settings.lcm_diffusion_setting.controlnet.conditioning_scale = (
-            conditioning_scale
-        )
-        app_settings.settings.lcm_diffusion_setting.controlnet._control_image = (
-            control_image
-        )
+        settings.controlnet.enabled = True
+        settings.controlnet.adapter_path = _controlnet_models_map[adapter_name]
+        settings.controlnet.conditioning_scale = conditioning_scale
+        settings.controlnet._control_image = control_image
 
+    # This code can be improved; currently, if the user clicks the
+    # "Enable ControlNet" checkbox or changes the currently selected
+    # ControlNet model, it will trigger a pipeline rebuild even if, in
+    # the end, the user leaves the same ControlNet settings
     global _controlnet_enabled
-    if (
-        app_settings.settings.lcm_diffusion_setting.controlnet.enabled
-        != _controlnet_enabled
+    global _adapter_path
+    if settings.controlnet.enabled != _controlnet_enabled or (
+        settings.controlnet.enabled
+        and settings.controlnet.adapter_path != _adapter_path
     ):
-        app_settings.settings.lcm_diffusion_setting.rebuild_pipeline = True
-        _controlnet_enabled = not _controlnet_enabled
+        settings.rebuild_pipeline = True
+        _controlnet_enabled = settings.controlnet.enabled
+        _adapter_path = settings.controlnet.adapter_path
     return gr.Checkbox.update(value=enable)
 
 
@@ -62,6 +67,7 @@ def get_controlnet_ui() -> None:
 
                     enabled_checkbox = gr.Checkbox(
                         label="Enable ControlNet",
+                        info="Enable ControlNet",
                         show_label=True,
                     )
                     model_dropdown = gr.Dropdown(

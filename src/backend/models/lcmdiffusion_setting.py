@@ -58,7 +58,7 @@ class LCMDiffusionSetting(BaseModel):
     lora: Optional[Lora] = Lora()
     controlnet: Optional[Union[ControlNetSetting, list[ControlNetSetting]]] = None
     dirs: dict = {
-        "controlnet": FastStableDiffusionPaths.get_lora_models_path(),
+        "controlnet": FastStableDiffusionPaths.get_controlnet_models_path(),
         "lora": FastStableDiffusionPaths.get_lora_models_path(),
     }
     rebuild_pipeline: bool = False
