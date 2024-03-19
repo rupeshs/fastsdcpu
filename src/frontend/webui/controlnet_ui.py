@@ -36,7 +36,7 @@ def on_user_input(
     else:
         settings.controlnet.enabled = True
         settings.controlnet.adapter_path = _controlnet_models_map[adapter_name]
-        settings.controlnet.conditioning_scale = conditioning_scale
+        settings.controlnet.conditioning_scale = float(conditioning_scale)
         settings.controlnet._control_image = control_image
 
     # This code can be improved; currently, if the user clicks the
