@@ -86,6 +86,13 @@ class FastStableDiffusionPaths:
         lora_models_path = join_paths(get_app_path(), constants.LORA_DIRECTORY)
         return lora_models_path
 
+    @staticmethod
+    def get_controlnet_models_path() -> str:
+        controlnet_models_path = join_paths(
+            get_app_path(), constants.CONTROLNET_DIRECTORY
+        )
+        return controlnet_models_path
+
 
 def get_base_folder_name(path: str) -> str:
     return os.path.basename(path)

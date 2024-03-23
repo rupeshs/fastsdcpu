@@ -7,6 +7,7 @@ from frontend.webui.models_ui import get_models_ui
 from frontend.webui.image_variations_ui import get_image_variations_ui
 from frontend.webui.upscaler_ui import get_upscaler_ui
 from frontend.webui.lora_models_ui import get_lora_models_ui
+from frontend.webui.controlnet_ui import get_controlnet_ui
 from paths import FastStableDiffusionPaths
 from state import get_settings
 
@@ -32,10 +33,12 @@ def get_web_ui() -> gr.Blocks:
         elif mode == "LCM-OpenVINO":
             app_settings.settings.lcm_diffusion_setting.use_openvino = True
 
-        # Disable app settings LoRA model from being loaded by default when
-        # the diffusion pipeline is created; LoRAs must be loaded from the WebUI
-        if app_settings.settings.lcm_diffusion_setting.lora:
-            app_settings.settings.lcm_diffusion_setting.lora.enabled = False
+    # Prevent saved LoRA and ControlNet settings from being used by
+    # default; in WebUI mode, the user must explicitly enable those
+    if app_settings.settings.lcm_diffusion_setting.lora:
+        app_settings.settings.lcm_diffusion_setting.lora.enabled = False
+    if app_settings.settings.lcm_diffusion_setting.controlnet:
+        app_settings.settings.lcm_diffusion_setting.controlnet.enabled = False
 
     with gr.Blocks(
         css=FastStableDiffusionPaths.get_css_path(),
@@ -71,6 +74,8 @@ def get_web_ui() -> gr.Blocks:
                 get_models_ui()
             with gr.TabItem("Lora Models"):
                 get_lora_models_ui()
+            with gr.TabItem("ControlNet"):
+                get_controlnet_ui()
 
         gr.HTML(_get_footer_message())
 

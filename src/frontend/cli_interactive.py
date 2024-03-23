@@ -5,6 +5,7 @@ from typing import Any
 from constants import DEVICE
 from paths import FastStableDiffusionPaths
 from backend.upscale.upscaler import upscale_image
+from backend.controlnet import controlnet_settings_from_dict
 from backend.upscale.tiled_upscale import generate_upscaled_image
 from frontend.webui.image_variations_ui import generate_image_variations
 from backend.lora import (
@@ -15,6 +16,7 @@ from backend.lora import (
 from backend.models.lcmdiffusion_setting import (
     DiffusionTask,
     LCMDiffusionSetting,
+    ControlNetSetting,
 )
 
 
@@ -49,13 +51,14 @@ def interactive_mode(
         print("> 5. SD Upscale")
         print("> 6. Edit default generation settings")
         print("> 7. Edit LoRA settings")
-        print("> 8. Quit")
+        print("> 8. Edit ControlNet settings")
+        print("> 9. Quit")
         option = user_value(
             int,
             "Enter a Diffusion Task number (1): ",
             1,
         )
-        if option not in range(1, 9):
+        if option not in range(1, 10):
             print("Wrong Diffusion Task number!")
             exit()
 
@@ -96,10 +99,75 @@ def interactive_mode(
                 True,
             )
         elif option == 8:
+            interactive_controlnet(
+                config,
+                context,
+                True,
+            )
+        elif option == 9:
             exit()
 
 
-def interactive_lora(config, context, menu_flag=False):
+def interactive_controlnet(
+    config,
+    context,
+    menu_flag=False,
+):
+    """
+    @param menu_flag: Indicates whether this function was called from the main
+        interactive CLI menu; _True_ if called from the main menu, _False_ otherwise
+    """
+    settings = config.lcm_diffusion_setting
+    if not settings.controlnet:
+        settings.controlnet = ControlNetSetting()
+
+    current_enabled = settings.controlnet.enabled
+    current_adapter_path = settings.controlnet.adapter_path
+    current_conditioning_scale = settings.controlnet.conditioning_scale
+    current_control_image = settings.controlnet._control_image
+
+    option = input("Enable ControlNet? (y/N): ")
+    settings.controlnet.enabled = True if option.upper() == "Y" else False
+    if settings.controlnet.enabled:
+        option = input(
+            f"Enter ControlNet adapter path ({settings.controlnet.adapter_path}): "
+        )
+        if option != "":
+            settings.controlnet.adapter_path = option
+        settings.controlnet.conditioning_scale = user_value(
+            float,
+            f"Enter ControlNet conditioning scale ({settings.controlnet.conditioning_scale}): ",
+            settings.controlnet.conditioning_scale,
+        )
+        option = input(
+            f"Enter ControlNet control image path (Leave empty to reuse current): "
+        )
+        if option != "":
+            try:
+                new_image = Image.open(option)
+                settings.controlnet._control_image = new_image
+            except (AttributeError, FileNotFoundError) as e:
+                settings.controlnet._control_image = None
+        if (
+            not settings.controlnet.adapter_path
+            or not path.exists(settings.controlnet.adapter_path)
+            or not settings.controlnet._control_image
+        ):
+            print("Invalid ControlNet settings! Disabling ControlNet")
+            settings.controlnet.enabled = False
+
+    if (
+        settings.controlnet.enabled != current_enabled
+        or settings.controlnet.adapter_path != current_adapter_path
+    ):
+        settings.rebuild_pipeline = True
+
+
+def interactive_lora(
+    config,
+    context,
+    menu_flag=False,
+):
     """
     @param menu_flag: Indicates whether this function was called from the main
         interactive CLI menu; _True_ if called from the main menu, _False_ otherwise
