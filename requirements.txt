@@ -15,3 +15,5 @@ gradio==3.39.0
 peft==0.6.1
 opencv-python==4.8.1.78
 omegaconf==2.3.0
+controlnet-aux==0.0.7
+mediapipe==0.10.11

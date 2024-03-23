@@ -1,11 +1,9 @@
 import gradio as gr
-from os import path
 from PIL import Image
 from backend.lora import get_lora_models
 from state import get_settings
-from models.interface_types import InterfaceType
-from backend.models.lcmdiffusion_setting import LCMDiffusionSetting, ControlNetSetting
-
+from backend.models.lcmdiffusion_setting import ControlNetSetting
+from backend.annotators.image_control_factory import ImageControlFactory
 
 _controlnet_models_map = None
 _controlnet_enabled = False
@@ -19,7 +17,11 @@ def on_user_input(
     adapter_name: str,
     conditioning_scale: float,
     control_image: Image,
+    preprocessor: str,
 ):
+    if control_image is None:
+        return gr.Checkbox.update(value=enable)
+
     settings = app_settings.settings.lcm_diffusion_setting
     if settings.controlnet == None:
         settings.controlnet = ControlNetSetting()
@@ -30,14 +32,20 @@ def on_user_input(
     elif enable and not control_image:
         gr.Warning("Please provide a ControlNet control image")
         return gr.Checkbox.update(value=False)
+    if preprocessor == "None":
+        processed_control_image = control_image
+    else:
+        image_control_factory = ImageControlFactory()
+        control = image_control_factory.create_control(preprocessor)
+        processed_control_image = control.get_control_image(control_image)
 
-    if enable == False:
+    if not enable:
         settings.controlnet.enabled = False
     else:
         settings.controlnet.enabled = True
         settings.controlnet.adapter_path = _controlnet_models_map[adapter_name]
         settings.controlnet.conditioning_scale = float(conditioning_scale)
-        settings.controlnet._control_image = control_image
+        settings.controlnet._control_image = processed_control_image
 
     # This code can be improved; currently, if the user clicks the
     # "Enable ControlNet" checkbox or changes the currently selected
@@ -80,7 +88,7 @@ def get_controlnet_ui() -> None:
                     conditioning_scale_slider = gr.Slider(
                         0.0,
                         1.0,
-                        value=0.5,
+                        value=1.0,
                         step=0.05,
                         label="ControlNet conditioning scale",
                         interactive=True,
@@ -89,6 +97,13 @@ def get_controlnet_ui() -> None:
                         label="Control image",
                         type="pil",
                     )
+                preprocessor_radio = gr.Radio(
+                    ["Canny", "Pose", "None"],
+                    label="Preprocessor",
+                    info="Select the preprocessor for the control image",
+                    value="Canny",
+                    interactive=True,
+                )
 
     enabled_checkbox.input(
         fn=on_user_input,
@@ -97,6 +112,7 @@ def get_controlnet_ui() -> None:
             model_dropdown,
             conditioning_scale_slider,
             control_image,
+            preprocessor_radio,
         ],
         outputs=[enabled_checkbox],
     )
@@ -107,6 +123,7 @@ def get_controlnet_ui() -> None:
             model_dropdown,
             conditioning_scale_slider,
             control_image,
+            preprocessor_radio,
         ],
         outputs=[enabled_checkbox],
     )
@@ -117,6 +134,7 @@ def get_controlnet_ui() -> None:
             model_dropdown,
             conditioning_scale_slider,
             control_image,
+            preprocessor_radio,
         ],
         outputs=[enabled_checkbox],
     )
@@ -127,6 +145,18 @@ def get_controlnet_ui() -> None:
             model_dropdown,
             conditioning_scale_slider,
             control_image,
+            preprocessor_radio,
+        ],
+        outputs=[enabled_checkbox],
+    )
+    preprocessor_radio.change(
+        fn=on_user_input,
+        inputs=[
+            enabled_checkbox,
+            model_dropdown,
+            conditioning_scale_slider,
+            control_image,
+            preprocessor_radio,
         ],
         outputs=[enabled_checkbox],
     )

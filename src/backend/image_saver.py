@@ -6,6 +6,22 @@ from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 from utils import get_image_file_extension
 
 
+def get_exclude_keys():
+    exclude_keys = {
+        "init_image": True,
+        "generated_images": True,
+        "lora": {
+            "models_dir": True,
+            "path": True,
+        },
+        "dirs": True,
+        "controlnet": {
+            "adapter_path": True,
+        },
+    }
+    return exclude_keys
+
+
 class ImageSaver:
     @staticmethod
     def save_images(
@@ -35,17 +51,9 @@ class ImageSaver:
             image.save(path.join(out_path, f"{gen_id}-{index+1}{image_extension}"))
         if lcm_diffusion_setting:
             with open(path.join(out_path, f"{gen_id}.json"), "w") as json_file:
-                exclude_keys = {
-                    "init_image": True,
-                    "generated_images": True,
-                    "lora": {
-                        "models_dir": True,
-                        "path": True,
-                    },
-                }
                 json.dump(
                     lcm_diffusion_setting.model_dump(
-                        exclude=exclude_keys,
+                        exclude=get_exclude_keys(),
                     ),
                     json_file,
                     indent=4,
