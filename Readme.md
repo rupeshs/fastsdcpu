@@ -244,6 +244,14 @@ Place your lora models in "lora_models" folder. Use LCM or LCM-Lora mode.
 You can download lora model (.safetensors/Safetensor) from [Civitai](https://civitai.com/) or [Hugging Face](https://huggingface.co/)
 E.g: [cutecartoonredmond](https://civitai.com/models/207984/cutecartoonredmond-15v-cute-cartoon-lora-for-liberteredmond-sd-15?modelVersionId=234192)
 
+### ControlNet support
+
+We can use ControlNet in LCM-LoRA mode.
+
+Download ControlNet models from [ControlNet-v1-1](https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/tree/main).Download and place controlnet models in "controlnet_models" folder.
+
+Use the medium size models (723 MB)(For example : <https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/blob/main/control_v11p_sd15_canny_fp16.safetensors>)
+
 ## FastSD CPU on Windows
 
 :exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
