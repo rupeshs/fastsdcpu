@@ -122,6 +122,9 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - ONNX EDSR 2x upscale
 - Add SDXL-Lightning support
 - Add SDXL-Lightning OpenVINO support (int8)
+- Add multilora support,thanks [monstruosoft](https://github.com/monstruosoft)
+- Add basic ControlNet v1.1 support(LCM-LoRA mode),thanks [monstruosoft](https://github.com/monstruosoft)
+- Add ControlNet annotators(Canny,Depth,LineArt,MLSD,NormalBAE,Pose,SoftEdge,Shuffle)
 
 ## 2 Steps fast inference (LCM)
 
