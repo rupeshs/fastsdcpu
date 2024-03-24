@@ -1,7 +1,6 @@
+from backend.annotators.control_interface import ControlInterface
 from controlnet_aux import OpenposeDetector
 from PIL import Image
-
-from backend.annotators.control_interface import ControlInterface
 
 
 class PoseControl(ControlInterface):

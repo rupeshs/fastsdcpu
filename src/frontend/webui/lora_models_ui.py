@@ -88,8 +88,11 @@ def on_click_load_lora(lora_name, lora_weight):
 
 def get_lora_models_ui() -> None:
     with gr.Blocks() as ui:
-
+        gr.HTML(
+            "Download and place your LoRA model weights in <b>lora_models</b> folders and restart App"
+        )
         with gr.Row():
+
             with gr.Column():
                 with gr.Row():
                     lora_models_map = get_lora_models(

@@ -23,7 +23,7 @@ for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
 echo Python version: %python_version%
 
 %PYTHON_COMMAND% -m venv "%~dp0env" 
-call "%~dp0env\Scripts\activate.bat" && pip install torch==2.0.1 --index-url https://download.pytorch.org/whl/cpu 
+call "%~dp0env\Scripts\activate.bat" && pip install torch==2.2.1 --index-url https://download.pytorch.org/whl/cpu 
 call "%~dp0env\Scripts\activate.bat" && pip install -r "%~dp0requirements.txt"
 echo FastSD CPU env installation completed.
 pause

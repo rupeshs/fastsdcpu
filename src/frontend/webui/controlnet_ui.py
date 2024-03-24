@@ -19,19 +19,21 @@ def on_user_input(
     control_image: Image,
     preprocessor: str,
 ):
-    if control_image is None:
-        return gr.Checkbox.update(value=enable)
 
     settings = app_settings.settings.lcm_diffusion_setting
-    if settings.controlnet == None:
+    if settings.controlnet is None:
         settings.controlnet = ControlNetSetting()
 
-    if enable and (adapter_name == None or adapter_name == ""):
+    if enable and (adapter_name is None or adapter_name == ""):
         gr.Warning("Please select a valid ControlNet adapter")
         return gr.Checkbox.update(value=False)
     elif enable and not control_image:
         gr.Warning("Please provide a ControlNet control image")
         return gr.Checkbox.update(value=False)
+
+    if control_image is None:
+        return gr.Checkbox.update(value=enable)
+
     if preprocessor == "None":
         processed_control_image = control_image
     else:
@@ -63,8 +65,18 @@ def on_user_input(
     return gr.Checkbox.update(value=enable)
 
 
+def on_change_conditioning_scale(cond_scale):
+    print(cond_scale)
+    app_settings.settings.lcm_diffusion_setting.controlnet.conditioning_scale = (
+        cond_scale
+    )
+
+
 def get_controlnet_ui() -> None:
     with gr.Blocks() as ui:
+        gr.HTML(
+            'Download ControlNet v1.1 model from <a href="https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/tree/main">ControlNet v1.1 </a> (723 MB files) and place it in <b>controlnet_models</b> folder,restart the app'
+        )
         with gr.Row():
             with gr.Column():
                 with gr.Row():
@@ -88,7 +100,7 @@ def get_controlnet_ui() -> None:
                     conditioning_scale_slider = gr.Slider(
                         0.0,
                         1.0,
-                        value=1.0,
+                        value=0.5,
                         step=0.05,
                         label="ControlNet conditioning scale",
                         interactive=True,
@@ -98,7 +110,17 @@ def get_controlnet_ui() -> None:
                         type="pil",
                     )
                 preprocessor_radio = gr.Radio(
-                    ["Canny", "Pose", "None"],
+                    [
+                        "Canny",
+                        "Depth",
+                        "LineArt",
+                        "MLSD",
+                        "NormalBAE",
+                        "Pose",
+                        "SoftEdge",
+                        "Shuffle",
+                        "None",
+                    ],
                     label="Preprocessor",
                     info="Select the preprocessor for the control image",
                     value="Canny",
@@ -159,4 +181,7 @@ def get_controlnet_ui() -> None:
             preprocessor_radio,
         ],
         outputs=[enabled_checkbox],
+    )
+    conditioning_scale_slider.change(
+        on_change_conditioning_scale, conditioning_scale_slider
     )

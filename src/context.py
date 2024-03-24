@@ -65,6 +65,7 @@ class Context:
                 format=settings.generated_images.format,
             )
         print(f"Latency : {elapsed:.2f} seconds")
-        if settings.lcm_diffusion_setting.controlnet.enabled:
-            images.append(settings.lcm_diffusion_setting.controlnet._control_image)
+        if settings.lcm_diffusion_setting.controlnet:
+            if settings.lcm_diffusion_setting.controlnet.enabled:
+                images.append(settings.lcm_diffusion_setting.controlnet._control_image)
         return images

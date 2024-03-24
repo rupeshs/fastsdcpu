@@ -1,15 +1,15 @@
 import numpy as np
 from backend.annotators.control_interface import ControlInterface
-from cv2 import Canny
 from PIL import Image
+from transformers import pipeline
 
 
-class CannyControl(ControlInterface):
+class DepthControl(ControlInterface):
     def get_control_image(self, image: Image) -> Image:
-        low_threshold = 100
-        high_threshold = 200
+        depth_estimator = pipeline("depth-estimation")
+        image = depth_estimator(image)["depth"]
         image = np.array(image)
-        image = Canny(image, low_threshold, high_threshold)
         image = image[:, :, None]
         image = np.concatenate([image, image, image], axis=2)
-        return Image.fromarray(image)
+        image = Image.fromarray(image)
+        return image
