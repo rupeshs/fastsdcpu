@@ -31,7 +31,8 @@ def is_reshape_required(
 
 
 def enable_openvino_controls() -> bool:
-    return is_openvino_device() and platform.system().lower() != "darwin"
+    return is_openvino_device() and platform.system().lower() != "darwin" and platform.processor().lower() != 'arm'
+
 
 
 def get_valid_model_id(
