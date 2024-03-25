@@ -323,7 +323,7 @@ Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.
 
 Thanks [Autantpourmoi](https://github.com/Autantpourmoi) for Mac testing.
 
-:exclamation:We don't support OpenVINO on Mac.
+:exclamation:We don't support OpenVINO on Mac (M1/M2/M3 chips, but *does* work on Intel chips).
 
 If you want to increase image generation speed on Mac(M1/M2 chip) try this:
 
