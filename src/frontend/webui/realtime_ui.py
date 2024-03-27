@@ -36,15 +36,16 @@ def predict(
     seed,
 ):
     lcm_diffusion_setting = LCMDiffusionSetting()
-    lcm_diffusion_setting.openvino_lcm_model_id = "rupeshs/LCM-dreamshaper-v7-openvino"
+    lcm_diffusion_setting.openvino_lcm_model_id = "rupeshs/sdxs-512-0.9-openvino"
     lcm_diffusion_setting.prompt = prompt
     lcm_diffusion_setting.guidance_scale = 1.0
     lcm_diffusion_setting.inference_steps = steps
     lcm_diffusion_setting.seed = seed
     lcm_diffusion_setting.use_seed = True
-    lcm_diffusion_setting.image_width = 256 if is_openvino_device() else 512
-    lcm_diffusion_setting.image_height = 256 if is_openvino_device() else 512
+    lcm_diffusion_setting.image_width = 512
+    lcm_diffusion_setting.image_height = 512
     lcm_diffusion_setting.use_openvino = True if is_openvino_device() else False
+    lcm_diffusion_setting.use_tiny_auto_encoder = True
     lcm_text_to_image.init(
         DEVICE,
         lcm_diffusion_setting,
@@ -116,7 +117,7 @@ with gr.Blocks(css=css) as demo:
         with gr.Accordion("Advanced options", open=False):
             steps = gr.Slider(
                 label="Steps",
-                value=4 if is_openvino_device() else 3,
+                value=1,
                 minimum=1,
                 maximum=6,
                 step=1,

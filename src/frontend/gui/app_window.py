@@ -538,10 +538,10 @@ class MainWindow(QMainWindow):
 
         if self.config.settings.lcm_diffusion_setting.use_openvino:
             model_id = self.openvino_lcm_model_id.currentText()
+            self.config.settings.lcm_diffusion_setting.openvino_lcm_model_id = model_id
         else:
             model_id = self.lcm_model.currentText()
-
-        self.config.settings.lcm_diffusion_setting.lcm_model_id = model_id
+            self.config.settings.lcm_diffusion_setting.lcm_model_id = model_id
 
         reshape_required = False
         if self.config.settings.lcm_diffusion_setting.use_openvino:

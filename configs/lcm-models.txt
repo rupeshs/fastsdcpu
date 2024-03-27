@@ -1,3 +1,4 @@
+rupeshs/sdxs-512-0.9-orig-vae
 stabilityai/sd-turbo
 rupeshs/SDXL-Lightning-2steps
 stabilityai/sdxl-turbo

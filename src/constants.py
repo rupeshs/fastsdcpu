@@ -1,8 +1,8 @@
 from os import environ
 
-APP_VERSION = "v1.0.0 beta 27"
-LCM_DEFAULT_MODEL = "stabilityai/sd-turbo"
-LCM_DEFAULT_MODEL_OPENVINO = "rupeshs/sd-turbo-openvino"
+APP_VERSION = "v1.0.0 beta 28"
+LCM_DEFAULT_MODEL = "rupeshs/sdxs-512-0.9-orig-vae"
+LCM_DEFAULT_MODEL_OPENVINO = "rupeshs/sdxs-512-0.9-openvino"
 APP_NAME = "FastSD CPU"
 APP_SETTINGS_FILE = "settings.yaml"
 RESULTS_DIRECTORY = "results"

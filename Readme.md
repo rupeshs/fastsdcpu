@@ -9,7 +9,7 @@ The following interfaces are available :
 - WebUI
 - CLI (CommandLine Interface)
 
-🚀 Using __OpenVINO(SD Turbo)__, it took __1.7 seconds__ to create a single 512x512 image on a __Core i7-12700__.
+🚀 Using __OpenVINO(SDXS-512-0.9)__, it took __0.82 seconds__ (820 milliseconds) to create a single 512x512 image on a __Core i7-12700__.
 
 ## Supported platforms⚡️
 
@@ -18,6 +18,20 @@ The following interfaces are available :
 - Mac
 - Android + Termux
 - Raspberry PI 4
+
+## 🚀 Fast 1 step inference (SDXS-512-0.9)
+
+### Inference Speed
+
+Tested on Core i7-12700 to generate __512x512__ image(1 step).
+
+__SDXS-512-0.9__
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 4.8s          |
+| OpenVINO              | 3.8s          |
+| OpenVINO + TAESD      | __0.82s__     |
 
 ## 🚀 Fast 1 step inference (SD/SDXL Turbo - Adversarial Diffusion Distillation,ADD)
 
@@ -125,6 +139,10 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add multilora support,thanks [monstruosoft](https://github.com/monstruosoft)
 - Add basic ControlNet v1.1 support(LCM-LoRA mode),thanks [monstruosoft](https://github.com/monstruosoft)
 - Add ControlNet annotators(Canny,Depth,LineArt,MLSD,NormalBAE,Pose,SoftEdge,Shuffle)
+- Add SDXS-512 0.9 support
+- Add SDXS-512 0.9 OpenVINO,fast 1 step inference (0.8 seconds to generate 512x512 image)
+- Default model changed to SDXS-512-0.9
+- Faster realtime image generation
 
 ## 2 Steps fast inference (LCM)
 
