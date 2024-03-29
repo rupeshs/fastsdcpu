@@ -145,6 +145,9 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add SDXS-512 0.9 OpenVINO,fast 1 step inference (0.8 seconds to generate 512x512 image)
 - Default model changed to SDXS-512-0.9
 - Faster realtime image generation
+- Add NPU device check
+- Revert default model to SDTurbo
+- Update realtime UI
 
 ## 2 Steps fast inference (LCM)
 
@@ -174,20 +177,15 @@ We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and the
 
 ## Real-time text to image (EXPERIMENTAL)
 
-Now we can generate near real-time text to images using FastSD CPU.
+We can generate real-time text to images using FastSD CPU.
 
 **CPU (OpenVINO)**
 
-Near real-time inference on CPU using OpenVINO, run the `start-realtime.bat` batch file and open the link in brower (Resolution : 256x256,Latency : 2.3s on Intel Core i7)
-
-**Colab (GPU)**
-
-You can use the colab to generate real-time images (Resolution : 512x512,Latency : 500ms on Tesla T4)
-[![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1slhhDhxPcb0Xk19nMuxWT9xG6VrmE4a5?usp=sharing)
+Near real-time inference on CPU using OpenVINO, run the `start-realtime.bat` batch file and open the link in browser (Resolution : 512x512,Latency : 0.82s on Intel Core i7)
 
 Watch YouTube video :
 
-[![IMAGE_ALT](https://img.youtube.com/vi/s2zSxBHkNE0/sddefault.jpg)](https://youtu.be/s2zSxBHkNE0)
+[![IMAGE_ALT](https://img.youtube.com/vi/0XMiLc_vsyI/0.jpg)](https://www.youtube.com/watch?v=0XMiLc_vsyI)
 
 ## Models
 
