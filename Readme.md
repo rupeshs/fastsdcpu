@@ -19,7 +19,9 @@ The following interfaces are available :
 - Android + Termux
 - Raspberry PI 4
 
-## 🚀 Fast 1 step inference (SDXS-512-0.9)
+## 🚀 Fastest 1 step inference (SDXS-512-0.9)
+
+:exclamation:This is an experimental model, only text to image workflow is supported.
 
 ### Inference Speed
 

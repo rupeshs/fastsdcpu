@@ -114,21 +114,22 @@ with gr.Blocks(css=css) as demo:
                 )
 
         image = gr.Image(type="filepath")
-        with gr.Accordion("Advanced options", open=False):
-            steps = gr.Slider(
-                label="Steps",
-                value=1,
-                minimum=1,
-                maximum=6,
-                step=1,
-            )
-            seed = gr.Slider(
-                randomize=True,
-                minimum=0,
-                maximum=999999999,
-                label="Seed",
-                step=1,
-            )
+
+        steps = gr.Slider(
+            label="Steps",
+            value=1,
+            minimum=1,
+            maximum=6,
+            step=1,
+            visible=False,
+        )
+        seed = gr.Slider(
+            randomize=True,
+            minimum=0,
+            maximum=999999999,
+            label="Seed",
+            step=1,
+        )
         gr.HTML(_get_footer_message())
 
         inputs = [prompt, steps, seed]

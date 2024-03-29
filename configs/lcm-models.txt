@@ -1,5 +1,5 @@
-rupeshs/sdxs-512-0.9-orig-vae
 stabilityai/sd-turbo
+rupeshs/sdxs-512-0.9-orig-vae
 rupeshs/SDXL-Lightning-2steps
 stabilityai/sdxl-turbo
 SimianLuo/LCM_Dreamshaper_v7

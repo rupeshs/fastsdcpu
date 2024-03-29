@@ -1,5 +1,5 @@
-rupeshs/sdxs-512-0.9-openvino
 rupeshs/sd-turbo-openvino
+rupeshs/sdxs-512-0.9-openvino
 rupeshs/SDXL-Lightning-2steps-openvino-int8
 rupeshs/sdxl-turbo-openvino-int8
 rupeshs/LCM-dreamshaper-v7-openvino
