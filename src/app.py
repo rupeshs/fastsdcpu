@@ -2,13 +2,11 @@ import json
 from argparse import ArgumentParser
 
 import constants
+from backend.controlnet import controlnet_settings_from_dict
 from backend.models.gen_images import ImageFormat
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from backend.upscale.tiled_upscale import generate_upscaled_image
-from backend.upscale.upscaler import upscale_image
-from backend.controlnet import controlnet_settings_from_dict
 from constants import APP_VERSION, DEVICE, LCM_DEFAULT_MODEL_OPENVINO
-from frontend.cli_interactive import interactive_mode
 from frontend.webui.image_variations_ui import generate_image_variations
 from models.interface_types import InterfaceType
 from paths import FastStableDiffusionPaths
@@ -214,6 +212,7 @@ if args.version:
 # parser.print_help()
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
+
 if args.webui:
     app_settings = get_settings()
 else:
@@ -234,6 +233,11 @@ if args.noimagesave:
     app_settings.settings.generated_images.save_image = False
 else:
     app_settings.settings.generated_images.save_image = True
+
+if not args.realtime:
+    # To minimize realtime mode dependencies
+    from backend.upscale.upscaler import upscale_image
+    from frontend.cli_interactive import interactive_mode
 
 if args.gui:
     from frontend.gui.ui import start_gui
