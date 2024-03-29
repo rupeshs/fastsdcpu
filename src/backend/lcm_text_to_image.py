@@ -205,7 +205,10 @@ class LCMTextToImage:
                         use_local_model,
                         self.torch_data_type,
                     )
-            self._pipeline_to_device()
+
+            if not self.use_openvino and not is_openvino_device():
+                self._pipeline_to_device()
+
             if (
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.image_to_image.value

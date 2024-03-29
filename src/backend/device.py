@@ -7,7 +7,7 @@ core = ov.Core()
 
 
 def is_openvino_device() -> bool:
-    if DEVICE.lower() == "cpu" or DEVICE.lower()[0] == "g":
+    if DEVICE.lower() == "cpu" or DEVICE.lower()[0] == "g" or DEVICE.lower()[0] == "n":
         return True
     else:
         return False
