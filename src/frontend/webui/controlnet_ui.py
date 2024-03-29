@@ -119,6 +119,7 @@ def get_controlnet_ui() -> None:
                         "Pose",
                         "SoftEdge",
                         "Shuffle",
+                        "Tile",
                         "None",
                     ],
                     label="Preprocessor",

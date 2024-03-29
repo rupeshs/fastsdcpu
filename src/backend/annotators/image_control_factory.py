@@ -6,6 +6,7 @@ from backend.annotators.normal_control import NormalControl
 from backend.annotators.pose_control import PoseControl
 from backend.annotators.shuffle_control import ShuffleControl
 from backend.annotators.softedge_control import SoftEdgeControl
+from backend.annotators.resize_control import ResizeControl
 
 
 class ImageControlFactory:
@@ -26,6 +27,8 @@ class ImageControlFactory:
             return NormalControl()
         elif controlnet_type == "SoftEdge":
             return SoftEdgeControl()
+        elif controlnet_type == "Tile":
+            return ResizeControl()
         else:
             print("Error: Control type not implemented!")
             raise Exception("Error: Control type not implemented!")
