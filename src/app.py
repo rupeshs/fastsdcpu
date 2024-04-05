@@ -6,13 +6,14 @@ from backend.controlnet import controlnet_settings_from_dict
 from backend.models.gen_images import ImageFormat
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from backend.upscale.tiled_upscale import generate_upscaled_image
-from constants import APP_VERSION, DEVICE, LCM_DEFAULT_MODEL_OPENVINO
+from constants import APP_VERSION, DEVICE
 from frontend.webui.image_variations_ui import generate_image_variations
 from models.interface_types import InterfaceType
 from paths import FastStableDiffusionPaths
 from PIL import Image
 from state import get_context, get_settings
 from utils import show_system_info
+from backend.device import get_device_name
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -47,11 +48,24 @@ group.add_argument(
     action="store_true",
     help="Version",
 )
+
+parser.add_argument(
+    "-b",
+    "--benchmark",
+    action="store_true",
+    help="Run inference benchmark on the selected device",
+)
 parser.add_argument(
     "--lcm_model_id",
     type=str,
     help="Model ID or path,Default stabilityai/sd-turbo",
     default="stabilityai/sd-turbo",
+)
+parser.add_argument(
+    "--openvino_lcm_model_id",
+    type=str,
+    help="OpenVINO Model ID or path,Default rupeshs/sd-turbo-openvino",
+    default="rupeshs/sd-turbo-openvino",
 )
 parser.add_argument(
     "--prompt",
@@ -203,6 +217,7 @@ parser.add_argument(
     help="LoRA adapter weight [0 to 1.0]",
     default=0.5,
 )
+
 args = parser.parse_args()
 
 if args.version:
@@ -264,7 +279,7 @@ else:
     config = app_settings.settings
 
     if args.use_openvino:
-        config.lcm_diffusion_setting.lcm_model_id = LCM_DEFAULT_MODEL_OPENVINO
+        config.lcm_diffusion_setting.openvino_lcm_model_id = args.openvino_lcm_model_id
     else:
         config.lcm_diffusion_setting.lcm_model_id = args.lcm_model_id
 
@@ -327,7 +342,12 @@ else:
     elif args.upscale and args.file == "" and args.custom_settings == None:
         print("Error : You need to specify a file in SD upscale mode")
         exit()
-    elif args.prompt == "" and args.file == "" and args.custom_settings == None:
+    elif (
+        args.prompt == ""
+        and args.file == ""
+        and args.custom_settings == None
+        and not args.benchmark
+    ):
         print("Error : You need to provide a prompt")
         exit()
 
@@ -380,8 +400,50 @@ else:
                 config.lcm_diffusion_setting.init_image, args.strength
             )
     else:
-        for i in range(0, args.batch_count):
+
+        if args.benchmark:
+            print("Initializing benchmark...")
+            config.lcm_diffusion_setting.prompt = "a cat"
             context.generate_text_to_image(
                 settings=config,
                 device=DEVICE,
             )
+            latencies = []
+            # if config.lcm_diffusion_setting.use_openvino:
+            #     context.generate_text_to_image(
+            #         settings=config,
+            #         device=DEVICE,
+            #     )
+
+            print("Starting benchmark please wait...")
+            for _ in range(3):
+                context.generate_text_to_image(
+                    settings=config,
+                    device=DEVICE,
+                )
+                latencies.append(context.latency)
+
+            print(f"================ FastSD Benchmark ({DEVICE}) ================")
+            avg_latency = sum(latencies) / 3
+            print(f"Device                         :{get_device_name()}")
+            print(
+                f"OpenVINO                        : {config.lcm_diffusion_setting.use_openvino}"
+            )
+            print(
+                f"Tiny AutoEncoder for SD (TAESD) : {config.lcm_diffusion_setting.use_tiny_auto_encoder}"
+            )
+            print(
+                f"Resolution                      : {config.lcm_diffusion_setting.image_width} x {config.lcm_diffusion_setting.image_height}"
+            )
+            print(
+                f"Steps                           : {config.lcm_diffusion_setting.inference_steps}"
+            )
+            print(f"latencies                      : {latencies}")
+            print(f"Latency                        : {round(avg_latency,3)} sec")
+
+        else:
+            for i in range(0, args.batch_count):
+                context.generate_text_to_image(
+                    settings=config,
+                    device=DEVICE,
+                )
