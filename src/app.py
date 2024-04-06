@@ -423,23 +423,43 @@ else:
                 )
                 latencies.append(context.latency)
 
-            print(f"================ FastSD Benchmark ({DEVICE}) ================")
+            benchmark_name = ""
+
+            if config.lcm_diffusion_setting.use_openvino:
+                benchmark_name = "OpenVINO"
+            else:
+                benchmark_name = "PyTorch"
+
+            bench_lcm_setting = config.lcm_diffusion_setting
             avg_latency = sum(latencies) / 3
-            print(f"Device                         :{get_device_name()}")
+            benchmark_result = [
+                ["Device", f"{DEVICE.upper()},{get_device_name()}"],
+                [
+                    "Tiny AutoEncoder for SD (TAESD)",
+                    f"{bench_lcm_setting.use_tiny_auto_encoder}",
+                ],
+                [
+                    "Resolution ",
+                    f"{bench_lcm_setting.image_width} x {bench_lcm_setting.image_height}",
+                ],
+                [
+                    "Steps",
+                    f"{bench_lcm_setting.inference_steps}",
+                ],
+                [
+                    "Latency",
+                    f"{round(avg_latency,3)} sec",
+                ],
+            ]
+            print()
             print(
-                f"OpenVINO                        : {config.lcm_diffusion_setting.use_openvino}"
+                f"                          FastSD Benchmark ({benchmark_name:8})                         "
             )
             print(
-                f"Tiny AutoEncoder for SD (TAESD) : {config.lcm_diffusion_setting.use_tiny_auto_encoder}"
+                f"+======================================================================================+"
             )
-            print(
-                f"Resolution                      : {config.lcm_diffusion_setting.image_width} x {config.lcm_diffusion_setting.image_height}"
-            )
-            print(
-                f"Steps                           : {config.lcm_diffusion_setting.inference_steps}"
-            )
-            print(f"latencies                      : {latencies}")
-            print(f"Latency                        : {round(avg_latency,3)} sec")
+            for benchmark in benchmark_result:
+                print(f"{benchmark[0]:35} - {benchmark[1]}")
 
         else:
             for i in range(0, args.batch_count):
