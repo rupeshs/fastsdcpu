@@ -1,0 +1,1 @@
+python src/app.py -b --use_openvino --use_tiny_auto_encoder

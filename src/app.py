@@ -409,12 +409,6 @@ else:
                 device=DEVICE,
             )
             latencies = []
-            # if config.lcm_diffusion_setting.use_openvino:
-            #     context.generate_text_to_image(
-            #         settings=config,
-            #         device=DEVICE,
-            #     )
-
             print("Starting benchmark please wait...")
             for _ in range(3):
                 context.generate_text_to_image(
@@ -432,15 +426,25 @@ else:
 
             bench_lcm_setting = config.lcm_diffusion_setting
             avg_latency = sum(latencies) / 3
+
+            bench_model_id = ""
+            if bench_lcm_setting.use_openvino:
+                bench_model_id = bench_lcm_setting.openvino_lcm_model_id
+            elif bench_lcm_setting.use_lcm_lora:
+                bench_model_id = bench_lcm_setting.lcm_lora.base_model_id
+            else:
+                bench_model_id = bench_lcm_setting.lcm_model_id
+
             benchmark_result = [
                 ["Device", f"{DEVICE.upper()},{get_device_name()}"],
+                ["Model", bench_model_id],
                 [
                     "Tiny AutoEncoder for SD (TAESD)",
                     f"{bench_lcm_setting.use_tiny_auto_encoder}",
                 ],
                 [
                     "Resolution ",
-                    f"{bench_lcm_setting.image_width} x {bench_lcm_setting.image_height}",
+                    f"{bench_lcm_setting.image_width}x{bench_lcm_setting.image_height}",
                 ],
                 [
                     "Steps",
@@ -455,11 +459,10 @@ else:
             print(
                 f"                          FastSD Benchmark ({benchmark_name:8})                         "
             )
-            print(
-                f"+======================================================================================+"
-            )
+            print(f"-" * 80)
             for benchmark in benchmark_result:
                 print(f"{benchmark[0]:35} - {benchmark[1]}")
+            print(f"-" * 80)
 
         else:
             for i in range(0, args.batch_count):
