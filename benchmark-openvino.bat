@@ -20,4 +20,4 @@ for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
 
 echo Python version: %python_version%
 
-call "%~dp0env\Scripts\activate.bat"  && %PYTHON_COMMAND%  src/app.py -b --use_openvino --use_tiny_auto_encoder --openvino_lcm_model_id "rupeshs/sd-turbo-openvino"
+call "%~dp0env\Scripts\activate.bat"  && %PYTHON_COMMAND%  src/app.py -b --use_openvino  --openvino_lcm_model_id "rupeshs/sd-turbo-openvino"

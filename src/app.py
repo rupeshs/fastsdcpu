@@ -403,12 +403,15 @@ else:
 
         if args.benchmark:
             print("Initializing benchmark...")
-            config.lcm_diffusion_setting.prompt = "a cat"
+            bench_lcm_setting = config.lcm_diffusion_setting
+            bench_lcm_setting.prompt = "a cat"
+            bench_lcm_setting.use_tiny_auto_encoder = False
             context.generate_text_to_image(
                 settings=config,
                 device=DEVICE,
             )
             latencies = []
+
             print("Starting benchmark please wait...")
             for _ in range(3):
                 context.generate_text_to_image(
@@ -417,15 +420,30 @@ else:
                 )
                 latencies.append(context.latency)
 
+            avg_latency = sum(latencies) / 3
+
+            bench_lcm_setting.use_tiny_auto_encoder = True
+
+            context.generate_text_to_image(
+                settings=config,
+                device=DEVICE,
+            )
+            latencies = []
+            for _ in range(3):
+                context.generate_text_to_image(
+                    settings=config,
+                    device=DEVICE,
+                )
+                latencies.append(context.latency)
+
+            avg_latency_taesd = sum(latencies) / 3
+
             benchmark_name = ""
 
             if config.lcm_diffusion_setting.use_openvino:
                 benchmark_name = "OpenVINO"
             else:
                 benchmark_name = "PyTorch"
-
-            bench_lcm_setting = config.lcm_diffusion_setting
-            avg_latency = sum(latencies) / 3
 
             bench_model_id = ""
             if bench_lcm_setting.use_openvino:
@@ -437,11 +455,7 @@ else:
 
             benchmark_result = [
                 ["Device", f"{DEVICE.upper()},{get_device_name()}"],
-                ["Model", bench_model_id],
-                [
-                    "Tiny AutoEncoder for SD (TAESD)",
-                    f"{bench_lcm_setting.use_tiny_auto_encoder}",
-                ],
+                ["Stable Diffusion Model", bench_model_id],
                 [
                     "Image Size ",
                     f"{bench_lcm_setting.image_width}x{bench_lcm_setting.image_height}",
@@ -455,18 +469,23 @@ else:
                     3,
                 ],
                 [
-                    "Averagae Latency",
+                    "Average Latency",
                     f"{round(avg_latency,3)} sec",
+                ],
+                [
+                    "Average Latency(TAESD* enabled)",
+                    f"{round(avg_latency_taesd,3)} sec",
                 ],
             ]
             print()
             print(
-                f"                          FastSD Benchmark ({benchmark_name:8})                         "
+                f"                          FastSD Benchmark - {benchmark_name:8}                         "
             )
             print(f"-" * 80)
             for benchmark in benchmark_result:
                 print(f"{benchmark[0]:35} - {benchmark[1]}")
             print(f"-" * 80)
+            print("*TAESD - Tiny AutoEncoder for Stable Diffusion")
 
         else:
             for i in range(0, args.batch_count):
