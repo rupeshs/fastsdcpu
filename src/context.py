@@ -16,6 +16,11 @@ class Context:
     ):
         self.interface_type = interface_type.value
         self.lcm_text_to_image = LCMTextToImage(device)
+        self._latency = 0
+
+    @property
+    def latency(self):
+        return self._latency
 
     def generate_text_to_image(
         self,
@@ -64,6 +69,7 @@ class Context:
                 lcm_diffusion_setting=settings.lcm_diffusion_setting,
                 format=settings.generated_images.format,
             )
+        self._latency = elapsed
         print(f"Latency : {elapsed:.2f} seconds")
         if settings.lcm_diffusion_setting.controlnet:
             if settings.lcm_diffusion_setting.controlnet.enabled:
