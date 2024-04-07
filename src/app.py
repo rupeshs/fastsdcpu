@@ -443,15 +443,19 @@ else:
                     f"{bench_lcm_setting.use_tiny_auto_encoder}",
                 ],
                 [
-                    "Resolution ",
+                    "Image Size ",
                     f"{bench_lcm_setting.image_width}x{bench_lcm_setting.image_height}",
                 ],
                 [
-                    "Steps",
+                    "Inference Steps",
                     f"{bench_lcm_setting.inference_steps}",
                 ],
                 [
-                    "Latency",
+                    "Benchmark Passes",
+                    3,
+                ],
+                [
+                    "Averagae Latency",
                     f"{round(avg_latency,3)} sec",
                 ],
             ]
