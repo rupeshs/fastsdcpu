@@ -254,6 +254,11 @@ class LCMTextToImage:
                 adapters = self.pipeline.get_active_adapters()
                 print(f"Active adapters : {adapters}")
 
+    def _get_timesteps(self):
+        time_steps = self.pipeline.scheduler.config.get("timesteps")
+        time_steps_value = [int(time_steps)] if time_steps else None
+        return time_steps_value
+
     def generate(
         self,
         lcm_diffusion_setting: LCMDiffusionSetting,
@@ -355,8 +360,10 @@ class LCMTextToImage:
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    timesteps=self._get_timesteps(),
                     **controlnet_args,
                 ).images
+
             elif (
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.image_to_image.value
