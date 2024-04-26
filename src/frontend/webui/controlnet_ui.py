@@ -26,13 +26,13 @@ def on_user_input(
 
     if enable and (adapter_name is None or adapter_name == ""):
         gr.Warning("Please select a valid ControlNet adapter")
-        return gr.Checkbox.update(value=False)
+        return gr.Checkbox(value=False)
     elif enable and not control_image:
         gr.Warning("Please provide a ControlNet control image")
-        return gr.Checkbox.update(value=False)
+        return gr.Checkbox(value=False)
 
     if control_image is None:
-        return gr.Checkbox.update(value=enable)
+        return gr.Checkbox(value=enable)
 
     if preprocessor == "None":
         processed_control_image = control_image
@@ -62,7 +62,7 @@ def on_user_input(
         settings.rebuild_pipeline = True
         _controlnet_enabled = settings.controlnet.enabled
         _adapter_path = settings.controlnet.adapter_path
-    return gr.Checkbox.update(value=enable)
+    return gr.Checkbox(value=enable)
 
 
 def on_change_conditioning_scale(cond_scale):

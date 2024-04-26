@@ -1,6 +1,7 @@
 import glob
 from os import path
-from paths import get_file_name
+from paths import get_file_name, FastStableDiffusionPaths
+from pathlib import Path
 
 
 # A basic class to keep track of the currently loaded LoRAs and
@@ -62,7 +63,8 @@ def load_lora_weight(
     if lcm_diffusion_setting.lora.enabled:
         print(f"LoRA adapter name : {current_lora.adapter_name}")
         pipeline.load_lora_weights(
-            current_lora.path,
+            FastStableDiffusionPaths.get_lora_models_path(),
+            weight_name=Path(lcm_diffusion_setting.lora.path).name,
             local_files_only=True,
             adapter_name=current_lora.adapter_name,
         )
