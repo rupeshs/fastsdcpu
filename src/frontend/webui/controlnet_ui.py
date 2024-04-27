@@ -19,6 +19,9 @@ def on_user_input(
     control_image: Image,
     preprocessor: str,
 ):
+    if not isinstance(adapter_name, str):
+        gr.Warning("Please select a valid ControlNet model")
+        return gr.Checkbox(value=False)
 
     settings = app_settings.settings.lcm_diffusion_setting
     if settings.controlnet is None:
@@ -26,13 +29,13 @@ def on_user_input(
 
     if enable and (adapter_name is None or adapter_name == ""):
         gr.Warning("Please select a valid ControlNet adapter")
-        return gr.Checkbox.update(value=False)
+        return gr.Checkbox(value=False)
     elif enable and not control_image:
         gr.Warning("Please provide a ControlNet control image")
-        return gr.Checkbox.update(value=False)
+        return gr.Checkbox(value=False)
 
     if control_image is None:
-        return gr.Checkbox.update(value=enable)
+        return gr.Checkbox(value=enable)
 
     if preprocessor == "None":
         processed_control_image = control_image
@@ -62,7 +65,7 @@ def on_user_input(
         settings.rebuild_pipeline = True
         _controlnet_enabled = settings.controlnet.enabled
         _adapter_path = settings.controlnet.adapter_path
-    return gr.Checkbox.update(value=enable)
+    return gr.Checkbox(value=enable)
 
 
 def on_change_conditioning_scale(cond_scale):
@@ -84,6 +87,10 @@ def get_controlnet_ui() -> None:
                     _controlnet_models_map = get_lora_models(
                         app_settings.settings.lcm_diffusion_setting.dirs["controlnet"]
                     )
+                    controlnet_models = list(_controlnet_models_map.keys())
+                    default_model = (
+                        controlnet_models[0] if len(controlnet_models) else None
+                    )
 
                     enabled_checkbox = gr.Checkbox(
                         label="Enable ControlNet",
@@ -94,7 +101,7 @@ def get_controlnet_ui() -> None:
                         _controlnet_models_map.keys(),
                         label="ControlNet model",
                         info="ControlNet model to load (.safetensors format)",
-                        # value=valid_model,
+                        value=default_model,
                         interactive=True,
                     )
                     conditioning_scale_slider = gr.Slider(

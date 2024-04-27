@@ -15,8 +15,8 @@ from backend.models.lcmdiffusion_setting import (
 def load_controlnet_adapters(lcm_diffusion_setting) -> dict:
     controlnet_args = {}
     if (
-        lcm_diffusion_setting.controlnet == None
-        or lcm_diffusion_setting.controlnet.enabled == False
+        lcm_diffusion_setting.controlnet is None
+        or not lcm_diffusion_setting.controlnet.enabled
     ):
         return controlnet_args
 
@@ -39,8 +39,8 @@ def load_controlnet_adapters(lcm_diffusion_setting) -> dict:
 def update_controlnet_arguments(lcm_diffusion_setting) -> dict:
     controlnet_args = {}
     if (
-        lcm_diffusion_setting.controlnet == None
-        or lcm_diffusion_setting.controlnet.enabled == False
+        lcm_diffusion_setting.controlnet is None
+        or not lcm_diffusion_setting.controlnet.enabled
     ):
         return controlnet_args
 
@@ -61,12 +61,12 @@ def controlnet_settings_from_dict(
     lcm_diffusion_setting,
     dictionary,
 ) -> None:
-    if lcm_diffusion_setting == None or dictionary == None:
+    if lcm_diffusion_setting is None or dictionary is None:
         logging.error("Invalid arguments!")
         return
     if (
-        not "controlnet" in dictionary
-        or dictionary["controlnet"] == None
+        "controlnet" not in dictionary
+        or dictionary["controlnet"] is None
         or len(dictionary["controlnet"]) == 0
     ):
         logging.warning("ControlNet settings not found, ControlNet will be disabled")
@@ -82,9 +82,9 @@ def controlnet_settings_from_dict(
     if controlnet.enabled:
         try:
             controlnet._control_image = Image.open(image_path)
-        except (AttributeError, FileNotFoundError) as e:
-            pass
-        if controlnet._control_image == None:
+        except (AttributeError, FileNotFoundError) as err:
+            print(err)
+        if controlnet._control_image is None:
             logging.error("Wrong ControlNet control image! Disabling ControlNet")
             controlnet.enabled = False
     lcm_diffusion_setting.controlnet = controlnet

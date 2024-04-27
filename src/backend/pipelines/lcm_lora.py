@@ -39,7 +39,7 @@ def get_lcm_lora_pipeline(
         lcm_lora_id,
     )
 
-    if "lcm" in lcm_lora_id.lower():
+    if "lcm" in lcm_lora_id.lower() or "hypersd" in lcm_lora_id.lower():
         print("LCM LoRA model detected so using recommended LCMScheduler")
         pipeline.scheduler = LCMScheduler.from_config(pipeline.scheduler.config)
 
