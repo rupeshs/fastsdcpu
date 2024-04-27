@@ -13,11 +13,11 @@ The following interfaces are available :
 
 ## Table of Contents
 
-- [Introduction](#introduction)
 - [Supported&nbsp;Platforms](#Supported&nbsp;platforms)
 - [Memory requirements](#memory-requirements)
 - [Features](#features)
 - [Benchmarks](#fast-inference-benchmarks)
+- [OpenVINO Support](#openvino)
 - [Installation](#installation)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
@@ -29,6 +29,8 @@ The following interfaces are available :
 - [Contributors](#contributors)
 
 ## Supported platforms⚡️
+
+FastSD CPU works on the followings platforms:
 
 - Windows
 - Linux
@@ -113,14 +115,14 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 
 ### 🚀 Fast 1 step inference with Hyper-SD
 
-#### Stablediffuion 1.5
+#### Stable diffuion 1.5
 
 Works with LCM-LoRA mode.
 Fast 1 step inference supported on `runwayml/stable-diffusion-v1-5` model,select `rupeshs/hypersd-sd1-5-1-step-lora` lcm_lora model from the settings.
 
-#### Stablediffuion XL
+#### Stable diffuion XL
 
-Works with LCM,LCM-LoRA and OpenVINO model
+Works with LCM and LCM-OpenVINO mode.
 
 - *Hyper-SD SDXL 1 step* - [rupeshs/hyper-sd-sdxl-1-step](https://huggingface.co/rupeshs/hyper-sd-sdxl-1-step)
 
@@ -128,13 +130,13 @@ Works with LCM,LCM-LoRA and OpenVINO model
 
 #### Inference Speed
 
-Tested on Core i7-12700 to generate __768x768__ image(2 steps).
+Tested on Core i7-12700 to generate __768x768__ image(1 step).
 
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
-| Pytorch               | 15s           |
-| OpenVINO              | 7s            |
-| OpenVINO + TAESDXL    | 5.8s          |
+| Pytorch               | 19s           |
+| OpenVINO              | 13s           |
+| OpenVINO + TAESDXL    | 6.3s          |
 
 ### Fastest 1 step inference (SDXS-512-0.9)
 
@@ -212,6 +214,7 @@ Alternatively you can run benchmarks by passing `-b` command line argument in CL
 
 ## OpenVINO support
 
+Fast SD CPU utilizes [OpenVINO](https://www.intel.com/content/www/us/en/developer/tools/openvino-toolkit/overview.html) to speed up the inference speed.
 Thanks [deinferno](https://github.com/deinferno) for the OpenVINO model contribution.
 We can get 2x speed improvement when using OpenVINO.
 Thanks [Disty0](https://github.com/Disty0) for the conversion script.
