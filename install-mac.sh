@@ -24,8 +24,8 @@ BASEDIR=$(pwd)
 $PYTHON_COMMAND -m venv "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
-pip install -r "$BASEDIR/requirements.txt"
 pip install torch==2.2.2
+pip install -r "$BASEDIR/requirements.txt"
 chmod +x "start.sh"
 chmod +x "start-webui.sh"
 read -n1 -r -p "FastSD CPU installation completed,press any key to continue..." key

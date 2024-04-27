@@ -5,11 +5,25 @@ FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Cons
 
 The following interfaces are available :
 
-- Desktop GUI (Qt,faster)
-- WebUI
+- Desktop GUI, basic text to image generation (Qt,faster)
+- WebUI (Advvanced features,Lora,controlnet etc)
 - CLI (CommandLine Interface)
 
 🚀 Using __OpenVINO(SDXS-512-0.9)__, it took __0.82 seconds__ (__820 milliseconds__) to create a single 512x512 image on a __Core i7-12700__.
+
+## Table of Contents
+
+- [Introduction](#introduction)
+- [Supported&nbsp;Platforms](#Supported&nbsp;platforms)
+- [Memory requirements](#memory-requirements)
+- [Features](#features)
+- [Benchmarks](#fast-inference-benchmarks)
+- [Installation](#installation)
+- [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
+- [Android](#android)
+- [Raspberry PI 4](#raspberry)
+- [License](#license)
+- [Contributors](#contributors)
 
 ## Supported platforms⚡️
 
@@ -18,64 +32,6 @@ The following interfaces are available :
 - Mac
 - Android + Termux
 - Raspberry PI 4
-
-## 🚀 Fastest 1 step inference (SDXS-512-0.9)
-
-:exclamation:This is an experimental model, only text to image workflow is supported.
-
-### Inference Speed
-
-Tested on Core i7-12700 to generate __512x512__ image(1 step).
-
-__SDXS-512-0.9__
-
-| Diffusion Pipeline    | Latency       |
-| --------------------- | ------------- |
-| Pytorch               | 4.8s          |
-| OpenVINO              | 3.8s          |
-| OpenVINO + TAESD      | __0.82s__     |
-
-## 🚀 Fast 1 step inference (SD/SDXL Turbo - Adversarial Diffusion Distillation,ADD)
-
-Added support for ultra fast 1 step inference using [sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) model
-
-:exclamation: These SD turbo models are intended for research purpose only.
-
-### Inference Speed
-
-Tested on Core i7-12700 to generate __512x512__ image(1 step).
-
-__SD Turbo__
-
-| Diffusion Pipeline    | Latency       |
-| --------------------- | ------------- |
-| Pytorch               | 7.8s          |
-| OpenVINO              | 5s            |
-| OpenVINO + TAESD      | 1.7s          |
-
-__SDXL Turbo__
-
-| Diffusion Pipeline    | Latency       |
-| --------------------- | ------------- |
-| Pytorch               | 10s           |
-| OpenVINO              | 5.6s          |
-| OpenVINO + TAESDXL    | 2.5s          |
-
-## 🚀 Fast 2 step inference (SDXL-Lightning - Adversarial Diffusion Distillation)
-
-SDXL-Lightning works with LCM and LCM-OpenVINO mode.You can select these models from app settings.
-
-Tested on Core i7-12700 to generate __768x768__ image(2 steps).
-
-| Diffusion Pipeline    | Latency       |
-| --------------------- | ------------- |
-| Pytorch               | 18s           |
-| OpenVINO              | 12s           |
-| OpenVINO + TAESDXL    | 10s           |
-
-- *SDXL-Lightning* - [rupeshs/SDXL-Lightning-2steps](https://huggingface.co/rupeshs/SDXL-Lightning-2steps)
-
-- *SDXL-Lightning OpenVINO* - [rupeshs/SDXL-Lightning-2steps-openvino-int8](https://huggingface.co/rupeshs/SDXL-Lightning-2steps-openvino-int8)
 
 ## Memory requirements
 
@@ -94,8 +50,6 @@ Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
 If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example in OpenVINO mode memory usage will become 9GB.
 
 :exclamation: Please note that guidance scale >1 increases RAM usage and slow inference speed.
-
-![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
 ## Features
 
@@ -149,11 +103,107 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Revert default model to SDTurbo
 - Update realtime UI
 
-## 2 Steps fast inference (LCM)
+<a id="fast-inference-benchmarks"></a>
+
+## Fast Inference Benchmarks
+
+### 🚀 Fast 1 step inference with Hyper-SD
+
+#### Stablediffuion 1.5
+
+Works with LCM-LoRA mode.
+Fast 1 step inference supported on `runwayml/stable-diffusion-v1-5` model,select `rupeshs/hypersd-sd1-5-1-step-lora` lcm_lora model from the settings.
+
+#### Stablediffuion XL
+
+Works with LCM,LCM-LoRA and OpenVINO model
+
+- *Hyper-SD SDXL 1 step* - [rupeshs/hyper-sd-sdxl-1-step](https://huggingface.co/rupeshs/hyper-sd-sdxl-1-step)
+
+- *Hyper-SD SDXL 1 step OpenVINO* - [rupeshs/hyper-sd-sdxl-1-step-openvino-int8](https://huggingface.co/rupeshs/hyper-sd-sdxl-1-step-openvino-int8)
+
+#### Inference Speed
+
+Tested on Core i7-12700 to generate __768x768__ image(2 steps).
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 15s           |
+| OpenVINO              | 7s            |
+| OpenVINO + TAESDXL    | 5.8s          |
+
+### Fastest 1 step inference (SDXS-512-0.9)
+
+:exclamation:This is an experimental model, only text to image workflow is supported.
+
+#### Inference Speed
+
+Tested on Core i7-12700 to generate __512x512__ image(1 step).
+
+__SDXS-512-0.9__
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 4.8s          |
+| OpenVINO              | 3.8s          |
+| OpenVINO + TAESD      | __0.82s__     |
+
+### 🚀 Fast 1 step inference (SD/SDXL Turbo - Adversarial Diffusion Distillation,ADD)
+
+Added support for ultra fast 1 step inference using [sdxl-turbo](https://huggingface.co/stabilityai/sdxl-turbo) model
+
+:exclamation: These SD turbo models are intended for research purpose only.
+
+#### Inference Speed
+
+Tested on Core i7-12700 to generate __512x512__ image(1 step).
+
+__SD Turbo__
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 7.8s          |
+| OpenVINO              | 5s            |
+| OpenVINO + TAESD      | 1.7s          |
+
+__SDXL Turbo__
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 10s           |
+| OpenVINO              | 5.6s          |
+| OpenVINO + TAESDXL    | 2.5s          |
+
+### 🚀 Fast 2 step inference (SDXL-Lightning - Adversarial Diffusion Distillation)
+
+SDXL-Lightning works with LCM and LCM-OpenVINO mode.You can select these models from app settings.
+
+Tested on Core i7-12700 to generate __768x768__ image(2 steps).
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| Pytorch               | 18s           |
+| OpenVINO              | 12s           |
+| OpenVINO + TAESDXL    | 10s           |
+
+- *SDXL-Lightning* - [rupeshs/SDXL-Lightning-2steps](https://huggingface.co/rupeshs/SDXL-Lightning-2steps)
+
+- *SDXL-Lightning OpenVINO* - [rupeshs/SDXL-Lightning-2steps-openvino-int8](https://huggingface.co/rupeshs/SDXL-Lightning-2steps-openvino-int8)
+
+### 2 Steps fast inference (LCM)
 
 FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It works well with SD 1.5 models.
 
 ![2 Steps inference](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/2steps-inference.jpg)
+
+### Benchmarking scripts
+
+To benchmark run the following batch file on Windows:
+
+- `benchmark.bat` - To benchmark Pytorch
+- `benchmark-openvino.bat` - To benchmark OpenVINO
+
+Alternatively you can run benchmarks by passing `-b` command line argument in CLI mode.
 
 ## OpenVINO support
 
@@ -174,12 +224,13 @@ You can directly use these models in FastSD CPU.
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
+<a id="real-time-text-to-image"></a>
 
 ## Real-time text to image (EXPERIMENTAL)
 
 We can generate real-time text to images using FastSD CPU.
 
-**CPU (OpenVINO)**
+__CPU (OpenVINO)__
 
 Near real-time inference on CPU using OpenVINO, run the `start-realtime.bat` batch file and open the link in browser (Resolution : 512x512,Latency : 0.82s on Intel Core i7)
 
@@ -275,17 +326,16 @@ Use the medium size models (723 MB)(For example : <https://huggingface.co/comfya
 
 ## FastSD CPU on Windows
 
-:exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
+:exclamation:__You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )__
+
+![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
 Clone/download this repo or download release.
 
-### Installation
+## Installation
 
 - Double click `install.bat`  (It will take some time to install,depending on your internet speed.)
-
-### Run
-
-You can run in desktop GUI mode or web UI mode.
+- You can run in desktop GUI mode or web UI mode.
 
 #### Desktop GUI
 
@@ -295,7 +345,7 @@ You can run in desktop GUI mode or web UI mode.
 
 - To start web UI double click `start-webui.bat`
 
-## FastSD CPU on Linux
+### FastSD CPU on Linux
 
 Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.
 
@@ -315,11 +365,11 @@ Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.
 
   `./start-webui.sh`
 
-## FastSD CPU on Mac
+### FastSD CPU on Mac
 
 ![FastSD CPU running on Mac](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-mac-gui.jpg)
 
-### Installation
+#### Installation
 
 Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.
 
@@ -347,32 +397,34 @@ If you want to increase image generation speed on Mac(M1/M2 chip) try this:
 
 `export DEVICE=mps` and start app `start.sh`
 
-## Web UI screenshot
+#### Web UI screenshot
 
 ![FastSD CPU WebUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastcpu-webui.png)
 
-## Google Colab
+### Google Colab
 
 Due to the limitation of using CPU/OpenVINO inside colab, we are using GPU with colab.
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1SuAqskB-_gjWLYNRFENAkIXZ1aoyINqL?usp=sharing)
 
-## CLI mode (Advanced users)
+### CLI mode (Advanced users)
 
 ![FastSD CPU CLI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastcpu-cli.png)
 
  Open the terminal and enter into fastsdcpu folder.
  Activate virtual environment using the command:
 
-#### Windows users
+##### Windows users
 
  (Suppose FastSD CPU available in the directory "D:\fastsdcpu")
   `D:\fastsdcpu\env\Scripts\activate.bat`
 
-#### Linux users
+##### Linux users
 
   `source env/bin/activate`
 
 Start CLI  `src/app.py -h`
+
+<a id="android"></a>
 
 ## Android (Termux + PRoot)
 
@@ -400,19 +452,14 @@ Run the following command to install without Qt GUI.
 
   Thanks [patienx](https://github.com/patientx) for this guide  [Step by step guide to installing FASTSDCPU on ANDROID](https://github.com/rupeshs/fastsdcpu/discussions/123)
 
+Another step by step guide to run FastSD on Android is [here](https://nolowiz.com/how-to-install-and-run-fastsd-cpu-on-android-temux-step-by-step-guide/)
+
+<a id="raspberry"></a>
+
 ## Raspberry PI 4 support
 
 Thanks WGNW_MGM for Raspberry PI 4 testing.FastSD CPU worked without problems.
 System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
-
-## Benchmarking
-
-To benchmark run the following batch file on Windows:
-
-- `benchmark.bat` - To benchmark Pytorch
-- `benchmark-openvino.bat` - To benchmark OpenVINO
-
-Alternatively you can run benchmarks by passing `-b` command line argument in CLI mode.
 
 ## Known issues
 
