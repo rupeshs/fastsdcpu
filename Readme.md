@@ -7,7 +7,7 @@ FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Cons
 The following interfaces are available :
 
 - Desktop GUI, basic text to image generation (Qt,faster)
-- WebUI (Advvanced features,Lora,controlnet etc)
+- WebUI (Advanced features,Lora,controlnet etc)
 - CLI (CommandLine Interface)
 
 🚀 Using __OpenVINO(SDXS-512-0.9)__, it took __0.82 seconds__ (__820 milliseconds__) to create a single 512x512 image on a __Core i7-12700__.
@@ -41,7 +41,7 @@ FastSD CPU works on the followings platforms:
 
 ## Memory requirements
 
-Minimum system RAM requirment for FastSD CPU.
+Minimum system RAM requirement for FastSD CPU.
 
 Model (LCM,OpenVINO): SD Turbo, 1 step, 512 x 512
 
