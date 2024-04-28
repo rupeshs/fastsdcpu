@@ -3,6 +3,7 @@
 <div align="center">
   <a href="https://trendshift.io/repositories/3957" target="_blank"><img src="https://trendshift.io/api/badge/repositories/3957" alt="rupeshs%2Ffastsdcpu | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
+
 FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) and
 [Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/).
 
