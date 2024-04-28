@@ -93,7 +93,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--guidance_scale",
-    type=int,
+    type=float,
     help="Guidance scale,default : 1.0",
     default=1.0,
 )
