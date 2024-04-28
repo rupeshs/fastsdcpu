@@ -74,6 +74,12 @@ parser.add_argument(
     default="",
 )
 parser.add_argument(
+    "--negative_prompt",
+    type=str,
+    help="Describe what you want to exclude from the generation",
+    default="",
+)
+parser.add_argument(
     "--image_height",
     type=int,
     help="Height of the image",
@@ -284,6 +290,7 @@ else:
         config.lcm_diffusion_setting.lcm_model_id = args.lcm_model_id
 
     config.lcm_diffusion_setting.prompt = args.prompt
+    config.lcm_diffusion_setting.negative_prompt = args.negative_prompt
     config.lcm_diffusion_setting.image_height = args.image_height
     config.lcm_diffusion_setting.image_width = args.image_width
     config.lcm_diffusion_setting.guidance_scale = args.guidance_scale
