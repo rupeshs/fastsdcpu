@@ -52,13 +52,14 @@ def interactive_mode(
         print("> 6. Edit default generation settings")
         print("> 7. Edit LoRA settings")
         print("> 8. Edit ControlNet settings")
-        print("> 9. Quit")
+        print("> 9. Edit negative prompt")
+        print("> 10. Quit")
         option = user_value(
             int,
             "Enter a Diffusion Task number (1): ",
             1,
         )
-        if option not in range(1, 10):
+        if option not in range(1, 11):
             print("Wrong Diffusion Task number!")
             exit()
 
@@ -105,7 +106,25 @@ def interactive_mode(
                 True,
             )
         elif option == 9:
+            interactive_negative(
+                config,
+                context,
+            )
+        elif option == 10:
             exit()
+
+
+def interactive_negative(
+    config,
+    context,
+):
+    settings = config.lcm_diffusion_setting
+    print(f"Current negative prompt: '{settings.negative_prompt}'")
+    user_input = input("Write a negative prompt (set guidance > 1.0): ")
+    if user_input == "":
+        return
+    else:
+        settings.negative_prompt = user_input
 
 
 def interactive_controlnet(
@@ -301,6 +320,11 @@ def interactive_settings(
         int,
         f"Inference steps ({settings.inference_steps}): ",
         settings.inference_steps,
+    )
+    settings.guidance_scale = user_value(
+        float,
+        f"Guidance scale ({settings.guidance_scale}): ",
+        settings.guidance_scale,
     )
     settings.number_of_images = user_value(
         int,
