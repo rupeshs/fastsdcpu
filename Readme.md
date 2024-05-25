@@ -113,7 +113,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Update realtime UI
 - Add hypersd support
 - 1 step fast inference support for SDXL and SD1.5
-- Experimental support single file Safetensors SD 1.5 models(Civitai models), add model path to configs/stable-diffusion-models.txt file.
+- Experimental support for single file Safetensors SD 1.5 models(Civitai models), simply add local model path to configs/stable-diffusion-models.txt file.
 
 <a id="fast-inference-benchmarks"></a>
 
