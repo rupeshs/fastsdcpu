@@ -90,5 +90,5 @@ class AppSettings:
             print(f"Error in saving settings : {ex}")
 
     def _load_default(self) -> dict:
-        defult_config = Settings()
-        return defult_config.model_dump()
+        default_config = Settings()
+        return default_config.model_dump()

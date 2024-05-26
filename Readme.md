@@ -35,7 +35,7 @@ The following interfaces are available :
 
 ## Supported platforms⚡️
 
-FastSD CPU works on the followings platforms:
+FastSD CPU works on the following platforms:
 
 - Windows
 - Linux
@@ -229,7 +229,7 @@ Thanks [Disty0](https://github.com/Disty0) for the conversion script.
 These are models converted to use directly use it with FastSD CPU. These models are compressed to int8 to reduce the file size (10GB to 4.4 GB) using [NNCF](https://github.com/openvinotoolkit/nncf)
 
 - Hyper-SD SDXL 1 step - [rupeshs/hyper-sd-sdxl-1-step-openvino-int8](https://huggingface.co/rupeshs/hyper-sd-sdxl-1-step-openvino-int8)
-- SDXL Lightening 2 steps - [rupeshs/SDXL-Lightning-2steps-openvino-int8](https://huggingface.co/rupeshs/SDXL-Lightning-2steps-openvino-int8)
+- SDXL Lightning 2 steps - [rupeshs/SDXL-Lightning-2steps-openvino-int8](https://huggingface.co/rupeshs/SDXL-Lightning-2steps-openvino-int8)
 
 ### OpenVINO SD Turbo models
 

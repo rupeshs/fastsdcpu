@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 # A basic class to keep track of the currently loaded LoRAs and
-# their weights; the diffusers funtion \c get_active_adapters()
+# their weights; the diffusers function \c get_active_adapters()
 # returns a list of adapter names but not their weights so we need
 # a way to keep track of the current LoRA weights to set whenever
 # a new LoRA is loaded
@@ -132,5 +132,5 @@ def update_lora_weights(
         adapter_names,
         adapter_weights=adapter_weights,
     )
-    adapater_weights = zip(adapter_names, adapter_weights)
-    print(f"Adapters: {list(adapater_weights)}")
+    adapter_weights = zip(adapter_names, adapter_weights)
+    print(f"Adapters: {list(adapter_weights)}")

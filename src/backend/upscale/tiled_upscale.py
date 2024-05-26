@@ -80,7 +80,7 @@ def generate_upscaled_image(
                 y1 = y * tile_size
                 w = tile_size + (tile_overlap if x < total_cols - 1 else 0)
                 h = tile_size + (tile_overlap if y < total_rows - 1 else 0)
-                mask_box = (  # Default tile mask box definiton
+                mask_box = (  # Default tile mask box definition
                     x_offset,
                     y_offset,
                     int(w * scale_factor),

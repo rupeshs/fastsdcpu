@@ -8,7 +8,7 @@ def show_system_info():
         print(f"OS: {platform.platform()}")
         print(f"Processor: {platform.processor()}")
     except Exception as ex:
-        print(f"Error ocurred while getting system information {ex}")
+        print(f"Error occurred while getting system information {ex}")
 
 
 def get_models_from_text_file(file_path: str) -> List:
