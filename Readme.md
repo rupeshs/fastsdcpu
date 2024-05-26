@@ -261,7 +261,7 @@ Watch YouTube video :
 
 ## Models
 
-To use single file safetensors SD 1.5 models(Civit AI) follow this [YouTube tutorial](https://www.youtube.com/watch?v=zZTfUZnXJVk)
+To use single file [Safetensors](https://huggingface.co/docs/safetensors/en/index) SD 1.5 models(Civit AI) follow this [YouTube tutorial](https://www.youtube.com/watch?v=zZTfUZnXJVk). Use LCM-LoRA Mode for single file safetensors.
 
 Fast SD supports LCM models and LCM-LoRA models.
 
