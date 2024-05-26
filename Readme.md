@@ -261,6 +261,8 @@ Watch YouTube video :
 
 ## Models
 
+To use single file safetensors SD 1.5 models(Civit AI) follow this [YouTube tutorial](https://www.youtube.com/watch?v=zZTfUZnXJVk)
+
 Fast SD supports LCM models and LCM-LoRA models.
 
 ### LCM Models
