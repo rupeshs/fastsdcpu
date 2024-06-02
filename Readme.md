@@ -490,12 +490,14 @@ System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
 
 ## API support
 
+![FastSD CPU API documentation](https://raw.githubusercontent.com/rupeshs/fastsdcpu/add-basic-api-support/docs/images/fastsdcpu-api.png)
+
 FastSD CPU supports basic API supports. Written using FastAPI.
 Following API endpoints are available
 
-- /api/info - To get the information about the system
-- /api/config - Return configuration
-- /api/models - list all available models
+- /api/info - To get system information
+- /api/config - Get configuration
+- /api/models - List all available models
 - /api/generate - Generate images (Text to image,image to image)
 
 To start FastAPI in webserver mode run:
@@ -511,7 +513,7 @@ To generate an image a minimal request `POST /api/generate` with body :
 ```
 {
     "prompt": "a cute cat",
-     "use_openvino": true
+    "use_openvino": true
 }
 ```
 
