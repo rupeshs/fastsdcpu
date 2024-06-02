@@ -492,7 +492,7 @@ System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
 
 ![FastSD CPU API documentation](https://raw.githubusercontent.com/rupeshs/fastsdcpu/add-basic-api-support/docs/images/fastsdcpu-api.png)
 
-FastSD CPU supports basic API supports.Following API endpoints are available :
+FastSD CPU supports basic API endpoints. Following API endpoints are available :
 
 - /api/info - To get system information
 - /api/config - Get configuration
@@ -504,7 +504,7 @@ To start FastAPI in webserver mode run:
 
 or use  `start-webserver.sh` for Linux and  `start-webserver.bat` for Windows.
 
-Access API documentation at <http://localhost:8000/api/docs> .
+Access API documentation locally at <http://localhost:8000/api/docs> .
 
 Generated image is JPEG image encoded as base64 string.
 In the image-to-image mode input image should be encoded as base64 string.
