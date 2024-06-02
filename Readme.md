@@ -30,6 +30,7 @@ The following interfaces are available :
 - [How to use controlnet](#usecontrolnet)
 - [Android](#android)
 - [Raspberry PI 4](#raspberry)
+- [API&nbsp;Support](#apisupport)
 - [License](#license)
 - [Contributors](#contributors)
 
@@ -114,6 +115,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add hypersd support
 - 1 step fast inference support for SDXL and SD1.5
 - Experimental support for single file Safetensors SD 1.5 models(Civitai models), simply add local model path to configs/stable-diffusion-models.txt file.
+- Add REST API support
 
 <a id="fast-inference-benchmarks"></a>
 
@@ -483,6 +485,37 @@ Another step by step guide to run FastSD on Android is [here](https://nolowiz.co
 
 Thanks WGNW_MGM for Raspberry PI 4 testing.FastSD CPU worked without problems.
 System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
+
+<a id="apisupport"></a>
+
+## API support
+
+![FastSD CPU API documentation](https://raw.githubusercontent.com/rupeshs/fastsdcpu/add-basic-api-support/docs/images/fastsdcpu-api.png)
+
+FastSD CPU supports basic API supports. Written using FastAPI.
+Following API endpoints are available
+
+- /api/info - To get system information
+- /api/config - Get configuration
+- /api/models - List all available models
+- /api/generate - Generate images (Text to image,image to image)
+
+To start FastAPI in webserver mode run:
+``python src/app.py --api``
+
+Access API documentation at <http://localhost:8000/api/docs>
+
+Generated image is JPEG image encoded as base64 string.
+In the image-to-image mode input image should be encoded as base64 string.
+
+To generate an image a minimal request `POST /api/generate` with body :
+
+```
+{
+    "prompt": "a cute cat",
+    "use_openvino": true
+}
+```
 
 ## Known issues
 

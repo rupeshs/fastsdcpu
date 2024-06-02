@@ -37,6 +37,12 @@ group.add_argument(
     help="Start Web UI",
 )
 group.add_argument(
+    "-a",
+    "--api",
+    action="store_true",
+    help="Start Web API server",
+)
+group.add_argument(
     "-r",
     "--realtime",
     action="store_true",
@@ -280,6 +286,11 @@ elif args.realtime:
 
     print("Starting realtime text to image(EXPERIMENTAL)")
     start_realtime_text_to_image(args.share)
+elif args.api:
+    from backend.api.web import start_web_server
+
+    start_web_server()
+
 else:
     context = get_context(InterfaceType.CLI)
     config = app_settings.settings
