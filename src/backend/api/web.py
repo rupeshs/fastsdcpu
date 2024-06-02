@@ -21,20 +21,24 @@ app = FastAPI(
         "name": "MIT",
         "identifier": "MIT",
     },
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
 )
 print(app_settings.settings.lcm_diffusion_setting)
 
 context = Context(InterfaceType.API_SERVER)
 
 
-@app.get("/")
+@app.get("/api/")
 async def root():
     return {"message": "Welcome to FastSD CPU API"}
 
 
 @app.get(
-    "/info",
-    description="Get information of the system",
+    "/api/info",
+    description="Get system information",
+    summary="Get system information",
 )
 async def info():
     device_info = DeviceInfo(
@@ -48,16 +52,18 @@ async def info():
 
 
 @app.get(
-    "/config",
+    "/api/config",
     description="Get current configuration",
+    summary="Get configurations",
 )
 async def config():
     return app_settings.settings
 
 
 @app.get(
-    "/models",
+    "/api/models",
     description="Get available models",
+    summary="Get available models",
 )
 async def models():
     return {
@@ -69,8 +75,9 @@ async def models():
 
 
 @app.post(
-    "/generate",
+    "/api/generate",
     description="Generate image(Text to image,Image to Image)",
+    summary="Generate image(Text to image,Image to Image)",
 )
 async def generate(diffusion_config: LCMDiffusionSetting) -> StableDiffusionResponse:
     app_settings.settings.lcm_diffusion_setting = diffusion_config
