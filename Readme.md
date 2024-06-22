@@ -29,7 +29,8 @@ The following interfaces are available :
 - [How to use Lora models](#useloramodels)
 - [How to use controlnet](#usecontrolnet)
 - [Android](#android)
-- [Raspberry PI 4](#raspberry)
+- [Raspberry Pi 4](#raspberry)
+- [Orange Pi 5](#orangepi)
 - [API&nbsp;Support](#apisupport)
 - [License](#license)
 - [Contributors](#contributors)
@@ -483,8 +484,15 @@ Another step by step guide to run FastSD on Android is [here](https://nolowiz.co
 
 ## Raspberry PI 4 support
 
-Thanks WGNW_MGM for Raspberry PI 4 testing.FastSD CPU worked without problems.
+Thanks [WGNW_MGM] for Raspberry PI 4 testing.FastSD CPU worked without problems.
 System configuration - Raspberry Pi 4 with 4GB RAM, 8GB of SWAP memory.
+
+<a id="orangepi"></a>
+
+## Orange Pi 5 support
+
+Thanks [khanumballz](https://github.com/khanumballz) for testing FastSD CPU with Orange PI 5.
+[Here is a video of FastSD CPU running on Orange Pi 5](https://www.youtube.com/watch?v=KEJiCU0aK8o).
 
 <a id="apisupport"></a>
 
