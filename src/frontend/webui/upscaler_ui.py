@@ -24,6 +24,9 @@ def create_upscaled_image(
     scale_factor = 2
     if upscale_mode == "SD":
         mode = UpscaleMode.sd_upscale.value
+    elif upscale_mode == "AURA-SR":
+        mode = UpscaleMode.aura_sr.value
+        scale_factor = 4
     else:
         mode = UpscaleMode.normal.value
 
@@ -48,7 +51,7 @@ def get_upscaler_ui() -> None:
                 input_image = gr.Image(label="Image", type="filepath")
                 with gr.Row():
                     upscale_mode = gr.Radio(
-                        ["EDSR", "SD"],
+                        ["EDSR", "SD", "AURA-SR"],
                         label="Upscale Mode (2x)",
                         info="Select upscale method, SD Upscale is experimental",
                         value="EDSR",

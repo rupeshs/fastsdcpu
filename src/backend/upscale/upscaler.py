@@ -1,6 +1,7 @@
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from backend.models.upscale import UpscaleMode
 from backend.upscale.edsr_upscale_onnx import upscale_edsr_2x
+from backend.upscale.aura_sr_upscale import upscale_aura_sr
 from backend.upscale.tiled_upscale import generate_upscaled_image
 from context import Context
 from PIL import Image
@@ -20,6 +21,10 @@ def upscale_image(
     if upscale_mode == UpscaleMode.normal.value:
 
         upscaled_img = upscale_edsr_2x(src_image_path)
+        upscaled_img.save(dst_image_path)
+        print(f"Upscaled image saved {dst_image_path}")
+    elif upscale_mode == UpscaleMode.aura_sr.value:
+        upscaled_img = upscale_aura_sr(src_image_path)
         upscaled_img.save(dst_image_path)
         print(f"Upscaled image saved {dst_image_path}")
     else:

@@ -6,3 +6,4 @@ class UpscaleMode(str, Enum):
 
     normal = "normal"
     sd_upscale = "sd_upscale"
+    aura_sr = "aura_sr"
