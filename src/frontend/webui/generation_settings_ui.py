@@ -97,7 +97,7 @@ def get_generation_settings_ui() -> None:
                 )
                 guidance_scale = gr.Slider(
                     1.0,
-                    2.0,
+                    10.0,
                     value=app_settings.settings.lcm_diffusion_setting.guidance_scale,
                     step=0.1,
                     label="Guidance Scale",

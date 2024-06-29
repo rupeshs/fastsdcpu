@@ -83,6 +83,9 @@ class LCMTextToImage:
                     b2=1.2,
                 )
 
+    def _enable_vae_tiling(self):
+        self.pipeline.vae.enable_tiling()
+
     def _update_lcm_scheduler_params(self):
         if isinstance(self.pipeline.scheduler, LCMScheduler):
             self.pipeline.scheduler = LCMScheduler.from_config(
