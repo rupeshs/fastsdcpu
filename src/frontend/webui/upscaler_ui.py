@@ -52,7 +52,7 @@ def get_upscaler_ui() -> None:
                 with gr.Row():
                     upscale_mode = gr.Radio(
                         ["EDSR", "SD", "AURA-SR"],
-                        label="Upscale Mode (2x) | AURA-SR (4x)",
+                        label="Upscale Mode (2x) | AURA-SR v2 (4x)",
                         info="Select upscale method, SD Upscale is experimental",
                         value="EDSR",
                     )
