@@ -118,6 +118,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Experimental support for single file Safetensors SD 1.5 models(Civitai models), simply add local model path to configs/stable-diffusion-models.txt file.
 - Add REST API support
 - Add Aura SR (4x)/GigaGAN based upscaler support
+- Add Aura SR v2 upscaler support
 
 <a id="fast-inference-benchmarks"></a>
 
