@@ -95,9 +95,9 @@ async def generate(diffusion_config: LCMDiffusionSetting) -> StableDiffusionResp
     )
 
 
-def start_web_server():
+def start_web_server(port: int = 8000):
     uvicorn.run(
         app,
         host="0.0.0.0",
-        port=8000,
+        port=port,
     )
