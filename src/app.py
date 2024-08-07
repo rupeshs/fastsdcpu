@@ -229,6 +229,12 @@ parser.add_argument(
     help="LoRA adapter weight [0 to 1.0]",
     default=0.5,
 )
+parser.add_argument(
+    "--port",
+    type=int,
+    help="Web server port",
+    default=8000,
+)
 
 args = parser.parse_args()
 
@@ -289,7 +295,7 @@ elif args.realtime:
 elif args.api:
     from backend.api.web import start_web_server
 
-    start_web_server()
+    start_web_server(args.port)
 
 else:
     context = get_context(InterfaceType.CLI)
