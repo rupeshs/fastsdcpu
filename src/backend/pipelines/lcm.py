@@ -4,6 +4,7 @@ from diffusers import (
     AutoencoderTiny,
     UNet2DConditionModel,
     LCMScheduler,
+    StableDiffusionPipeline,
 )
 import torch
 from backend.tiny_decoder import get_tiny_decoder_vae_model
@@ -16,6 +17,7 @@ from diffusers import (
     AutoPipelineForImage2Image,
     StableDiffusionControlNetPipeline,
 )
+import pathlib
 
 
 def _get_lcm_pipeline_from_base_model(
@@ -73,6 +75,23 @@ def get_lcm_model_pipeline(
             "segmind/SSD-1B",
             use_local_model,
         )
+    elif pathlib.Path(model_id).suffix == ".safetensors":
+        # When loading a .safetensors model, the pipeline has to be created
+        # with StableDiffusionPipeline() since it's the only class that
+        # defines the method from_single_file()
+        dummy_pipeline = StableDiffusionPipeline.from_single_file(
+            model_id,
+            safety_checker=None,
+            run_safety_checker=False,
+            load_safety_checker=False,
+            local_files_only=use_local_model,
+            use_safetensors=True,
+        )
+        pipeline = AutoPipelineForText2Image.from_pipe(
+            dummy_pipeline,
+            **pipeline_args,
+        )
+        del dummy_pipeline
     else:
         # pipeline = DiffusionPipeline.from_pretrained(
         pipeline = AutoPipelineForText2Image.from_pretrained(
