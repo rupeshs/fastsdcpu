@@ -216,13 +216,21 @@ FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It work
 
 ### FLUX.1-schnell OpenVINO support
 
-Select this model - rupeshs/FLUX.1-schnell-openvino-int4
+![FLUX Schenell OpenVINO](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu_flux_on_cpu.png)
 
-:exclamation: Important - Please not the following points
+:exclamation: Important - Please note the following points with FLUX workflow
 
-- Only text to image generation is supported as of now
+- As of now only text to image generation mode is supported
+- Use OpenVINO mode
+- Use int4 model - *rupeshs/FLUX.1-schnell-openvino-int4*
 - Tiny decoder will not work with FLUX
-- 512x512 image generation needs 30GB System RAM
+- 512x512 image generation needs around __30GB__ system RAM
+
+Tested on Core i7-12700 to generate __512x512__ image(3 steps).
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| OpenVINO              | 4 min          |
 
 ### Benchmark scripts
 
