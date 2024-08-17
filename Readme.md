@@ -226,11 +226,11 @@ FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It work
 - Tiny decoder will not work with FLUX
 - 512x512 image generation needs around __30GB__ system RAM
 
-Tested on Core i7-12700 to generate __512x512__ image(3 steps).
+Tested on Intel Core i7-12700 to generate __512x512__ image(3 steps).
 
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
-| OpenVINO              | 4 min          |
+| OpenVINO              | 4 min 30sec   |
 
 ### Benchmark scripts
 
