@@ -140,6 +140,13 @@ parser.add_argument(
     default=1,
 )
 parser.add_argument(
+    "--token_merging",
+    type=float,
+    help="Token merging scale, 0.0 - 1.0, default : 0.0",
+    default=0.0,
+)
+
+parser.add_argument(
     "--use_safety_checker",
     action="store_true",
     help="Use safety checker",
@@ -341,6 +348,7 @@ else:
         config.lcm_diffusion_setting.use_seed = False
     config.lcm_diffusion_setting.use_offline_model = args.use_offline_model
     config.lcm_diffusion_setting.clip_skip = args.clip_skip
+    config.lcm_diffusion_setting.token_merging = args.token_merging
     config.lcm_diffusion_setting.use_safety_checker = args.use_safety_checker
 
     # Read custom settings from JSON file
