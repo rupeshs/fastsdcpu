@@ -309,6 +309,12 @@ class LCMTextToImage:
             if self.is_openvino_init:
                 self.is_openvino_init = False
 
+        pipeline_extra_args = {}
+        if lcm_diffusion_setting.clip_skip > 1:
+            # We follow the convention that "CLIP Skip == 2" means "skip
+            # the last layer", so "CLIP Skip == 1" means "no skipping"
+            pipeline_extra_args['clip_skip'] = lcm_diffusion_setting.clip_skip - 1
+
         if not lcm_diffusion_setting.use_safety_checker:
             self.pipeline.safety_checker = None
             if (
@@ -369,6 +375,7 @@ class LCMTextToImage:
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                     timesteps=self._get_timesteps(),
+                    **pipeline_extra_args,
                     **controlnet_args,
                 ).images
 
@@ -386,6 +393,7 @@ class LCMTextToImage:
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    **pipeline_extra_args,
                     **controlnet_args,
                 ).images
         return result_images

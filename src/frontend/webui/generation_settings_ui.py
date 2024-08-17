@@ -25,6 +25,10 @@ def on_change_guidance_scale(guidance_scale):
     app_settings.settings.lcm_diffusion_setting.guidance_scale = guidance_scale
 
 
+def on_change_clip_skip(clip_skip):
+    app_settings.settings.lcm_diffusion_setting.clip_skip = clip_skip
+
+
 def on_change_seed_value(seed):
     app_settings.settings.lcm_diffusion_setting.seed = seed
 
@@ -103,6 +107,15 @@ def get_generation_settings_ui() -> None:
                     label="Guidance Scale",
                     interactive=True,
                 )
+                clip_skip = gr.Slider(
+                    1,
+                    12,
+                    value=app_settings.settings.lcm_diffusion_setting.clip_skip,
+                    step=1,
+                    label="CLIP Skip",
+                    interactive=True,
+                )
+
 
                 seed = gr.Slider(
                     value=app_settings.settings.lcm_diffusion_setting.seed,
@@ -145,6 +158,7 @@ def get_generation_settings_ui() -> None:
         image_width.change(on_change_image_width, image_width)
         num_images.change(on_change_num_images, num_images)
         guidance_scale.change(on_change_guidance_scale, guidance_scale)
+        clip_skip.change(on_change_clip_skip, clip_skip)
         seed.change(on_change_seed_value, seed)
         seed_checkbox.change(on_change_seed_checkbox, seed_checkbox)
         safety_checker_checkbox.change(
