@@ -5,3 +5,4 @@ rupeshs/SDXL-Lightning-2steps-openvino-int8
 rupeshs/sdxl-turbo-openvino-int8
 rupeshs/LCM-dreamshaper-v7-openvino
 Disty0/LCM_SoteMix
+rupeshs/FLUX.1-schnell-openvino-int4

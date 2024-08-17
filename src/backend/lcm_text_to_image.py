@@ -30,6 +30,7 @@ from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from constants import DEVICE
 from diffusers import LCMScheduler
 from image_ops import resize_pil_image
+from backend.openvino.flux_pipeline import get_flux_pipeline
 
 
 class LCMTextToImage:
@@ -145,10 +146,14 @@ class LCMTextToImage:
                     == DiffusionTask.text_to_image.value
                 ):
                     print(f"***** Init Text to image (OpenVINO) - {ov_model_id} *****")
-                    self.pipeline = get_ov_text_to_image_pipeline(
-                        ov_model_id,
-                        use_local_model,
-                    )
+                    if "flux" in ov_model_id.lower():
+                        print("Loading OpenVINO Flux pipeline")
+                        self.pipeline = get_flux_pipeline(ov_model_id)
+                    else:
+                        self.pipeline = get_ov_text_to_image_pipeline(
+                            ov_model_id,
+                            use_local_model,
+                        )
                 elif (
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.image_to_image.value
