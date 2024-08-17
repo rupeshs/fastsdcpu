@@ -119,6 +119,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add REST API support
 - Add Aura SR (4x)/GigaGAN based upscaler support
 - Add Aura SR v2 upscaler support
+- Add FLUX.1 schnell OpenVINO int 4 support
 
 <a id="fast-inference-benchmarks"></a>
 
@@ -212,6 +213,24 @@ Tested on Core i7-12700 to generate __768x768__ image(2 steps).
 FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It works well with SD 1.5 models.
 
 ![2 Steps inference](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/2steps-inference.jpg)
+
+### FLUX.1-schnell OpenVINO support
+
+![FLUX Schenell OpenVINO](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu_flux_on_cpu.png)
+
+:exclamation: Important - Please note the following points with FLUX workflow
+
+- As of now only text to image generation mode is supported
+- Use OpenVINO mode
+- Use int4 model - *rupeshs/FLUX.1-schnell-openvino-int4*
+- Tiny decoder will not work with FLUX
+- 512x512 image generation needs around __30GB__ system RAM
+
+Tested on Intel Core i7-12700 to generate __512x512__ image(3 steps).
+
+| Diffusion Pipeline    | Latency       |
+| --------------------- | ------------- |
+| OpenVINO              | 4 min 30sec   |
 
 ### Benchmark scripts
 
