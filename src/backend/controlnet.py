@@ -23,7 +23,7 @@ def load_controlnet_adapters(lcm_diffusion_setting) -> dict:
     logging.info("Loading ControlNet adapter")
     controlnet_adapter = ControlNetModel.from_single_file(
         lcm_diffusion_setting.controlnet.adapter_path,
-        local_files_only=True,
+        # local_files_only=True,
         use_safetensors=True,
     )
     controlnet_args["controlnet"] = controlnet_adapter
