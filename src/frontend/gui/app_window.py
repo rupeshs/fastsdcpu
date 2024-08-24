@@ -91,6 +91,9 @@ class MainWindow(QMainWindow):
         self.inference_steps.setValue(
             int(self.config.settings.lcm_diffusion_setting.inference_steps)
         )
+        self.clip_skip.setValue(
+            int(self.config.settings.lcm_diffusion_setting.clip_skip)
+        )
         self.seed_check.setChecked(self.config.settings.lcm_diffusion_setting.use_seed)
         self.seed_value.setText(str(self.config.settings.lcm_diffusion_setting.seed))
         self.use_local_model_folder.setChecked(
@@ -246,6 +249,13 @@ class MainWindow(QMainWindow):
         self.guidance.setValue(10)
         self.guidance.valueChanged.connect(self.update_guidance_label)
 
+        self.clip_skip_value = QLabel("CLIP Skip: 1")
+        self.clip_skip = QSlider(orientation=Qt.Orientation.Horizontal)
+        self.clip_skip.setMaximum(12)
+        self.clip_skip.setMinimum(1)
+        self.clip_skip.setValue(1)
+        self.clip_skip.valueChanged.connect(self.update_clip_skip_label)
+
         self.width_value = QLabel("Width :")
         self.width = QComboBox(self)
         self.width.addItem("256")
@@ -340,6 +350,8 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.height)
         vlayout.addWidget(self.guidance_value)
         vlayout.addWidget(self.guidance)
+        vlayout.addWidget(self.clip_skip_value)
+        vlayout.addWidget(self.clip_skip)
         vlayout.addLayout(hlayout)
         vlayout.addWidget(self.safety_checker)
 
@@ -491,6 +503,10 @@ class MainWindow(QMainWindow):
             self.neg_prompt.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_lcm_lora = False
 
+    def update_clip_skip_label(self, value):
+        self.clip_skip_value.setText(f"CLIP Skip: {value}")
+        self.config.settings.lcm_diffusion_setting.clip_skip = value
+
     def use_safety_checker_changed(self, state):
         if state == 2:
             self.config.settings.lcm_diffusion_setting.use_safety_checker = True
@@ -604,6 +620,7 @@ class MainWindow(QMainWindow):
         self.height.setCurrentText("512")
         self.inference_steps.setValue(4)
         self.guidance.setValue(10)
+        self.clip_skip.setValue(1)
         self.use_openvino_check.setChecked(False)
         self.seed_check.setChecked(False)
         self.safety_checker.setChecked(False)

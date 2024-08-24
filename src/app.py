@@ -134,6 +134,12 @@ parser.add_argument(
     help="Use offline model",
 )
 parser.add_argument(
+    "--clip_skip",
+    type=int,
+    help="CLIP Skip (1-12), default : 1 (disabled) ",
+    default=1,
+)
+parser.add_argument(
     "--use_safety_checker",
     action="store_true",
     help="Use safety checker",
@@ -334,6 +340,7 @@ else:
     else:
         config.lcm_diffusion_setting.use_seed = False
     config.lcm_diffusion_setting.use_offline_model = args.use_offline_model
+    config.lcm_diffusion_setting.clip_skip = args.clip_skip
     config.lcm_diffusion_setting.use_safety_checker = args.use_safety_checker
 
     # Read custom settings from JSON file
