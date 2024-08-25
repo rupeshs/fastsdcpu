@@ -94,6 +94,9 @@ class MainWindow(QMainWindow):
         self.clip_skip.setValue(
             int(self.config.settings.lcm_diffusion_setting.clip_skip)
         )
+        self.token_merging.setValue(
+            int(self.config.settings.lcm_diffusion_setting.token_merging * 100)
+        )
         self.seed_check.setChecked(self.config.settings.lcm_diffusion_setting.use_seed)
         self.seed_value.setText(str(self.config.settings.lcm_diffusion_setting.seed))
         self.use_local_model_folder.setChecked(
@@ -256,6 +259,13 @@ class MainWindow(QMainWindow):
         self.clip_skip.setValue(1)
         self.clip_skip.valueChanged.connect(self.update_clip_skip_label)
 
+        self.token_merging_value = QLabel("Token Merging: 0")
+        self.token_merging = QSlider(orientation=Qt.Orientation.Horizontal)
+        self.token_merging.setMaximum(100)
+        self.token_merging.setMinimum(0)
+        self.token_merging.setValue(0)
+        self.token_merging.valueChanged.connect(self.update_token_merging_label)
+
         self.width_value = QLabel("Width :")
         self.width = QComboBox(self)
         self.width.addItem("256")
@@ -352,6 +362,8 @@ class MainWindow(QMainWindow):
         vlayout.addWidget(self.guidance)
         vlayout.addWidget(self.clip_skip_value)
         vlayout.addWidget(self.clip_skip)
+        vlayout.addWidget(self.token_merging_value)
+        vlayout.addWidget(self.token_merging)
         vlayout.addLayout(hlayout)
         vlayout.addWidget(self.safety_checker)
 
@@ -507,6 +519,11 @@ class MainWindow(QMainWindow):
         self.clip_skip_value.setText(f"CLIP Skip: {value}")
         self.config.settings.lcm_diffusion_setting.clip_skip = value
 
+    def update_token_merging_label(self, value):
+        val = round(int(value) / 100, 1)
+        self.token_merging_value.setText(f"Token Merging: {val}")
+        self.config.settings.lcm_diffusion_setting.token_merging = val
+
     def use_safety_checker_changed(self, state):
         if state == 2:
             self.config.settings.lcm_diffusion_setting.use_safety_checker = True
@@ -621,6 +638,7 @@ class MainWindow(QMainWindow):
         self.inference_steps.setValue(4)
         self.guidance.setValue(10)
         self.clip_skip.setValue(1)
+        self.token_merging.setValue(0)
         self.use_openvino_check.setChecked(False)
         self.seed_check.setChecked(False)
         self.safety_checker.setChecked(False)

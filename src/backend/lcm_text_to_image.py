@@ -32,6 +32,12 @@ from diffusers import LCMScheduler
 from image_ops import resize_pil_image
 from backend.openvino.flux_pipeline import get_flux_pipeline
 
+try:
+    # support for token merging; keeping it optional for now
+    import tomesd
+except ImportError:
+    print("tomesd library unavailable; disabling token merging support")
+    tomesd = None
 
 class LCMTextToImage:
     def __init__(
@@ -45,6 +51,7 @@ class LCMTextToImage:
         self.previous_use_tae_sd = False
         self.previous_use_lcm_lora = False
         self.previous_ov_model_id = ""
+        self.previous_token_merging = 0.0
         self.previous_safety_checker = False
         self.previous_use_openvino = False
         self.img_to_img_pipeline = None
@@ -107,6 +114,7 @@ class LCMTextToImage:
         use_tiny_auto_encoder = lcm_diffusion_setting.use_tiny_auto_encoder
         use_lora = lcm_diffusion_setting.use_lcm_lora
         lcm_lora: LCMLora = lcm_diffusion_setting.lcm_lora
+        token_merging = lcm_diffusion_setting.token_merging
         ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
 
         if lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value:
@@ -124,6 +132,7 @@ class LCMTextToImage:
             or self.previous_lcm_lora_id != lcm_lora.lcm_lora_id
             or self.previous_use_lcm_lora != use_lora
             or self.previous_ov_model_id != ov_model_id
+            or self.previous_token_merging != token_merging
             or self.previous_safety_checker != lcm_diffusion_setting.use_safety_checker
             or self.previous_use_openvino != lcm_diffusion_setting.use_openvino
             or (
@@ -194,6 +203,11 @@ class LCMTextToImage:
 
                 self.img_to_img_pipeline = get_image_to_image_pipeline(self.pipeline)
 
+                if tomesd and token_merging > 0.001:
+                    print(f"***** Token Merging: {token_merging} *****")
+                    tomesd.apply_patch(self.pipeline, ratio=token_merging)
+                    tomesd.apply_patch(self.img_to_img_pipeline, ratio=token_merging)
+
             if use_tiny_auto_encoder:
                 if self.use_openvino and is_openvino_device():
                     print("Using Tiny Auto Encoder (OpenVINO)")
@@ -237,6 +251,7 @@ class LCMTextToImage:
             self.previous_lcm_lora_base_id = lcm_lora.base_model_id
             self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
             self.previous_use_lcm_lora = use_lora
+            self.previous_token_merging = lcm_diffusion_setting.token_merging
             self.previous_safety_checker = lcm_diffusion_setting.use_safety_checker
             self.previous_use_openvino = lcm_diffusion_setting.use_openvino
             self.previous_task_type = lcm_diffusion_setting.diffusion_task

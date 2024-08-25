@@ -51,6 +51,7 @@ class LCMDiffusionSetting(BaseModel):
     inference_steps: Optional[int] = 1
     guidance_scale: Optional[float] = 1
     clip_skip: Optional[int] = 1
+    token_merging: Optional[float] = 0
     number_of_images: Optional[int] = 1
     seed: Optional[int] = 123123
     use_seed: bool = False

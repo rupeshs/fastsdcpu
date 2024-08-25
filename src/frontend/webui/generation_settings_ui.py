@@ -29,6 +29,10 @@ def on_change_clip_skip(clip_skip):
     app_settings.settings.lcm_diffusion_setting.clip_skip = clip_skip
 
 
+def on_change_token_merging(token_merging):
+    app_settings.settings.lcm_diffusion_setting.token_merging = token_merging
+
+
 def on_change_seed_value(seed):
     app_settings.settings.lcm_diffusion_setting.seed = seed
 
@@ -115,6 +119,14 @@ def get_generation_settings_ui() -> None:
                     label="CLIP Skip",
                     interactive=True,
                 )
+                token_merging = gr.Slider(
+                    0.0,
+                    1.0,
+                    value=app_settings.settings.lcm_diffusion_setting.token_merging,
+                    step=0.01,
+                    label="Token Merging",
+                    interactive=True,
+                )
 
 
                 seed = gr.Slider(
@@ -159,6 +171,7 @@ def get_generation_settings_ui() -> None:
         num_images.change(on_change_num_images, num_images)
         guidance_scale.change(on_change_guidance_scale, guidance_scale)
         clip_skip.change(on_change_clip_skip, clip_skip)
+        token_merging.change(on_change_token_merging, token_merging)
         seed.change(on_change_seed_value, seed)
         seed_checkbox.change(on_change_seed_checkbox, seed_checkbox)
         safety_checker_checkbox.change(
