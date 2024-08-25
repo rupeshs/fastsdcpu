@@ -49,7 +49,6 @@ def get_lcm_lora_pipeline(
             base_model_id,
             torch_dtype=torch_data_type,
             safety_checker=None,
-            load_safety_checker=False,
             local_files_only=use_local_model,
             use_safetensors=True,
         )

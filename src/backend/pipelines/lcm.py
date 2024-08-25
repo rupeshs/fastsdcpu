@@ -82,8 +82,6 @@ def get_lcm_model_pipeline(
         dummy_pipeline = StableDiffusionPipeline.from_single_file(
             model_id,
             safety_checker=None,
-            run_safety_checker=False,
-            load_safety_checker=False,
             local_files_only=use_local_model,
             use_safetensors=True,
         )
