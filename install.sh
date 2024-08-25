@@ -34,6 +34,9 @@ else
     pip install -r "$BASEDIR/requirements.txt"
 fi
 
+## https://github.com/jhj0517/Whisper-WebUI/issues/258#issuecomment-2333390291
+pip install -U gradio
+
 chmod +x "start.sh"
 chmod +x "start-webui.sh"
 read -n1 -r -p "FastSD CPU installation completed,press any key to continue..." key
