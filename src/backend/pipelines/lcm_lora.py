@@ -29,9 +29,13 @@ def get_lcm_lora_pipeline(
     base_model_id: str,
     lcm_lora_id: str,
     use_local_model: bool,
+    use_safety_checker: bool,
     torch_data_type: torch.dtype,
     pipeline_args={},
 ):
+    safety_checker_args = {}
+    if not use_safety_checker:
+        safety_checker_args['safety_checker'] = None
     if pathlib.Path(base_model_id).suffix == ".safetensors":
         # SD 1.5 models only
         # When loading a .safetensors model, the pipeline has to be created
@@ -48,9 +52,9 @@ def get_lcm_lora_pipeline(
         dummy_pipeline = StableDiffusionPipeline.from_single_file(
             base_model_id,
             torch_dtype=torch_data_type,
-            safety_checker=None,
             local_files_only=use_local_model,
             use_safetensors=True,
+            **safety_checker_args,
         )
         pipeline = AutoPipelineForText2Image.from_pipe(
             dummy_pipeline,
@@ -62,6 +66,7 @@ def get_lcm_lora_pipeline(
             base_model_id,
             torch_dtype=torch_data_type,
             local_files_only=use_local_model,
+            **safety_checker_args,
             **pipeline_args,
         )
 

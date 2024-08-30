@@ -114,6 +114,7 @@ class LCMTextToImage:
         self.use_openvino = lcm_diffusion_setting.use_openvino
         model_id = lcm_diffusion_setting.lcm_model_id
         use_local_model = lcm_diffusion_setting.use_offline_model
+        use_safety_checker = lcm_diffusion_setting.use_safety_checker
         use_tiny_auto_encoder = lcm_diffusion_setting.use_tiny_auto_encoder
         use_lora = lcm_diffusion_setting.use_lcm_lora
         lcm_lora: LCMLora = lcm_diffusion_setting.lcm_lora
@@ -192,6 +193,7 @@ class LCMTextToImage:
                         lcm_lora.base_model_id,
                         lcm_lora.lcm_lora_id,
                         use_local_model,
+                        use_safety_checker,
                         torch_data_type=self.torch_data_type,
                         pipeline_args=controlnet_args,
                     )
@@ -201,6 +203,7 @@ class LCMTextToImage:
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
+                        use_safety_checker,
                         controlnet_args,
                     )
 

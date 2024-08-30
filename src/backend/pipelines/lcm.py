@@ -59,9 +59,13 @@ def load_taesd(
 def get_lcm_model_pipeline(
     model_id: str = LCM_DEFAULT_MODEL,
     use_local_model: bool = False,
+    use_safety_checker: bool = False,
     pipeline_args={},
 ):
     pipeline = None
+    safety_checker_args = {}
+    if not use_safety_checker:
+        safety_checker_args['safety_checker'] = None
     if model_id == "latent-consistency/lcm-sdxl":
         pipeline = _get_lcm_pipeline_from_base_model(
             model_id,
@@ -81,9 +85,9 @@ def get_lcm_model_pipeline(
         # defines the method from_single_file()
         dummy_pipeline = StableDiffusionPipeline.from_single_file(
             model_id,
-            safety_checker=None,
             local_files_only=use_local_model,
             use_safetensors=True,
+            **safety_checker_args,
         )
         if 'lcm' in model_id.lower():
             dummy_pipeline.scheduler = LCMScheduler.from_config(dummy_pipeline.scheduler.config)
@@ -98,6 +102,7 @@ def get_lcm_model_pipeline(
         pipeline = AutoPipelineForText2Image.from_pretrained(
             model_id,
             local_files_only=use_local_model,
+            **safety_checker_args,
             **pipeline_args,
         )
 
