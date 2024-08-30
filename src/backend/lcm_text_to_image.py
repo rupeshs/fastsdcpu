@@ -31,6 +31,9 @@ from constants import DEVICE
 from diffusers import LCMScheduler
 from image_ops import resize_pil_image
 from backend.openvino.flux_pipeline import get_flux_pipeline
+from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
+from transformers import AutoImageProcessor
+
 
 try:
     # support for token merging; keeping it optional for now
@@ -111,6 +114,7 @@ class LCMTextToImage:
         self.use_openvino = lcm_diffusion_setting.use_openvino
         model_id = lcm_diffusion_setting.lcm_model_id
         use_local_model = lcm_diffusion_setting.use_offline_model
+        use_safety_checker = lcm_diffusion_setting.use_safety_checker
         use_tiny_auto_encoder = lcm_diffusion_setting.use_tiny_auto_encoder
         use_lora = lcm_diffusion_setting.use_lcm_lora
         lcm_lora: LCMLora = lcm_diffusion_setting.lcm_lora
@@ -173,12 +177,10 @@ class LCMTextToImage:
                         use_local_model,
                     )
             else:
-                if self.pipeline:
-                    del self.pipeline
+                if self.pipeline or self.img_to_img_pipeline:
                     self.pipeline = None
-                if self.img_to_img_pipeline:
-                    del self.img_to_img_pipeline
                     self.img_to_img_pipeline = None
+                    gc.collect()
 
                 controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
                 if use_lora:
@@ -189,6 +191,7 @@ class LCMTextToImage:
                         lcm_lora.base_model_id,
                         lcm_lora.lcm_lora_id,
                         use_local_model,
+                        use_safety_checker,
                         torch_data_type=self.torch_data_type,
                         pipeline_args=controlnet_args,
                     )
@@ -198,6 +201,7 @@ class LCMTextToImage:
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
+                        use_safety_checker,
                         controlnet_args,
                     )
 
@@ -207,6 +211,32 @@ class LCMTextToImage:
                     print(f"***** Token Merging: {token_merging} *****")
                     tomesd.apply_patch(self.pipeline, ratio=token_merging)
                     tomesd.apply_patch(self.img_to_img_pipeline, ratio=token_merging)
+
+            if lcm_diffusion_setting.use_safety_checker:
+                print("Enabling safety checker")
+                use_local_model = lcm_diffusion_setting.use_offline_model
+                torch_dtype = self.torch_data_type
+                if not self.pipeline.safety_checker:
+                    self.pipeline.safety_checker = StableDiffusionSafetyChecker.from_pretrained(
+                        "CompVis/stable-diffusion-safety-checker",
+                        local_files_only=use_local_model,
+                        torch_dtype=torch_dtype)
+                    if self.img_to_img_pipeline:
+                        self.img_to_img_pipeline.safety_checker = self.pipeline.safety_checker
+                if not self.pipeline.feature_extractor:
+                    self.pipeline.feature_extractor = AutoImageProcessor.from_pretrained(
+                        "CompVis/stable-diffusion-safety-checker",
+                        local_files_only=use_local_model,
+                        torch_dtype=torch_dtype)
+                    if self.img_to_img_pipeline:
+                        self.img_to_img_pipeline.feature_extractor = self.pipeline.feature_extractor
+
+            else:
+                print("Disabling safety checker")
+                if self.pipeline.safety_checker:
+                    self.pipeline.safety_checker = None
+                    if self.img_to_img_pipeline:
+                        self.img_to_img_pipeline.safety_checker = None
 
             if use_tiny_auto_encoder:
                 if self.use_openvino and is_openvino_device():
@@ -329,15 +359,6 @@ class LCMTextToImage:
             # We follow the convention that "CLIP Skip == 2" means "skip
             # the last layer", so "CLIP Skip == 1" means "no skipping"
             pipeline_extra_args['clip_skip'] = lcm_diffusion_setting.clip_skip - 1
-
-        if not lcm_diffusion_setting.use_safety_checker:
-            self.pipeline.safety_checker = None
-            if (
-                lcm_diffusion_setting.diffusion_task
-                == DiffusionTask.image_to_image.value
-                and not is_openvino_pipe
-            ):
-                self.img_to_img_pipeline.safety_checker = None
 
         if (
             not lcm_diffusion_setting.use_lcm_lora
