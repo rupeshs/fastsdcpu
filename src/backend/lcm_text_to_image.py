@@ -177,12 +177,10 @@ class LCMTextToImage:
                         use_local_model,
                     )
             else:
-                if self.pipeline:
-                    del self.pipeline
+                if self.pipeline or self.img_to_img_pipeline:
                     self.pipeline = None
-                if self.img_to_img_pipeline:
-                    del self.img_to_img_pipeline
                     self.img_to_img_pipeline = None
+                    gc.collect()
 
                 controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
                 if use_lora:
