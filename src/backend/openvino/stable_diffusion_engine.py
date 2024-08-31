@@ -11,6 +11,7 @@ from openvino.runtime import Core
 # tokenizer
 from transformers import CLIPTokenizer
 import torch
+import random
 
 from diffusers import DiffusionPipeline
 from diffusers.schedulers import (DDIMScheduler,
@@ -27,6 +28,9 @@ from diffusers.utils import PIL_INTERPOLATION
 import cv2
 import os
 import sys
+
+# for multithreading 
+import concurrent.futures
 
 #For GIF
 import PIL
@@ -83,62 +87,96 @@ def preprocess(image: PIL.Image.Image, ht=512, wt=512):
 
     return image, {"padding": pad, "src_width": src_width, "src_height": src_height}
 
+def try_enable_npu_turbo(device, core):
+    import platform
+    if "windows" in platform.system().lower():
+        if "NPU" in device and "3720" not in core.get_property('NPU', 'DEVICE_ARCHITECTURE'):
+            try:
+                core.set_property(properties={'NPU_TURBO': 'YES'},device_name='NPU')
+            except:
+                print(f"Failed loading NPU_TURBO for device {device}. Skipping... ")
+            else:
+                print_npu_turbo_art()
+        else:
+            print(f"Skipping NPU_TURBO for device {device}")
+    elif "linux" in platform.system().lower():
+        if os.path.isfile('/sys/module/intel_vpu/parameters/test_mode'):
+            with open('/sys/module/intel_vpu/version', 'r') as f:
+                version = f.readline().split()[0]
+                if tuple(map(int, version.split('.'))) < tuple(map(int, '1.9.0'.split('.'))):
+                    print(f"The driver intel_vpu-1.9.0 (or later) needs to be loaded for NPU Turbo (currently {version}). Skipping...")
+                else:
+                    with open('/sys/module/intel_vpu/parameters/test_mode', 'r') as tm_file:
+                        test_mode = int(tm_file.readline().split()[0])
+                        if test_mode == 512:
+                            print_npu_turbo_art()
+                        else:
+                            print("The driver >=intel_vpu-1.9.0 was must be loaded with "
+                                  "\"modprobe intel_vpu test_mode=512\" to enable NPU_TURBO "
+                                  f"(currently test_mode={test_mode}). Skipping...")
+        else:
+            print(f"The driver >=intel_vpu-1.9.0 must be loaded with  \"modprobe intel_vpu test_mode=512\" to enable NPU_TURBO. Skipping...")
+    else:
+        print(f"This platform ({platform.system()}) does not support NPU Turbo")
+
 def result(var):
     return next(iter(var.values()))
 
-
 class StableDiffusionEngineAdvanced(DiffusionPipeline):
-    def __init__(
-            self,
-             #scheduler: Union[DDIMScheduler, PNDMScheduler, LMSDiscreteScheduler],
-            model="runwayml/stable-diffusion-v1-5",
-            tokenizer="openai/clip-vit-large-patch14",
-            device=["CPU","CPU","CPU","CPU"],
-            ):
-
+    def __init__(self, model="runwayml/stable-diffusion-v1-5", 
+                  tokenizer="openai/clip-vit-large-patch14", 
+                  device=["CPU", "CPU", "CPU", "CPU"]):
         try:
-            self.tokenizer = CLIPTokenizer.from_pretrained(model,local_files_only=True)
+            self.tokenizer = CLIPTokenizer.from_pretrained(model, local_files_only=True)
         except:
             self.tokenizer = CLIPTokenizer.from_pretrained(tokenizer)
             self.tokenizer.save_pretrained(model)
 
-        # models
         self.core = Core()
-        self.core.set_property({'CACHE_DIR': os.path.join(model, 'cache')})  # Adding caching to reduce init time
-        print("Setting caching")
+        self.core.set_property({'CACHE_DIR': os.path.join(model, 'cache')})
+        try_enable_npu_turbo(device, self.core)
+            
+        print("Loading models... ")
         
-        print("Text Device:", device[0])
-        self.text_encoder = self.load_model(model, "text_encoder", device[0])
-        self._text_encoder_output = self.text_encoder.output(0)
 
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            futures = {
+                "unet_time_proj": executor.submit(self.core.compile_model, os.path.join(model, "unet_time_proj.xml"), device[0]),
+                "text": executor.submit(self.load_model, model, "text_encoder", device[0]),
+                "unet": executor.submit(self.load_model, model, "unet_int8", device[1]),
+                "unet_neg": executor.submit(self.load_model, model, "unet_int8", device[2]) if device[1] != device[2] else None,
+                "vae_decoder": executor.submit(self.load_model, model, "vae_decoder", device[3]),
+                "vae_encoder": executor.submit(self.load_model, model, "vae_encoder", device[3])
+            }
+
+        self.unet_time_proj = futures["unet_time_proj"].result()
+        self.text_encoder = futures["text"].result()
+        self.unet = futures["unet"].result()
+        self.unet_neg = futures["unet_neg"].result() if futures["unet_neg"] else self.unet
+        self.vae_decoder = futures["vae_decoder"].result()
+        self.vae_encoder = futures["vae_encoder"].result()
+        print("Text Device:", device[0])
         print("unet Device:", device[1])
         print("unet-neg Device:", device[2])
-        self.unet_time_proj = self.core.compile_model(os.path.join(model, "unet_time_proj.xml"), 'CPU')
-
-        self.unet = self.load_model(model, "unet_int8", device[1])
-        self.unet_neg = self.unet if device[1] == device[2] else self.load_model(model, "unet_int8", device[2])
-
         print("VAE Device:", device[3])
-        self.vae_decoder = self.load_model(model, "vae_decoder", device[3])
-        self.vae_encoder = self.load_model(model, "vae_encoder", device[3])
 
+        self._text_encoder_output = self.text_encoder.output(0)
         self._vae_d_output = self.vae_decoder.output(0)
-        self._vae_e_output = self.vae_encoder.output(0) if self.vae_encoder is not None else None
+        self._vae_e_output = self.vae_encoder.output(0) if self.vae_encoder else None
 
         self.set_dimensions()
-
         self.infer_request_neg = self.unet_neg.create_infer_request()
         self.infer_request = self.unet.create_infer_request()
         self.infer_request_time_proj = self.unet_time_proj.create_infer_request()
         self.time_proj_constants = np.load(os.path.join(model, "time_proj_constants.npy"))
-
-
+        
     def load_model(self, model, model_name, device):
         if "NPU" in device:
             with open(os.path.join(model, f"{model_name}.blob"), "rb") as f:
                 return self.core.import_model(f.read(), device)
         return self.core.compile_model(os.path.join(model, f"{model_name}.xml"), device)
-
+    
     def set_dimensions(self):
         latent_shape = self.unet.input("latent_model_input").shape
         if latent_shape[1] == 4:
@@ -230,7 +268,6 @@ class StableDiffusionEngineAdvanced(DiffusionPipeline):
             latent_model_input = latents
             latent_model_input = scheduler.scale_model_input(latent_model_input, t)
 
-            latent_model_input_gpu = latent_model_input
             latent_model_input_neg = latent_model_input
             if self.unet.input("latent_model_input").shape[1] != 4:
                 #print("In transpose")
@@ -335,7 +372,7 @@ class StableDiffusionEngineAdvanced(DiffusionPipeline):
    
         noise = np.random.randn(*latents_shape).astype(np.float32)
         if image is None:
-            print("Image is NONE")
+            ##print("Image is NONE")
             # if we use LMSDiscreteScheduler, let's make sure latents are mulitplied by sigmas
             if isinstance(scheduler, LMSDiscreteScheduler):
 
@@ -426,60 +463,87 @@ class StableDiffusionEngineAdvanced(DiffusionPipeline):
 
         return timesteps, num_inference_steps - t_start
 
-
 class StableDiffusionEngine(DiffusionPipeline):
     def __init__(
             self,
-        
             model="bes-dev/stable-diffusion-v1-4-openvino",
             tokenizer="openai/clip-vit-large-patch14",
-            device=["CPU", "CPU", "CPU"]
-    ):
-       
+            device=["CPU","CPU","CPU","CPU"]):
+        
+        self.core = Core()
+        self.core.set_property({'CACHE_DIR': os.path.join(model, 'cache')})
+
+        self.batch_size = 2 if device[1] == device[2] and device[1] == "GPU" else 1
+        try_enable_npu_turbo(device, self.core)
+
         try:
             self.tokenizer = CLIPTokenizer.from_pretrained(model, local_files_only=True)
-        except:
-            while True:
-                try:
-                    self.tokenizer = CLIPTokenizer.from_pretrained(tokenizer)
-                    self.tokenizer.save_pretrained(model)
-                    break
-                except:
-                    print("Retry Token Download...")
+        except Exception as e:
+            print("Local tokenizer not found. Attempting to download...")
+            self.tokenizer = self.download_tokenizer(tokenizer, model)
+    
+        print("Loading models... ")
 
-        # self.scheduler = scheduler
-        # models
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            text_future = executor.submit(self.load_model, model, "text_encoder", device[0])
+            vae_de_future = executor.submit(self.load_model, model, "vae_decoder", device[3])
+            vae_en_future = executor.submit(self.load_model, model, "vae_encoder", device[3])
 
-        self.core = Core()
-        self.core.set_property({'CACHE_DIR': os.path.join(model, 'cache')})  # adding caching to reduce init time
-        # text features
+            if self.batch_size == 1:
+                if "int8" not in model:
+                    unet_future = executor.submit(self.load_model, model, "unet_bs1", device[1])
+                    unet_neg_future = executor.submit(self.load_model, model, "unet_bs1", device[2]) if device[1] != device[2] else None
+                else:
+                    unet_future = executor.submit(self.load_model, model, "unet_int8a16", device[1])
+                    unet_neg_future = executor.submit(self.load_model, model, "unet_int8a16", device[2]) if device[1] != device[2] else None
+            else:
+                unet_future = executor.submit(self.load_model, model, "unet", device[1])
+                unet_neg_future = None
 
-        print("Text Device:", device[0])
-        self.text_encoder = self.core.compile_model(os.path.join(model, "text_encoder.xml"), device[0])
+            self.unet = unet_future.result()
+            self.unet_neg = unet_neg_future.result() if unet_neg_future else self.unet
+            self.text_encoder = text_future.result()
+            self.vae_decoder = vae_de_future.result()
+            self.vae_encoder = vae_en_future.result()
+            print("Text Device:", device[0])
+            print("unet Device:", device[1])
+            print("unet-neg Device:", device[2])
+            print("VAE Device:", device[3])
 
-        self._text_encoder_output = self.text_encoder.output(0)
+            self._text_encoder_output = self.text_encoder.output(0)
+            self._unet_output = self.unet.output(0)
+            self._vae_d_output = self.vae_decoder.output(0)
+            self._vae_e_output = self.vae_encoder.output(0) if self.vae_encoder else None
 
-        # diffusion
-        print("unet Device:", device[1])
-        self.unet = self.core.compile_model(os.path.join(model, "unet.xml"), device[1])  # "unet_ov22_2.xml"
-        self._unet_output = self.unet.output(0)
-        self.latent_shape = tuple(self.unet.inputs[0].shape)[1:]
-        # decoder
-        print("Vae Device:", device[2])
+            self.unet_input_tensor_name = "sample" if 'sample' in self.unet.input(0).names else "latent_model_input"
 
-        self.vae_decoder = self.core.compile_model(os.path.join(model, "vae_decoder.xml"), device[2])
+            if self.batch_size == 1:
+                self.infer_request = self.unet.create_infer_request()
+                self.infer_request_neg = self.unet_neg.create_infer_request()
+                self._unet_neg_output = self.unet_neg.output(0)
+            else:
+                self.infer_request = None
+                self.infer_request_neg = None
+                self._unet_neg_output = None
+         
+        self.set_dimensions()
 
-        # encoder
+        
 
-        self.vae_encoder = self.core.compile_model(os.path.join(model, "vae_encoder.xml"), device[2])
-
-        self.init_image_shape = tuple(self.vae_encoder.inputs[0].shape)[2:]
-
-        self._vae_d_output = self.vae_decoder.output(0)
-        self._vae_e_output = self.vae_encoder.output(0) if self.vae_encoder is not None else None
-
-        self.height = self.unet.input(0).shape[2] * 8
-        self.width = self.unet.input(0).shape[3] * 8
+    def load_model(self, model, model_name, device):
+        if "NPU" in device:
+            with open(os.path.join(model, f"{model_name}.blob"), "rb") as f:
+                return self.core.import_model(f.read(), device)
+        return self.core.compile_model(os.path.join(model, f"{model_name}.xml"), device)
+        
+    def set_dimensions(self):
+        latent_shape = self.unet.input(self.unet_input_tensor_name).shape
+        if latent_shape[1] == 4:
+            self.height = latent_shape[2] * 8
+            self.width = latent_shape[3] * 8
+        else:
+            self.height = latent_shape[1] * 8
+            self.width = latent_shape[2] * 8
 
     def __call__(
             self,
@@ -510,7 +574,6 @@ class StableDiffusionEngine(DiffusionPipeline):
         # do classifier free guidance
         do_classifier_free_guidance = guidance_scale > 1.0
         if do_classifier_free_guidance:
-
             if negative_prompt is None:
                 uncond_tokens = [""]
             elif isinstance(negative_prompt, str):
@@ -557,21 +620,57 @@ class StableDiffusionEngine(DiffusionPipeline):
             if callback:
                 callback(i, callback_userdata)
 
-            # expand the latents if we are doing classifier free guidance
-            latent_model_input = np.concatenate([latents] * 2) if do_classifier_free_guidance else latents
-            latent_model_input = scheduler.scale_model_input(latent_model_input, t)
-            # print("latent_model_input:", latent_model_input)
-            # predict the noise residual
-            noise_pred = self.unet([latent_model_input, np.array(t, dtype=np.float32), text_embeddings])[self._unet_output]
-            # print("noise_pred:",noise_pred)
-            # perform guidance
+            if self.batch_size == 1:
+                # expand the latents if we are doing classifier free guidance
+                noise_pred = []
+                latent_model_input = latents 
+                   
+                #Scales the denoising model input by `(sigma**2 + 1) ** 0.5` to match the Euler algorithm.
+                latent_model_input = scheduler.scale_model_input(latent_model_input, t)
+                latent_model_input_pos = latent_model_input 
+                latent_model_input_neg = latent_model_input
+
+                if self.unet.input(self.unet_input_tensor_name).shape[1] != 4:
+                    try:
+                        latent_model_input_pos = latent_model_input_pos.permute(0,2,3,1)
+                    except:
+                        latent_model_input_pos = latent_model_input_pos.transpose(0,2,3,1)
+                
+                if self.unet_neg.input(self.unet_input_tensor_name).shape[1] != 4:
+                    try:
+                        latent_model_input_neg = latent_model_input_neg.permute(0,2,3,1)
+                    except:
+                        latent_model_input_neg = latent_model_input_neg.transpose(0,2,3,1)
+                
+                if "sample" in self.unet_input_tensor_name:                                        
+                    input_tens_neg_dict = {"sample" : latent_model_input_neg, "encoder_hidden_states": np.expand_dims(text_embeddings[0], axis=0), "timestep": np.expand_dims(np.float32(t), axis=0)}
+                    input_tens_pos_dict = {"sample" : latent_model_input_pos, "encoder_hidden_states": np.expand_dims(text_embeddings[1], axis=0), "timestep": np.expand_dims(np.float32(t), axis=0)}
+                else:
+                    input_tens_neg_dict = {"latent_model_input" : latent_model_input_neg, "encoder_hidden_states": np.expand_dims(text_embeddings[0], axis=0), "t": np.expand_dims(np.float32(t), axis=0)}
+                    input_tens_pos_dict = {"latent_model_input" : latent_model_input_pos, "encoder_hidden_states": np.expand_dims(text_embeddings[1], axis=0), "t": np.expand_dims(np.float32(t), axis=0)}
+                                                     
+                self.infer_request_neg.start_async(input_tens_neg_dict)
+                self.infer_request.start_async(input_tens_pos_dict)    
+         
+                self.infer_request_neg.wait()
+                self.infer_request.wait()
+
+                noise_pred_neg = self.infer_request_neg.get_output_tensor(0)
+                noise_pred_pos = self.infer_request.get_output_tensor(0)
+                               
+                noise_pred.append(noise_pred_neg.data.astype(np.float32))
+                noise_pred.append(noise_pred_pos.data.astype(np.float32))
+            else:
+                latent_model_input = np.concatenate([latents] * 2) if do_classifier_free_guidance else latents
+                latent_model_input = scheduler.scale_model_input(latent_model_input, t)
+                noise_pred = self.unet([latent_model_input, np.array(t, dtype=np.float32), text_embeddings])[self._unet_output]
+                
             if do_classifier_free_guidance:
                 noise_pred_uncond, noise_pred_text = noise_pred[0], noise_pred[1]
                 noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
 
             # compute the previous noisy sample x_t -> x_t-1
-            latents = scheduler.step(torch.from_numpy(noise_pred), t, torch.from_numpy(latents), **extra_step_kwargs)[
-                "prev_sample"].numpy()
+            latents = scheduler.step(torch.from_numpy(noise_pred), t, torch.from_numpy(latents), **extra_step_kwargs)["prev_sample"].numpy()
 
             if create_gif:
                 frames.append(latents)
@@ -580,15 +679,10 @@ class StableDiffusionEngine(DiffusionPipeline):
             callback(num_inference_steps, callback_userdata)
 
         # scale and decode the image latents with vae
-        
         #if self.height == 512 and self.width == 512:
         latents = 1 / 0.18215 * latents
-
         image = self.vae_decoder(latents)[self._vae_d_output]
-
         image = self.postprocess_image(image, meta)
-
-        
 
         return image
 
@@ -610,7 +704,7 @@ class StableDiffusionEngine(DiffusionPipeline):
 
         noise = np.random.randn(*latents_shape).astype(np.float32)
         if image is None:
-            print("Image is NONE")
+            #print("Image is NONE")
             # if we use LMSDiscreteScheduler, let's make sure latents are mulitplied by sigmas
             if isinstance(scheduler, LMSDiscreteScheduler):
 
@@ -626,7 +720,7 @@ class StableDiffusionEngine(DiffusionPipeline):
 
         moments = self.vae_encoder(input_image)[self._vae_e_output]
 
-        if "SD_2.1" in model:
+        if "sd_2.1" in model:
             latents = moments * 0.18215
 
         else:
@@ -638,8 +732,6 @@ class StableDiffusionEngine(DiffusionPipeline):
 
         latents = scheduler.add_noise(torch.from_numpy(latents), torch.from_numpy(noise), latent_timestep).numpy()
         return latents, meta
- 
-       
         
   
     def postprocess_image(self, image: np.ndarray, meta: Dict):
@@ -722,45 +814,36 @@ class LatentConsistencyEngine(DiffusionPipeline):
 
         self.core = Core()
         self.core.set_property({'CACHE_DIR': os.path.join(model, 'cache')})  # adding caching to reduce init time
-        # text features
+        try_enable_npu_turbo(device, self.core)
+               
 
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            text_future = executor.submit(self.load_model, model, "text_encoder", device[0])
+            unet_future = executor.submit(self.load_model, model, "unet", device[1])    
+            vae_de_future = executor.submit(self.load_model, model, "vae_decoder", device[2])
+                
         print("Text Device:", device[0])
-        if "NPU" in device[0]:    
-            blob_name = "text_encoder.blob"
-            with open(os.path.join(model, blob_name), "rb") as f:
-                self.text_encoder = self.core.import_model(f.read(), device[0])
-        else:
-            self.text_encoder = self.core.compile_model(os.path.join(model, "text_encoder.xml"), device[0])
-        
+        self.text_encoder = text_future.result()
         self._text_encoder_output = self.text_encoder.output(0)
 
-        # diffusion
-        print("unet Device:", device[1])
-        if "NPU" in device[1]:    
-            blob_name = "unet.blob"
-            with open(os.path.join(model, blob_name), "rb") as f:
-                self.unet = self.core.import_model(f.read(), device[1])
-        else:    
-                self.unet = self.core.compile_model(os.path.join(model, "unet.xml"), device[1])
-        
+        print("Unet Device:", device[1])
+        self.unet = unet_future.result()
         self._unet_output = self.unet.output(0)
         self.infer_request = self.unet.create_infer_request()
 
-        # decoder
-        print("Vae Device:", device[2])
-        if "NPU" in device[2]:    
-            blob_name = "vae_decoder.blob"
-            with open(os.path.join(model, blob_name), "rb") as f:
-                self.vae_decoder = self.core.import_model(f.read(), device[2])
-        else:    
-            self.vae_decoder = self.core.compile_model(os.path.join(model, "vae_decoder.xml"), device[2])
-        
+        print(f"VAE Device: {device[2]}")
+        self.vae_decoder = vae_de_future.result()
         self.infer_request_vae = self.vae_decoder.create_infer_request()
         self.safety_checker = None #pipe.safety_checker
         self.feature_extractor = None #pipe.feature_extractor
         self.vae_scale_factor = 2 ** 3
         self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
 
+    def load_model(self, model, model_name, device):
+        if "NPU" in device:
+            with open(os.path.join(model, f"{model_name}.blob"), "rb") as f:
+                return self.core.import_model(f.read(), device)
+        return self.core.compile_model(os.path.join(model, f"{model_name}.xml"), device)
 
     def _encode_prompt(
         self,
@@ -962,14 +1045,14 @@ class LatentConsistencyEngine(DiffusionPipeline):
 
         #print("After Step 6: ")
 
-        #vae_start = time.time()
+        vae_start = time.time()
 
         if not output_type == "latent":
             image = torch.from_numpy(self.vae_decoder(denoised / 0.18215, share_inputs=True, share_outputs=True)[0])
         else:
             image = denoised
 
-        #print("vae decoder done", time.time() - vae_start)
+        print("Decoder Ended: ", time.time() - vae_start)
         #post_start = time.time()
 
         #if has_nsfw_concept is None:
@@ -1043,7 +1126,7 @@ class StableDiffusionEngineReferenceOnly(DiffusionPipeline):
     def __call__(
             self,
             prompt,
-            init_image = None,
+            image = None,
             negative_prompt=None,
             scheduler=None,
             strength = 1.0,
@@ -1099,7 +1182,7 @@ class StableDiffusionEngineReferenceOnly(DiffusionPipeline):
         latent_timestep = timesteps[:1]
 
         ref_image = self.prepare_image(
-            image=init_image,
+            image=image,
             width=512,
             height=512,
         )
@@ -1242,7 +1325,7 @@ class StableDiffusionEngineReferenceOnly(DiffusionPipeline):
    
         noise = np.random.randn(*latents_shape).astype(np.float32)
         if image is None:
-            print("Image is NONE")
+            #print("Image is NONE")
             # if we use LMSDiscreteScheduler, let's make sure latents are mulitplied by sigmas
             if isinstance(scheduler, LMSDiscreteScheduler):
              
@@ -1369,3 +1452,42 @@ class StableDiffusionEngineReferenceOnly(DiffusionPipeline):
             image = np.concatenate([image] * 2)
 
         return image
+
+def print_npu_turbo_art():
+    random_number = random.randint(1, 3)
+    
+    if random_number == 1:
+        print("                                                                                                                      ")
+        print("      ___           ___         ___                                ___           ___                         ___      ")
+        print("     /\  \         /\  \       /\  \                              /\  \         /\  \         _____         /\  \     ")
+        print("     \:\  \       /::\  \      \:\  \                ___          \:\  \       /::\  \       /::\  \       /::\  \    ")
+        print("      \:\  \     /:/\:\__\      \:\  \              /\__\          \:\  \     /:/\:\__\     /:/\:\  \     /:/\:\  \   ")
+        print("  _____\:\  \   /:/ /:/  /  ___  \:\  \            /:/  /      ___  \:\  \   /:/ /:/  /    /:/ /::\__\   /:/  \:\  \  ")
+        print(" /::::::::\__\ /:/_/:/  /  /\  \  \:\__\          /:/__/      /\  \  \:\__\ /:/_/:/__/___ /:/_/:/\:|__| /:/__/ \:\__\ ")
+        print(" \:\~~\~~\/__/ \:\/:/  /   \:\  \ /:/  /         /::\  \      \:\  \ /:/  / \:\/:::::/  / \:\/:/ /:/  / \:\  \ /:/  / ")
+        print("  \:\  \        \::/__/     \:\  /:/  /         /:/\:\  \      \:\  /:/  /   \::/~~/~~~~   \::/_/:/  /   \:\  /:/  /  ")
+        print("   \:\  \        \:\  \      \:\/:/  /          \/__\:\  \      \:\/:/  /     \:\~~\        \:\/:/  /     \:\/:/  /   ")
+        print("    \:\__\        \:\__\      \::/  /                \:\__\      \::/  /       \:\__\        \::/  /       \::/  /    ")
+        print("     \/__/         \/__/       \/__/                  \/__/       \/__/         \/__/         \/__/         \/__/     ")
+        print("                                                                                                                      ")
+    elif random_number == 2:
+        print(" _   _   ____    _   _     _____   _   _   ____    ____     ___  ")
+        print("| \ | | |  _ \  | | | |   |_   _| | | | | |  _ \  | __ )   / _ \ ")
+        print("|  \| | | |_) | | | | |     | |   | | | | | |_) | |  _ \  | | | |")
+        print("| |\  | |  __/  | |_| |     | |   | |_| | |  _ <  | |_) | | |_| |")
+        print("|_| \_| |_|      \___/      |_|    \___/  |_| \_\ |____/   \___/ ")
+        print("                                                                 ")
+    else:
+        print("")
+        print("    )   (                                 (                )   ")
+        print(" ( /(   )\ )              *   )           )\ )     (    ( /(   ")
+        print(" )\()) (()/(      (     ` )  /(      (   (()/(   ( )\   )\())  ")
+        print("((_)\   /(_))     )\     ( )(_))     )\   /(_))  )((_) ((_)\   ")
+        print(" _((_) (_))    _ ((_)   (_(_())   _ ((_) (_))   ((_)_    ((_)  ")
+        print("| \| | | _ \  | | | |   |_   _|  | | | | | _ \   | _ )  / _ \  ")
+        print("| .` | |  _/  | |_| |     | |    | |_| | |   /   | _ \ | (_) | ")
+        print("|_|\_| |_|     \___/      |_|     \___/  |_|_\   |___/  \___/  ")
+        print("                                                               ")
+
+
+

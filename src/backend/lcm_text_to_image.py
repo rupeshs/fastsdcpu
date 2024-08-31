@@ -31,7 +31,7 @@ from constants import DEVICE
 from diffusers import LCMScheduler
 from image_ops import resize_pil_image
 from backend.openvino.flux_pipeline import get_flux_pipeline
-from backend.openvino.ov_hc_stablediffusion_pipeline import OvHcStableDiffusion
+from backend.openvino.ov_hc_stablediffusion_pipeline import OvHcLatentConsistency
 
 
 try:
@@ -111,7 +111,7 @@ class LCMTextToImage:
 
     def _load_ov_hetero_pipeline(self):
         print("Loading Heterogeneous Compute pipeline")
-        self.pipeline = OvHcStableDiffusion(self.ov_model_id)
+        self.pipeline = OvHcLatentConsistency(self.ov_model_id)
 
     def _generate_images_hetero_compute(
         self,
@@ -125,6 +125,7 @@ class LCMTextToImage:
                     neg_prompt=lcm_diffusion_setting.negative_prompt,
                     init_image=None,
                     strength=1.0,
+                    num_inference_steps=lcm_diffusion_setting.inference_steps
                 )
             ]
         else:
@@ -134,6 +135,7 @@ class LCMTextToImage:
                     neg_prompt=lcm_diffusion_setting.negative_prompt,
                     init_image=lcm_diffusion_setting.init_image,
                     strength=lcm_diffusion_setting.strength,
+                    num_inference_steps=lcm_diffusion_setting.inference_steps
                 )
             ]
 
@@ -349,7 +351,10 @@ class LCMTextToImage:
         if lcm_diffusion_setting.use_seed:
             cur_seed = lcm_diffusion_setting.seed
             if self.use_openvino:
-                np.random.seed(cur_seed)
+                if self._is_hetero_pipeline():
+                    torch.manual_seed(cur_seed)
+                else:
+                    np.random.seed(cur_seed)
             else:
                 torch.manual_seed(cur_seed)
 
