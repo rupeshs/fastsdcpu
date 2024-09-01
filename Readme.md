@@ -24,7 +24,7 @@ The following interfaces are available :
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
-- [AI PC Support - OpenVINO]()
+- [AI PC Support - OpenVINO](#ai-pc-support)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -275,9 +275,10 @@ You can directly use these models in FastSD CPU.
 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
-## Intel AI PC support - OpenVINO (CPU,GPU,NPU)
+<a id="ai-pc-support"></a>
+## Intel AI PC support - OpenVINO (CPU, GPU, NPU)
 
-Fast SD now supports AI PC inference support. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
+Fast SD now supports AI PC with Intel® Core™ Ultra Processors. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
 
 ### GPU
 
@@ -294,7 +295,7 @@ Please note that NPU support is experimental currently support [rupeshs/sd15-lcm
 
 This is heterogeneous computing since text encoder and UNET will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
 
-
+Please note that tiny auto encoder will not work in NPU mode.
 
 <a id="real-time-text-to-image"></a>
 

@@ -1224,8 +1224,6 @@ class LatentConsistencyEngineAdvanced(DiffusionPipeline):
             height // self.vae_scale_factor,
             width // self.vae_scale_factor,
         )
-        print(shape)
-        
         if image:
             #latents_shape = (1, 4, 512, 512 // 8)
             #input_image, meta = preprocess(image,512,512)
@@ -1239,7 +1237,7 @@ class LatentConsistencyEngineAdvanced(DiffusionPipeline):
             noise = torch.randn(shape, dtype=dtype)
             #latents = scheduler.add_noise(init_latents, noise, timestep)
             latents = scheduler.add_noise(torch.from_numpy(latents), noise, timestep)
-            print(latents.shape)
+           
         else:
             latents = torch.randn(shape, dtype=dtype)
         # scale the initial noise by the standard deviation required by the scheduler
@@ -1327,7 +1325,7 @@ class LatentConsistencyEngineAdvanced(DiffusionPipeline):
              timesteps = scheduler.timesteps
         #timesteps = scheduler.timesteps
         #latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)
-        print("timesteps: ", latent_timestep)
+        #print("timesteps: ", latent_timestep)
 
         #print("After Step 3: timesteps is ", timesteps)
 
