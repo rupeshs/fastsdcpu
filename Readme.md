@@ -290,12 +290,20 @@ For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as sh
 FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
 Please note that NPU support is experimental currently support [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
 
+Supports following modes on NPU :
+- Text to image
+- Image to image
+- Image variations
+
+To run model in NPU follow these steps (Please make sure that your AIPC's NPU driver is latest):
 - Start webui
 - Select LCM-OpenVINO mode
-- Select the models tab and select OpenVINO model sd15-lcm-square-openvino-int8
+- Select the models settings tab and select OpenVINO model `sd15-lcm-square-openvino-int8`
 - Now it will run on the NPU
 
-This is heterogeneous computing since text encoder and UNET will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
+
+
+This is heterogeneous computing since text encoder and Unet will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
 
 Please note that tiny auto encoder will not work in NPU mode.
 
