@@ -31,6 +31,8 @@ from constants import DEVICE
 from diffusers import LCMScheduler
 from image_ops import resize_pil_image
 from backend.openvino.flux_pipeline import get_flux_pipeline
+from backend.openvino.ov_hc_stablediffusion_pipeline import OvHcLatentConsistency
+
 
 try:
     # support for token merging; keeping it optional for now
@@ -38,6 +40,7 @@ try:
 except ImportError:
     print("tomesd library unavailable; disabling token merging support")
     tomesd = None
+
 
 class LCMTextToImage:
     def __init__(
@@ -61,6 +64,7 @@ class LCMTextToImage:
         self.torch_data_type = (
             torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
         )
+        self.ov_model_id = None
         print(f"Torch datatype : {self.torch_data_type}")
 
     def _pipeline_to_device(self):
@@ -102,6 +106,39 @@ class LCMTextToImage:
                 beta_end=0.01,
             )
 
+    def _is_hetero_pipeline(self) -> bool:
+        return "square" in self.ov_model_id.lower()
+
+    def _load_ov_hetero_pipeline(self):
+        print("Loading Heterogeneous Compute pipeline")
+        self.pipeline = OvHcLatentConsistency(self.ov_model_id)
+
+    def _generate_images_hetero_compute(
+        self,
+        lcm_diffusion_setting: LCMDiffusionSetting,
+    ):
+        print("Using OpenVINO ")
+        if lcm_diffusion_setting.diffusion_task == DiffusionTask.text_to_image.value:
+            return [
+                self.pipeline.generate(
+                    prompt=lcm_diffusion_setting.prompt,
+                    neg_prompt=lcm_diffusion_setting.negative_prompt,
+                    init_image=None,
+                    strength=1.0,
+                    num_inference_steps=lcm_diffusion_setting.inference_steps
+                )
+            ]
+        else:
+            return [
+                self.pipeline.generate(
+                    prompt=lcm_diffusion_setting.prompt,
+                    neg_prompt=lcm_diffusion_setting.negative_prompt,
+                    init_image=lcm_diffusion_setting.init_image,
+                    strength=lcm_diffusion_setting.strength,
+                    num_inference_steps=lcm_diffusion_setting.inference_steps
+                )
+            ]
+
     def init(
         self,
         device: str = "cpu",
@@ -115,7 +152,7 @@ class LCMTextToImage:
         use_lora = lcm_diffusion_setting.use_lcm_lora
         lcm_lora: LCMLora = lcm_diffusion_setting.lcm_lora
         token_merging = lcm_diffusion_setting.token_merging
-        ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
+        self.ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
 
         if lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value:
             lcm_diffusion_setting.init_image = resize_pil_image(
@@ -131,7 +168,7 @@ class LCMTextToImage:
             or self.previous_lcm_lora_base_id != lcm_lora.base_model_id
             or self.previous_lcm_lora_id != lcm_lora.lcm_lora_id
             or self.previous_use_lcm_lora != use_lora
-            or self.previous_ov_model_id != ov_model_id
+            or self.previous_ov_model_id != self.ov_model_id
             or self.previous_token_merging != token_merging
             or self.previous_safety_checker != lcm_diffusion_setting.use_safety_checker
             or self.previous_use_openvino != lcm_diffusion_setting.use_openvino
@@ -154,24 +191,33 @@ class LCMTextToImage:
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.text_to_image.value
                 ):
-                    print(f"***** Init Text to image (OpenVINO) - {ov_model_id} *****")
-                    if "flux" in ov_model_id.lower():
+                    print(
+                        f"***** Init Text to image (OpenVINO) - {self.ov_model_id} *****"
+                    )
+                    if "flux" in self.ov_model_id.lower():
                         print("Loading OpenVINO Flux pipeline")
-                        self.pipeline = get_flux_pipeline(ov_model_id)
+                        self.pipeline = get_flux_pipeline(self.ov_model_id)
+                    elif self._is_hetero_pipeline():
+                        self._load_ov_hetero_pipeline()
                     else:
                         self.pipeline = get_ov_text_to_image_pipeline(
-                            ov_model_id,
+                            self.ov_model_id,
                             use_local_model,
                         )
                 elif (
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.image_to_image.value
                 ):
-                    print(f"***** Image to image (OpenVINO) - {ov_model_id} *****")
-                    self.pipeline = get_ov_image_to_image_pipeline(
-                        ov_model_id,
-                        use_local_model,
-                    )
+                    if not self.pipeline and self._is_hetero_pipeline():
+                        self._load_ov_hetero_pipeline()
+                    else:
+                        print(
+                            f"***** Image to image (OpenVINO) - {self.ov_model_id} *****"
+                        )
+                        self.pipeline = get_ov_image_to_image_pipeline(
+                            self.ov_model_id,
+                            use_local_model,
+                        )
             else:
                 if self.pipeline:
                     del self.pipeline
@@ -231,22 +277,23 @@ class LCMTextToImage:
             if not self.use_openvino and not is_openvino_device():
                 self._pipeline_to_device()
 
-            if (
-                lcm_diffusion_setting.diffusion_task
-                == DiffusionTask.image_to_image.value
-                and lcm_diffusion_setting.use_openvino
-            ):
-                self.pipeline.scheduler = LCMScheduler.from_config(
-                    self.pipeline.scheduler.config,
-                )
-            else:
-                self._update_lcm_scheduler_params()
+            if not self._is_hetero_pipeline():
+                if (
+                    lcm_diffusion_setting.diffusion_task
+                    == DiffusionTask.image_to_image.value
+                    and lcm_diffusion_setting.use_openvino
+                ):
+                    self.pipeline.scheduler = LCMScheduler.from_config(
+                        self.pipeline.scheduler.config,
+                    )
+                else:
+                    self._update_lcm_scheduler_params()
 
             if use_lora:
                 self._add_freeu()
 
             self.previous_model_id = model_id
-            self.previous_ov_model_id = ov_model_id
+            self.previous_ov_model_id = self.ov_model_id
             self.previous_use_tae_sd = use_tiny_auto_encoder
             self.previous_lcm_lora_base_id = lcm_lora.base_model_id
             self.previous_lcm_lora_id = lcm_lora.lcm_lora_id
@@ -304,12 +351,15 @@ class LCMTextToImage:
         if lcm_diffusion_setting.use_seed:
             cur_seed = lcm_diffusion_setting.seed
             if self.use_openvino:
-                np.random.seed(cur_seed)
+                if self._is_hetero_pipeline():
+                    torch.manual_seed(cur_seed)
+                else:
+                    np.random.seed(cur_seed)
             else:
                 torch.manual_seed(cur_seed)
 
         is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
-        if is_openvino_pipe:
+        if is_openvino_pipe and not self._is_hetero_pipeline():
             print("Using OpenVINO")
             if reshape and not self.is_openvino_init:
                 print("Reshape and compile")
@@ -324,11 +374,14 @@ class LCMTextToImage:
             if self.is_openvino_init:
                 self.is_openvino_init = False
 
+        if is_openvino_pipe and self._is_hetero_pipeline():
+            return self._generate_images_hetero_compute(lcm_diffusion_setting)
+
         pipeline_extra_args = {}
         if lcm_diffusion_setting.clip_skip > 1:
             # We follow the convention that "CLIP Skip == 2" means "skip
             # the last layer", so "CLIP Skip == 1" means "no skipping"
-            pipeline_extra_args['clip_skip'] = lcm_diffusion_setting.clip_skip - 1
+            pipeline_extra_args["clip_skip"] = lcm_diffusion_setting.clip_skip - 1
 
         if not lcm_diffusion_setting.use_safety_checker:
             self.pipeline.safety_checker = None
