@@ -282,7 +282,9 @@ Fast SD now supports AI PC with Intel® Core™ Ultra Processors. [To learn more
 
 ### GPU
 
-For GPU mode `set device=GPU` and run webui.
+For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as shown below.
+
+![FastSD AIPC Arc GPU benchmark](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/ARCGPU.png)
 
 ### NPU
 FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
