@@ -7,7 +7,7 @@ from huggingface_hub import snapshot_download
 from PIL import Image
 from backend.openvino.stable_diffusion_engine import (
     StableDiffusionEngineAdvanced,
-    LatentConsistencyEngine
+    LatentConsistencyEngineAdvanced
 )
 
 
@@ -53,7 +53,7 @@ class OvHcLatentConsistency:
     """
     OpenVINO Heterogeneous compute Latent consistency models
     For the current Intel Cor Ultra, the Text Encoder and Unet can run on NPU
-
+    Supports following  - Text to image , Image to image and image variations
     """
 
     def __init__(
@@ -68,7 +68,7 @@ class OvHcLatentConsistency:
                 beta_start=0.001,
                 beta_end=0.01,
             )
-        self.ov_sd_pipleline = LatentConsistencyEngine(
+        self.ov_sd_pipleline = LatentConsistencyEngineAdvanced(
             model=model_dir,
             device=device,
         )
@@ -79,10 +79,12 @@ class OvHcLatentConsistency:
         neg_prompt: str,
         init_image: Image = None,
          num_inference_steps=4,
-        strength: float = 1.0,
+        strength: float = 0.5,
     ):
         image = self.ov_sd_pipleline(
             prompt=prompt,
+            init_image = init_image,
+            strength = strength,
             num_inference_steps=num_inference_steps,
             scheduler=self.scheduler,
             seed=None,

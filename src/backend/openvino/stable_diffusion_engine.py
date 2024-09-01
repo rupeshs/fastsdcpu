@@ -1068,6 +1068,334 @@ class LatentConsistencyEngine(DiffusionPipeline):
 
         return image[0]
 
+class LatentConsistencyEngineAdvanced(DiffusionPipeline):
+    def __init__(
+        self,
+            model="SimianLuo/LCM_Dreamshaper_v7",
+            tokenizer="openai/clip-vit-large-patch14",
+            device=["CPU", "CPU", "CPU"],
+    ):
+        super().__init__()
+        try:
+            self.tokenizer = CLIPTokenizer.from_pretrained(model, local_files_only=True)
+        except:
+            self.tokenizer = CLIPTokenizer.from_pretrained(tokenizer)
+            self.tokenizer.save_pretrained(model)
+
+        self.core = Core()
+        self.core.set_property({'CACHE_DIR': os.path.join(model, 'cache')})  # adding caching to reduce init time
+        #try_enable_npu_turbo(device, self.core)
+               
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+            text_future = executor.submit(self.load_model, model, "text_encoder", device[0])
+            unet_future = executor.submit(self.load_model, model, "unet", device[1])    
+            vae_de_future = executor.submit(self.load_model, model, "vae_decoder", device[2])
+            vae_encoder_future = executor.submit(self.load_model, model, "vae_encoder", device[2])
+                
+       
+        print("Text Device:", device[0])
+        self.text_encoder = text_future.result()
+        self._text_encoder_output = self.text_encoder.output(0)
+
+        print("Unet Device:", device[1])
+        self.unet = unet_future.result()
+        self._unet_output = self.unet.output(0)
+        self.infer_request = self.unet.create_infer_request()
+
+        print(f"VAE Device: {device[2]}")
+        self.vae_decoder = vae_de_future.result()
+        self.vae_encoder = vae_encoder_future.result()
+        self._vae_e_output = self.vae_encoder.output(0) if self.vae_encoder else None
+
+        self.infer_request_vae = self.vae_decoder.create_infer_request()
+        self.safety_checker = None #pipe.safety_checker
+        self.feature_extractor = None #pipe.feature_extractor
+        self.vae_scale_factor = 2 ** 3
+        self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
+
+    def load_model(self, model, model_name, device):
+        if "NPU" in device:
+            with open(os.path.join(model, f"{model_name}.blob"), "rb") as f:
+                return self.core.import_model(f.read(), device)
+        return self.core.compile_model(os.path.join(model, f"{model_name}.xml"), device)
+    
+    def get_timesteps(self, num_inference_steps:int, strength:float, scheduler):
+        """
+        Helper function for getting scheduler timesteps for generation
+        In case of image-to-image generation, it updates number of steps according to strength
+        
+        Parameters:
+           num_inference_steps (int):
+              number of inference steps for generation
+           strength (float):
+               value between 0.0 and 1.0, that controls the amount of noise that is added to the input image. 
+               Values that approach 1.0 allow for lots of variations but will also produce images that are not semantically consistent with the input.
+        """
+        # get the original timestep using init_timestep
+   
+        init_timestep = min(int(num_inference_steps * strength), num_inference_steps)
+    
+        t_start = max(num_inference_steps - init_timestep, 0)
+        timesteps = scheduler.timesteps[t_start:]
+
+        return timesteps, num_inference_steps - t_start     
+
+    def _encode_prompt(
+        self,
+        prompt,
+        num_images_per_prompt,
+        prompt_embeds: None,
+    ):
+        r"""
+        Encodes the prompt into text encoder hidden states.
+        Args:
+            prompt (`str` or `List[str]`, *optional*):
+                prompt to be encoded
+            num_images_per_prompt (`int`):
+                number of images that should be generated per prompt
+            prompt_embeds (`torch.FloatTensor`, *optional*):
+                Pre-generated text embeddings. Can be used to easily tweak text inputs, *e.g.* prompt weighting. If not
+                provided, text embeddings will be generated from `prompt` input argument.
+        """
+
+        if prompt_embeds is None:
+
+            text_inputs = self.tokenizer(
+                prompt,
+                padding="max_length",
+                max_length=self.tokenizer.model_max_length,
+                truncation=True,
+                return_tensors="pt",
+            )
+            text_input_ids = text_inputs.input_ids
+            untruncated_ids = self.tokenizer(
+                prompt, padding="longest", return_tensors="pt"
+            ).input_ids
+
+            if untruncated_ids.shape[-1] >= text_input_ids.shape[
+                -1
+            ] and not torch.equal(text_input_ids, untruncated_ids):
+                removed_text = self.tokenizer.batch_decode(
+                    untruncated_ids[:, self.tokenizer.model_max_length - 1 : -1]
+                )
+                logger.warning(
+                    "The following part of your input was truncated because CLIP can only handle sequences up to"
+                    f" {self.tokenizer.model_max_length} tokens: {removed_text}"
+                )
+
+            prompt_embeds = self.text_encoder(text_input_ids, share_inputs=True, share_outputs=True)
+            prompt_embeds = torch.from_numpy(prompt_embeds[0])
+
+        bs_embed, seq_len, _ = prompt_embeds.shape
+        # duplicate text embeddings for each generation per prompt
+        prompt_embeds = prompt_embeds.repeat(1, num_images_per_prompt, 1)
+        prompt_embeds = prompt_embeds.view(
+            bs_embed * num_images_per_prompt, seq_len, -1
+        )
+
+        # Don't need to get uncond prompt embedding because of LCM Guided Distillation
+        return prompt_embeds
+
+    def run_safety_checker(self, image, dtype):
+        if self.safety_checker is None:
+            has_nsfw_concept = None
+        else:
+            if torch.is_tensor(image):
+                feature_extractor_input = self.image_processor.postprocess(
+                    image, output_type="pil"
+                )
+            else:
+                feature_extractor_input = self.image_processor.numpy_to_pil(image)
+            safety_checker_input = self.feature_extractor(
+                feature_extractor_input, return_tensors="pt"
+            )
+            image, has_nsfw_concept = self.safety_checker(
+                images=image, clip_input=safety_checker_input.pixel_values.to(dtype)
+            )
+        return image, has_nsfw_concep
+
+    def prepare_latents(
+        self,image,timestep,batch_size, num_channels_latents, height, width, dtype, scheduler,latents=None,
+    ):
+        shape = (
+            batch_size,
+            num_channels_latents,
+            height // self.vae_scale_factor,
+            width // self.vae_scale_factor,
+        )
+        print(shape)
+        
+        if image:
+            #latents_shape = (1, 4, 512, 512 // 8)
+            #input_image, meta = preprocess(image,512,512)
+            latents_shape = (1, 4, 512 // 8, 512 // 8)
+            noise = np.random.randn(*latents_shape).astype(np.float32)
+            input_image,meta = preprocess(image,512,512)
+            moments = self.vae_encoder(input_image)[self._vae_e_output]
+            mean, logvar = np.split(moments, 2, axis=1)
+            std = np.exp(logvar * 0.5)
+            latents = (mean + std * np.random.randn(*mean.shape)) * 0.18215
+            noise = torch.randn(shape, dtype=dtype)
+            #latents = scheduler.add_noise(init_latents, noise, timestep)
+            latents = scheduler.add_noise(torch.from_numpy(latents), noise, timestep)
+            print(latents.shape)
+        else:
+            latents = torch.randn(shape, dtype=dtype)
+        # scale the initial noise by the standard deviation required by the scheduler
+        return latents
+
+    def get_w_embedding(self, w, embedding_dim=512, dtype=torch.float32):
+        """
+        see https://github.com/google-research/vdm/blob/dc27b98a554f65cdc654b800da5aa1846545d41b/model_vdm.py#L298
+        Args:
+        timesteps: torch.Tensor: generate embedding vectors at these timesteps
+        embedding_dim: int: dimension of the embeddings to generate
+        dtype: data type of the generated embeddings
+        Returns:
+        embedding vectors with shape `(len(timesteps), embedding_dim)`
+        """
+        assert len(w.shape) == 1
+        w = w * 1000.0
+
+        half_dim = embedding_dim // 2
+        emb = torch.log(torch.tensor(10000.0)) / (half_dim - 1)
+        emb = torch.exp(torch.arange(half_dim, dtype=dtype) * -emb)
+        emb = w.to(dtype)[:, None] * emb[None, :]
+        emb = torch.cat([torch.sin(emb), torch.cos(emb)], dim=1)
+        if embedding_dim % 2 == 1:  # zero pad
+            emb = torch.nn.functional.pad(emb, (0, 1))
+        assert emb.shape == (w.shape[0], embedding_dim)
+        return emb
+
+    @torch.no_grad()
+    def __call__(
+        self,
+        prompt: Union[str, List[str]] = None,
+        init_image: Optional[PIL.Image.Image] = None,
+        strength: Optional[float] = 0.8,
+        height: Optional[int] = 512,
+        width: Optional[int] = 512,
+        guidance_scale: float = 7.5,
+        scheduler = None,
+        num_images_per_prompt: Optional[int] = 1,
+        latents: Optional[torch.FloatTensor] = None,
+        num_inference_steps: int = 4,
+        lcm_origin_steps: int = 50,
+        prompt_embeds: Optional[torch.FloatTensor] = None,
+        output_type: Optional[str] = "pil",
+        return_dict: bool = True,
+        model: Optional[Dict[str, any]] = None,
+        seed: Optional[int] = 1234567,
+        cross_attention_kwargs: Optional[Dict[str, Any]] = None,
+        callback = None,
+        callback_userdata = None
+    ):
+
+        # 1. Define call parameters
+        if prompt is not None and isinstance(prompt, str):
+            batch_size = 1
+        elif prompt is not None and isinstance(prompt, list):
+            batch_size = len(prompt)
+        else:
+            batch_size = prompt_embeds.shape[0]
+
+        if seed is not None:
+            torch.manual_seed(seed)
+
+        #print("After Step 1: batch size is ", batch_size)
+        # do_classifier_free_guidance = guidance_scale > 0.0
+        # In LCM Implementation:  cfg_noise = noise_cond + cfg_scale * (noise_cond - noise_uncond) , (cfg_scale > 0.0 using CFG)
+
+        # 2. Encode input prompt
+        prompt_embeds = self._encode_prompt(
+            prompt,
+            num_images_per_prompt,
+            prompt_embeds=prompt_embeds,
+        )
+        #print("After Step 2: prompt embeds is ", prompt_embeds)
+        #print("After Step 2: scheduler is ", scheduler )
+        # 3. Prepare timesteps
+        #scheduler.set_timesteps(num_inference_steps, original_inference_steps=lcm_origin_steps)
+        latent_timestep = None
+        if init_image:
+            scheduler.set_timesteps(num_inference_steps, original_inference_steps=lcm_origin_steps)
+            timesteps, num_inference_steps = self.get_timesteps(num_inference_steps, strength, scheduler)
+            latent_timestep = timesteps[:1]
+        else:
+             scheduler.set_timesteps(num_inference_steps, original_inference_steps=lcm_origin_steps)
+             timesteps = scheduler.timesteps
+        #timesteps = scheduler.timesteps
+        #latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)
+        print("timesteps: ", latent_timestep)
+
+        #print("After Step 3: timesteps is ", timesteps)
+
+        # 4. Prepare latent variable
+        num_channels_latents = 4
+        latents = self.prepare_latents(
+                init_image,
+                latent_timestep,
+                batch_size * num_images_per_prompt,
+                num_channels_latents,
+                height,
+                width,
+                prompt_embeds.dtype,
+                scheduler,
+                latents,
+            )
+        
+        latents = latents * scheduler.init_noise_sigma
+
+        #print("After Step 4: ")
+        bs = batch_size * num_images_per_prompt
+
+        # 5. Get Guidance Scale Embedding
+        w = torch.tensor(guidance_scale).repeat(bs)
+        w_embedding = self.get_w_embedding(w, embedding_dim=256)
+        #print("After Step 5: ")
+        # 6. LCM MultiStep Sampling Loop:
+        with self.progress_bar(total=num_inference_steps) as progress_bar:
+            for i, t in enumerate(timesteps):
+                if callback:
+                    callback(i+1, callback_userdata)
+
+                ts = torch.full((bs,), t, dtype=torch.long)
+
+                # model prediction (v-prediction, eps, x)
+                model_pred = self.unet([latents, ts, prompt_embeds, w_embedding],share_inputs=True, share_outputs=True)[0]
+
+                # compute the previous noisy sample x_t -> x_t-1
+                latents, denoised = scheduler.step(
+                    torch.from_numpy(model_pred), t, latents, return_dict=False
+                )
+                progress_bar.update()
+
+        #print("After Step 6: ")
+
+        vae_start = time.time()
+
+        if not output_type == "latent":
+            image = torch.from_numpy(self.vae_decoder(denoised / 0.18215, share_inputs=True, share_outputs=True)[0])
+        else:
+            image = denoised
+
+        print("Decoder Ended: ", time.time() - vae_start)
+        #post_start = time.time()
+
+        #if has_nsfw_concept is None:
+        do_denormalize = [True] * image.shape[0]
+        #else:
+        #    do_denormalize = [not has_nsfw for has_nsfw in has_nsfw_concept]
+
+        #print ("After do_denormalize: image is ", image)
+
+        image = self.image_processor.postprocess(
+            image, output_type=output_type, do_denormalize=do_denormalize
+        )
+
+        return image[0]
+    
 class StableDiffusionEngineReferenceOnly(DiffusionPipeline):
     def __init__(
             self,

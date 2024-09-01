@@ -24,6 +24,7 @@ The following interfaces are available :
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
+- [AI PC Support - OpenVINO]()
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -120,6 +121,10 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add Aura SR (4x)/GigaGAN based upscaler support
 - Add Aura SR v2 upscaler support
 - Add FLUX.1 schnell OpenVINO int 4 support
+- Add CLIP skip support
+- Add token merging support
+- Add Intel AI PC support 
+- AI PC NPU(Power efficient inference using OpenVINO) supports, text to image ,image to image and image variations support
 
 <a id="fast-inference-benchmarks"></a>
 
@@ -269,6 +274,28 @@ You can directly use these models in FastSD CPU.
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
+
+## Intel AI PC support - OpenVINO (CPU,GPU,NPU)
+
+Fast SD now supports AI PC inference support. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
+
+### GPU
+
+For GPU mode `set device=GPU` and run webui.
+
+### NPU
+FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
+Please note that NPU support is experimental currently support [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
+
+- Start webui
+- Select LCM-OpenVINO mode
+- Select the models tab and select OpenVINO model sd15-lcm-square-openvino-int8
+- Now it will run on the NPU
+
+This is heterogeneous computing since text encoder and UNET will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
+
+
+
 <a id="real-time-text-to-image"></a>
 
 ## Real-time text to image (EXPERIMENTAL)
