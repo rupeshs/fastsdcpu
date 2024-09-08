@@ -49,7 +49,6 @@ def get_lcm_lora_pipeline(
             base_model_id,
             torch_dtype=torch_data_type,
             safety_checker=None,
-            load_safety_checker=False,
             local_files_only=use_local_model,
             use_safetensors=True,
         )
@@ -72,7 +71,7 @@ def get_lcm_lora_pipeline(
         lcm_lora_id,
     )
     # Always fuse LCM-LoRA
-    pipeline.fuse_lora()
+    # pipeline.fuse_lora()
 
     if "lcm" in lcm_lora_id.lower() or "hypersd" in lcm_lora_id.lower():
         print("LCM LoRA model detected so using recommended LCMScheduler")
