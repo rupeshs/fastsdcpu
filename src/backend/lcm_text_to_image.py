@@ -1,6 +1,6 @@
 import gc
 from math import ceil
-from typing import Any
+from typing import Any, List
 
 import numpy as np
 import torch
@@ -125,7 +125,7 @@ class LCMTextToImage:
                     neg_prompt=lcm_diffusion_setting.negative_prompt,
                     init_image=None,
                     strength=1.0,
-                    num_inference_steps=lcm_diffusion_setting.inference_steps
+                    num_inference_steps=lcm_diffusion_setting.inference_steps,
                 )
             ]
         else:
@@ -135,15 +135,35 @@ class LCMTextToImage:
                     neg_prompt=lcm_diffusion_setting.negative_prompt,
                     init_image=lcm_diffusion_setting.init_image,
                     strength=lcm_diffusion_setting.strength,
-                    num_inference_steps=lcm_diffusion_setting.inference_steps
+                    num_inference_steps=lcm_diffusion_setting.inference_steps,
                 )
             ]
+
+    def _is_valid_mode(
+        self,
+        modes: List,
+    ) -> bool:
+        return modes.count(True) == 1 or modes.count(False) == 3
+
+    def _validate_mode(
+        self,
+        modes: List,
+    ) -> None:
+        if not self._is_valid_mode(modes):
+            raise ValueError("Invalid mode,delete configs/settings.yaml and retry!")
 
     def init(
         self,
         device: str = "cpu",
         lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting(),
     ) -> None:
+        # Mode validation either LCM LoRA or OpenVINO or GGUF
+        modes = [
+            lcm_diffusion_setting.use_gguf_model,
+            lcm_diffusion_setting.use_openvino,
+            lcm_diffusion_setting.use_lcm_lora,
+        ]
+        self._validate_mode(modes)
         self.device = device
         self.use_openvino = lcm_diffusion_setting.use_openvino
         model_id = lcm_diffusion_setting.lcm_model_id

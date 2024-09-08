@@ -64,3 +64,4 @@ class LCMDiffusionSetting(BaseModel):
         "lora": FastStableDiffusionPaths.get_lora_models_path(),
     }
     rebuild_pipeline: bool = False
+    use_gguf_model: bool = False
