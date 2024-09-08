@@ -28,10 +28,13 @@ def get_web_ui() -> gr.Blocks:
         global app_settings
         app_settings.settings.lcm_diffusion_setting.use_lcm_lora = False
         app_settings.settings.lcm_diffusion_setting.use_openvino = False
+        app_settings.settings.lcm_diffusion_setting.use_gguf_model = False
         if mode == "LCM-LoRA":
             app_settings.settings.lcm_diffusion_setting.use_lcm_lora = True
         elif mode == "LCM-OpenVINO":
             app_settings.settings.lcm_diffusion_setting.use_openvino = True
+        elif mode == "GGUF":
+            app_settings.settings.lcm_diffusion_setting.use_gguf_model = True
 
     # Prevent saved LoRA and ControlNet settings from being used by
     # default; in WebUI mode, the user must explicitly enable those
@@ -50,9 +53,11 @@ def get_web_ui() -> gr.Blocks:
             current_mode = "LCM-OpenVINO"
         elif app_settings.settings.lcm_diffusion_setting.use_lcm_lora:
             current_mode = "LCM-LoRA"
+        elif app_settings.settings.lcm_diffusion_setting.use_gguf_model:
+            current_mode = "GGUF"
 
         mode = gr.Radio(
-            ["LCM", "LCM-LoRA", "LCM-OpenVINO"],
+            ["LCM", "LCM-LoRA", "LCM-OpenVINO", "GGUF"],
             label="Mode",
             info="Current working mode",
             value=current_mode,

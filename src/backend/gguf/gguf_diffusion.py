@@ -15,12 +15,12 @@ from ctypes import (
 )
 from dataclasses import dataclass
 from os import path
-from typing import List
+from typing import List, Any
 
 import numpy as np
 from PIL import Image
 
-from src.backend.gguf.sdcpp_types import (
+from backend.gguf.sdcpp_types import (
     RngType,
     SampleMethod,
     Schedule,
@@ -92,8 +92,8 @@ class GGUFDiffusion:
             self.libsdcpp = ctypes.CDLL(sdcpp_shared_lib_path)
         except OSError as e:
             print(f"Failed to load library {sdcpp_shared_lib_path}")
-            print(f"Error: {e}")
-            return None
+            raise ValueError(f"Error: {e}")
+
         self.model_config = config
 
         self.libsdcpp.new_sd_ctx.argtypes = [
@@ -198,7 +198,10 @@ class GGUFDiffusion:
         print(f"{text.decode('utf-8')}", end="")
 
     def _str_to_bytes(self, in_str: str, encoding: str = "utf-8") -> bytes:
-        return in_str.encode(encoding)
+        if in_str:
+            return in_str.encode(encoding)
+        else:
+            return b""
 
     def generate_text2mg(self, txt2img_cfg: Txt2ImgConfig) -> List[Image]:
         self.libsdcpp.txt2img.restype = POINTER(SDImage)
@@ -253,7 +256,6 @@ class GGUFDiffusion:
                 width = image.width
                 height = image.height
                 channels = image.channel
-
                 pixel_data = np.ctypeslib.as_array(
                     image.data, shape=(height, width, channels)
                 )
@@ -270,6 +272,9 @@ class GGUFDiffusion:
                 images.append(pil_image)
 
         return images
+
+    def _get_images_from_buffer(sd_image_buffer: Any) -> List[Image]:
+        pass
 
     def terminate(self):
         self.libsdcpp.free_sd_ctx.argtypes = [c_void_p]

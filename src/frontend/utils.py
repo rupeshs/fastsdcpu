@@ -31,8 +31,11 @@ def is_reshape_required(
 
 
 def enable_openvino_controls() -> bool:
-    return is_openvino_device() and platform.system().lower() != "darwin" and platform.processor().lower() != 'arm'
-
+    return (
+        is_openvino_device()
+        and platform.system().lower() != "darwin"
+        and platform.processor().lower() != "arm"
+    )
 
 
 def get_valid_model_id(
@@ -41,7 +44,9 @@ def get_valid_model_id(
     default_model: str = "",
 ) -> str:
     if len(models) == 0:
-        print("Error: model configuration file is empty,please add some models.")
+        print(
+            "Warning: model configuration file/directory is empty,please add some models."
+        )
         return ""
     if model_id == "":
         if default_model:

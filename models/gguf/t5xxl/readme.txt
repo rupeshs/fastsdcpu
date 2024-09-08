@@ -1,1 +1,1 @@
-Place T5XXL model files here
+Place T5-XXL model files here

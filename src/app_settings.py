@@ -1,15 +1,17 @@
-import yaml
-from os import path, makedirs
-from models.settings import Settings
-from paths import FastStableDiffusionPaths
-from utils import get_models_from_text_file
-from constants import (
-    OPENVINO_LCM_MODELS_FILE,
-    LCM_LORA_MODELS_FILE,
-    SD_MODELS_FILE,
-    LCM_MODELS_FILE,
-)
 from copy import deepcopy
+from os import makedirs, path
+
+import yaml
+from constants import (
+    LCM_LORA_MODELS_FILE,
+    LCM_MODELS_FILE,
+    OPENVINO_LCM_MODELS_FILE,
+    SD_MODELS_FILE,
+)
+from paths import FastStableDiffusionPaths, join_paths
+from utils import get_files_in_dir, get_models_from_text_file
+
+from models.settings import Settings
 
 
 class AppSettings:
@@ -26,6 +28,18 @@ class AppSettings:
         )
         self._lcm_models = get_models_from_text_file(
             FastStableDiffusionPaths().get_models_config_path(LCM_MODELS_FILE)
+        )
+        self._gguf_diffusion_models = get_files_in_dir(
+            join_paths(FastStableDiffusionPaths().get_gguf_models_path(), "diffusion")
+        )
+        self._gguf_clip_models = get_files_in_dir(
+            join_paths(FastStableDiffusionPaths().get_gguf_models_path(), "clip")
+        )
+        self._gguf_vae_models = get_files_in_dir(
+            join_paths(FastStableDiffusionPaths().get_gguf_models_path(), "vae")
+        )
+        self._gguf_t5xxl_models = get_files_in_dir(
+            join_paths(FastStableDiffusionPaths().get_gguf_models_path(), "t5xxl")
         )
         self._config = None
 
@@ -48,6 +62,22 @@ class AppSettings:
     @property
     def lcm_lora_models(self):
         return self._lcm_lora_models
+
+    @property
+    def gguf_diffusion_models(self):
+        return self._gguf_diffusion_models
+
+    @property
+    def gguf_clip_models(self):
+        return self._gguf_clip_models
+
+    @property
+    def gguf_vae_models(self):
+        return self._gguf_vae_models
+
+    @property
+    def gguf_t5xxl_models(self):
+        return self._gguf_t5xxl_models
 
     def load(self, skip_file=False):
         if skip_file:
