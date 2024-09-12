@@ -5,3 +5,4 @@ runwayml/stable-diffusion-v1-5
 segmind/SSD-1B
 stablediffusionapi/anything-v5
 prompthero/openjourney-v4
+aipicasso/commonart-beta

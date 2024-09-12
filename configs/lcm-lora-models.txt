@@ -2,3 +2,10 @@ latent-consistency/lcm-lora-sdv1-5
 latent-consistency/lcm-lora-sdxl
 latent-consistency/lcm-lora-ssd-1b
 rupeshs/hypersd-sd1-5-1-step-lora
+Fictiverse/Stable_Diffusion_PaperCut_Model
+stabilityai/stable-diffusion-xl-base-1.0
+runwayml/stable-diffusion-v1-5
+segmind/SSD-1B
+stablediffusionapi/anything-v5
+wavymulder/collage-diffusion
+
