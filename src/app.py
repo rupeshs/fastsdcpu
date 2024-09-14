@@ -251,6 +251,12 @@ parser.add_argument(
     help="Web server port",
     default=8000,
 )
+parser.add_argument(
+    "--root_path",
+    type=str,
+    help="Web server root path",
+    default=None,
+)
 
 args = parser.parse_args()
 
@@ -302,6 +308,7 @@ elif args.webui:
     print("Starting web UI mode")
     start_webui(
         args.share,
+        args.root_path,
     )
 elif args.realtime:
     from frontend.webui.realtime_ui import start_realtime_text_to_image

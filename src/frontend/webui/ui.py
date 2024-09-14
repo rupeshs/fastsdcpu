@@ -84,7 +84,8 @@ def get_web_ui() -> gr.Blocks:
 
 def start_webui(
     share: bool = False,
+    root_path: str = "/",
 ):
     webui = get_web_ui()
     webui.queue()
-    webui.launch(share=share)
+    webui.launch(share=share,root_path=root_path)

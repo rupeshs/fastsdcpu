@@ -4,6 +4,7 @@ FFusion/FFusionXL-BASE
 anokimchen/sd-turbo-openvino-8bit-GPT4vision-calibrated
 anokimchen/sd-turbo-openvino-8bit-no-calibration
 anokimchen/tiny-sd-openvino
+echarlaix/LCM_Dreamshaper_v7-openvino-8bit
 helenai/Lykon-DreamShaper-ov
 helenai/SimianLuo-LCM_Dreamshaper_v7-ov
 helenai/eimiss-EimisAnimeDiffusion_1.0v-ov

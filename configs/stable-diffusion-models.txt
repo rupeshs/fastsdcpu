@@ -1,8 +1,10 @@
-Lykon/dreamshaper-8
 Fictiverse/Stable_Diffusion_PaperCut_Model
-stabilityai/stable-diffusion-xl-base-1.0
+Lykon/dreamshaper-8
+aipicasso/commonart-beta
+digiplay/counterfeitV2525d_tweak
+gsdf/Counterfeit-V3.0
+prompthero/openjourney-v4
 runwayml/stable-diffusion-v1-5
 segmind/SSD-1B
+stabilityai/stable-diffusion-xl-base-1.0
 stablediffusionapi/anything-v5
-prompthero/openjourney-v4
-aipicasso/commonart-beta

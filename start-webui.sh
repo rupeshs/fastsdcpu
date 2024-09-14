@@ -23,4 +23,24 @@ echo "Python version : $python_version"
 BASEDIR=$(pwd)
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
-$PYTHON_COMMAND src/app.py -w
+
+## https://qiita.com/ko1nksm/items/7d37852b9fc581b1266e
+abort() { echo "$*" >&2; exit 1; }
+unknown() { abort "unrecognized option '$1'"; }
+required() { [ $# -gt 1 ] || abort "option '$1' requires an argument"; }
+
+OPTION_SHARE=''
+OPTION_ROOT_PATH=''
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    -s | --share ) OPTION_SHARE=' --share' ;;
+    -r | --root_path ) required "$@" && shift; OPTION_ROOT_PATH=' --root_path='$1 ;;
+    -h | --help ) abort "usage : $(basename $0) [--share] [--root_path=\"/(path)\"]" ;;
+    -?*) unknown "$@" ;;
+    *) break
+  esac
+  shift
+done
+
+$PYTHON_COMMAND src/app.py -w ${OPTION_SHARE} ${OPTION_ROOT_PATH}
