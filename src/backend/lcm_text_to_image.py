@@ -27,7 +27,7 @@ from backend.pipelines.lcm import (
     load_taesd,
 )
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
-from constants import DEVICE
+from constants import DEVICE, GGUF_THREADS
 from diffusers import LCMScheduler
 from image_ops import resize_pil_image
 from backend.openvino.flux_pipeline import get_flux_pipeline
@@ -39,6 +39,7 @@ from backend.gguf.gguf_diffusion import (
     SampleMethod,
 )
 from paths import get_app_path
+from pprint import pprint
 
 try:
     # support for token merging; keeping it optional for now
@@ -67,6 +68,8 @@ class LCMTextToImage:
         self.is_openvino_init = False
         self.previous_lora = None
         self.task_type = DiffusionTask.text_to_image
+        self.previous_use_gguf_model = False
+        self.previous_gguf_model = None
         self.torch_data_type = (
             torch.float32 if is_openvino_device() or DEVICE == "mps" else torch.float16
         )
@@ -164,6 +167,7 @@ class LCMTextToImage:
         lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting(),
     ) -> None:
         # Mode validation either LCM LoRA or OpenVINO or GGUF
+
         modes = [
             lcm_diffusion_setting.use_gguf_model,
             lcm_diffusion_setting.use_openvino,
@@ -247,11 +251,12 @@ class LCMTextToImage:
                             use_local_model,
                         )
             elif lcm_diffusion_setting.use_gguf_model:
-                print("***** Init Text to image (GGUF) *****")
-                if self.pipeline:
-                    self.pipeline.terminate()
-                    del self.pipeline
-                    self.pipeline = None
+                model = lcm_diffusion_setting.gguf_model.diffusion_path
+                print(f"***** Init Text to image (GGUF) - {model} *****")
+                # if self.pipeline:
+                #     self.pipeline.terminate()
+                #     del self.pipeline
+                #     self.pipeline = None
                 self._init_gguf_diffusion(lcm_diffusion_setting)
             else:
                 if self.pipeline:
@@ -340,7 +345,9 @@ class LCMTextToImage:
             self.previous_task_type = lcm_diffusion_setting.diffusion_task
             self.previous_lora = lcm_diffusion_setting.lora.model_copy(deep=True)
             self.previous_use_gguf_model = lcm_diffusion_setting.use_gguf_model
-            self.previous_gguf_model = lcm_diffusion_setting.gguf_model
+            self.previous_gguf_model = lcm_diffusion_setting.gguf_model.model_copy(
+                deep=True
+            )
             lcm_diffusion_setting.rebuild_pipeline = False
             if (
                 lcm_diffusion_setting.diffusion_task
@@ -516,7 +523,10 @@ class LCMTextToImage:
         config.clip_l_path = lcm_diffusion_setting.gguf_model.clip_path
         config.t5xxl_path = lcm_diffusion_setting.gguf_model.t5xxl_path
         config.vae_path = lcm_diffusion_setting.gguf_model.vae_path
-        config.n_threads = -1
+        config.n_threads = GGUF_THREADS
+        print(f"GGUF Threads : {GGUF_THREADS} ")
+        print("GGUF - Model config")
+        pprint(lcm_diffusion_setting.gguf_model.model_dump())
         self.pipeline = GGUFDiffusion(
             get_app_path(),  # Place DLL in fastsdcpu folder
             config,

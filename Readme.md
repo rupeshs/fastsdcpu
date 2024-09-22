@@ -25,6 +25,7 @@ The following interfaces are available :
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
 - [AI PC Support - OpenVINO](#ai-pc-support)
+- [GGUF support (Flux)](#gguf-support)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -123,7 +124,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add FLUX.1 schnell OpenVINO int 4 support
 - Add CLIP skip support
 - Add token merging support
-- Add Intel AI PC support 
+- Add Intel AI PC support
 - AI PC NPU(Power efficient inference using OpenVINO) supports, text to image ,image to image and image variations support
 
 <a id="fast-inference-benchmarks"></a>
@@ -276,6 +277,7 @@ You can directly use these models in FastSD CPU.
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
 <a id="ai-pc-support"></a>
+
 ## Intel AI PC support - OpenVINO (CPU, GPU, NPU)
 
 Fast SD now supports AI PC with Intel® Core™ Ultra Processors. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
@@ -287,15 +289,18 @@ For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as sh
 ![FastSD AI PC Arc GPU benchmark](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/ARCGPU.png)
 
 ### NPU
+
 FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
 Please note that NPU support is experimental currently support [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
 
 Supports following modes on NPU :
+
 - Text to image
 - Image to image
 - Image variations
 
 To run model in NPU follow these steps (Please make sure that your AI PC's NPU driver is the latest):
+
 - Start webui
 - Select LCM-OpenVINO mode
 - Select the models settings tab and select OpenVINO model `sd15-lcm-square-openvino-int8`
@@ -304,6 +309,21 @@ To run model in NPU follow these steps (Please make sure that your AI PC's NPU d
 This is heterogeneous computing since text encoder and Unet will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
 
 Please note that tiny auto encoder will not work in NPU mode.
+
+<a id="gguf-support"></a>
+
+## GGUF support - Flux
+
+GGUF Flux model supported via [stablediffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) shared library. Currently Flux Schenell model supported.
+To use GGUF model use web UI and select GGUF mode.
+Tested on Windows, it should work on Linux.
+
+### How to run GGUF Flux
+
+- Download diffusion model from [flux1-schnell-q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/flux1-schnell-q4_0.gguf) and place it inside `models/gguf/diffusion` directory
+- Download clip model from [clip_l_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/clip_l_q4_0.gguf) and place it inside `models/gguf/clip` directory
+- Download T5-XXL model from [t5xxl_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/t5xxl_q4_0.gguf) and place it inside `models/gguf/t5xxl` directory
+- Download VAE model from [ae.safetensors](https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/ae.safetensors) and place it inside `models/gguf/vae` directory
 
 <a id="real-time-text-to-image"></a>
 

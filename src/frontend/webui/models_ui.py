@@ -52,12 +52,10 @@ def change_gguf_t5xxl_model(model_path):
 
 
 def change_gguf_vae_model(model_path):
-    print(model_path)
     if model_path == "None":
         app_settings.settings.lcm_diffusion_setting.gguf_model.vae_path = ""
     else:
         app_settings.settings.lcm_diffusion_setting.gguf_model.vae_path = model_path
-    print(app_settings.settings.lcm_diffusion_setting.gguf_model.vae_path)
 
 
 def get_models_ui() -> None:
@@ -144,7 +142,7 @@ def get_models_ui() -> None:
                 label="GGUF VAE model",
                 info="GGUF VAE model ",
                 value=get_valid_model_id(
-                    app_settings.gguf_t5xxl_models,
+                    app_settings.gguf_vae_models,
                     app_settings.settings.lcm_diffusion_setting.gguf_model.vae_path,
                 ),
                 interactive=True,

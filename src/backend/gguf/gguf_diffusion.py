@@ -44,7 +44,7 @@ class ModelConfig:
     stacked_id_embed_dir: str = ""
     vae_decode_only: bool = True
     vae_tiling: bool = False
-    free_params_immediately: bool = True
+    free_params_immediately: bool = False
     n_threads: int = 4
     wtype: SdType = SdType.SD_TYPE_Q4_0
     rng_type: RngType = RngType.CUDA_RNG
@@ -143,6 +143,7 @@ class GGUFDiffusion:
             self.model_config.keep_control_net_cpu,
             self.model_config.keep_vae_on_cpu,
         )
+
         if logging_enabled:
             self._set_logcallback()
 
@@ -245,9 +246,21 @@ class GGUFDiffusion:
             txt2img_cfg.input_id_images_path,
         )
 
+        images = self._get_sd_images_from_buffer(
+            image_buffer,
+            txt2img_cfg.batch_count,
+        )
+
+        return images
+
+    def _get_sd_images_from_buffer(
+        self,
+        image_buffer: Any,
+        batch_count: int,
+    ) -> List[Image]:
         images = []
         if image_buffer:
-            for i in range(txt2img_cfg.batch_count):
+            for i in range(batch_count):
                 image = image_buffer[i]
                 print(
                     f"Generated image: {image.width}x{image.height} with {image.channel} channels"
@@ -270,15 +283,15 @@ class GGUFDiffusion:
                     raise ValueError(f"Unsupported number of channels: {channels}")
 
                 images.append(pil_image)
-
         return images
 
-    def _get_images_from_buffer(sd_image_buffer: Any) -> List[Image]:
-        pass
-
     def terminate(self):
-        self.libsdcpp.free_sd_ctx.argtypes = [c_void_p]
-        self.libsdcpp.free_sd_ctx.restype = None
-        self.libsdcpp.free_sd_ctx(self.sd_ctx)
-        del self.sd_ctx
-        self.sd_ctx = None
+        if self.libsdcpp:
+            if self.sd_ctx:
+                self.libsdcpp.free_sd_ctx.argtypes = [c_void_p]
+                self.libsdcpp.free_sd_ctx.restype = None
+                self.libsdcpp.free_sd_ctx(self.sd_ctx)
+                del self.sd_ctx
+                self.sd_ctx = None
+                del self.libsdcpp
+                self.libsdcpp = None

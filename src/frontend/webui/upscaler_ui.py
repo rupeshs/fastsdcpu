@@ -53,7 +53,7 @@ def get_upscaler_ui() -> None:
                     upscale_mode = gr.Radio(
                         ["EDSR", "SD", "AURA-SR"],
                         label="Upscale Mode (2x) | AURA-SR v2 (4x)",
-                        info="Select upscale method, SD Upscale is experimental",
+                        info="Select upscale method(For SD Scale GGUF mode is not supported)",
                         value="EDSR",
                     )
 
