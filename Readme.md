@@ -317,13 +317,18 @@ Please note that tiny auto encoder will not work in NPU mode.
 GGUF Flux model supported via [stablediffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) shared library. Currently Flux Schenell model supported.
 To use GGUF model use web UI and select GGUF mode.
 Tested on Windows, it should work on Linux.
+:exclamation: Main advantage here we reduced minimum system RAM required for Flux workflow to around __12 GB__.
 
 ### How to run GGUF Flux
 
-- Download diffusion model from [flux1-schnell-q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/flux1-schnell-q4_0.gguf) and place it inside `models/gguf/diffusion` directory
-- Download clip model from [clip_l_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/clip_l_q4_0.gguf) and place it inside `models/gguf/clip` directory
-- Download T5-XXL model from [t5xxl_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/t5xxl_q4_0.gguf) and place it inside `models/gguf/t5xxl` directory
-- Download VAE model from [ae.safetensors](https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/ae.safetensors) and place it inside `models/gguf/vae` directory
+- Download [stable-diffusion.dll](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/stable-diffusion.dll) and place it inside fastsdcpu folder.
+- Download __diffusion model__ from [flux1-schnell-q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/flux1-schnell-q4_0.gguf) and place it inside `models/gguf/diffusion` directory
+- Download __clip model__ from [clip_l_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/clip_l_q4_0.gguf) and place it inside `models/gguf/clip` directory
+- Download __T5-XXL model__ from [t5xxl_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/t5xxl_q4_0.gguf) and place it inside `models/gguf/t5xxl` directory
+- Download __VAE model__ from [ae.safetensors](https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/ae.safetensors) and place it inside `models/gguf/vae` directory
+- Start web UI and select GGUF mode
+- Select the models settings tab and select GGUF diffusion,clip_l,t5xxl and VAE models.
+- Enter your prompt and generate image
 
 <a id="real-time-text-to-image"></a>
 
