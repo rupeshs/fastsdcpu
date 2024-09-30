@@ -319,7 +319,7 @@ To use GGUF model use web UI and select GGUF mode.
 Tested on Windows, it should work on Linux.
 :exclamation: Main advantage here we reduced minimum system RAM required for Flux workflow to around __12 GB__.
 
-### How to run GGUF Flux
+### How to run Flux GGUF model
 
 - Download [stable-diffusion.dll](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/stable-diffusion.dll) and place it inside fastsdcpu folder.
 - Download __diffusion model__ from [flux1-schnell-q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/flux1-schnell-q4_0.gguf) and place it inside `models/gguf/diffusion` directory
@@ -329,6 +329,17 @@ Tested on Windows, it should work on Linux.
 - Start web UI and select GGUF mode
 - Select the models settings tab and select GGUF diffusion,clip_l,t5xxl and VAE models.
 - Enter your prompt and generate image
+
+### Build stablediffusion.cpp shared library for GGUF flux model support(Optional)
+
+To build the stablediffusion.cpp library follow these steps
+
+- `git clone https://github.com/leejet/stable-diffusion.cpp`
+- `cd stable-diffusion.cpp`
+- `git checkout 14206fd48832ab600d9db75f15acb5062ae2c296`
+- `cmake . -DSD_BUILD_SHARED_LIBS=ON`
+- `cmake --build . --config Release`
+- Copy the stablediffusion dll/so file to fastsdcpu folder
 
 <a id="real-time-text-to-image"></a>
 
