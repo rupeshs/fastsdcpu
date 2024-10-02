@@ -1,6 +1,6 @@
 from os import environ, cpu_count
 
-APP_VERSION = "v1.0.0 beta 50"
+APP_VERSION = "v1.0.0 beta 60"
 LCM_DEFAULT_MODEL = "stabilityai/sd-turbo"
 LCM_DEFAULT_MODEL_OPENVINO = "rupeshs/sd-turbo-openvino"
 APP_NAME = "FastSD CPU"
