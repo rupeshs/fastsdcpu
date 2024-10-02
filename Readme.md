@@ -323,7 +323,7 @@ Please note that tiny auto encoder will not work in NPU mode.
 
 To use GGUF model use web UI and select GGUF mode.
 
-Tested on Windows, it should work on Linux.
+Tested on Windows and Linux.
 
 :exclamation: Main advantage here we reduced minimum system RAM required for Flux workflow to around __12 GB__.
 
