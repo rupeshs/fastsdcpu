@@ -320,9 +320,13 @@ Please note that tiny auto encoder will not work in NPU mode.
 ## GGUF support - Flux
 
 [GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md) Flux model supported via [stablediffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) shared library. Currently Flux Schenell model supported.
+
 To use GGUF model use web UI and select GGUF mode.
+
 Tested on Windows, it should work on Linux.
+
 :exclamation: Main advantage here we reduced minimum system RAM required for Flux workflow to around __12 GB__.
+
 Supported mode - Text to image
 
 ### How to run Flux GGUF model
