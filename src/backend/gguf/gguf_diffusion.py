@@ -96,7 +96,7 @@ class GGUFDiffusion:
 
         if not config.clip_l_path or not path.exists(config.clip_l_path):
             raise ValueError(
-                "Clip model file not found,please check readme.md for GGUF model usage"
+                "CLIP model file not found,please check readme.md for GGUF model usage"
             )
 
         if not config.t5xxl_path or not path.exists(config.t5xxl_path):
