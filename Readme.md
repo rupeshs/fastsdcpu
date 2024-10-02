@@ -19,12 +19,14 @@ The following interfaces are available :
 ## Table of Contents
 
 - [Supported&nbsp;Platforms](#Supported&nbsp;platforms)
+- [Dependencies](#dependencies)
 - [Memory requirements](#memory-requirements)
 - [Features](#features)
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
 - [AI PC Support - OpenVINO](#ai-pc-support)
+- [GGUF support (Flux)](#gguf-support)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -45,6 +47,10 @@ FastSD CPU works on the following platforms:
 - Mac
 - Android + Termux
 - Raspberry PI 4
+
+## Dependencies
+
+- Python 3.10 or Python 3.11 (Please ensure that you have a working Python 3.10 or Python 3.11 installation available on the system)
 
 ## Memory requirements
 
@@ -123,7 +129,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add FLUX.1 schnell OpenVINO int 4 support
 - Add CLIP skip support
 - Add token merging support
-- Add Intel AI PC support 
+- Add Intel AI PC support
 - AI PC NPU(Power efficient inference using OpenVINO) supports, text to image ,image to image and image variations support
 
 <a id="fast-inference-benchmarks"></a>
@@ -276,6 +282,7 @@ You can directly use these models in FastSD CPU.
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
 <a id="ai-pc-support"></a>
+
 ## Intel AI PC support - OpenVINO (CPU, GPU, NPU)
 
 Fast SD now supports AI PC with Intel® Core™ Ultra Processors. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
@@ -287,15 +294,18 @@ For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as sh
 ![FastSD AI PC Arc GPU benchmark](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/ARCGPU.png)
 
 ### NPU
+
 FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
 Please note that NPU support is experimental currently support [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
 
 Supports following modes on NPU :
+
 - Text to image
 - Image to image
 - Image variations
 
 To run model in NPU follow these steps (Please make sure that your AI PC's NPU driver is the latest):
+
 - Start webui
 - Select LCM-OpenVINO mode
 - Select the models settings tab and select OpenVINO model `sd15-lcm-square-openvino-int8`
@@ -304,6 +314,44 @@ To run model in NPU follow these steps (Please make sure that your AI PC's NPU d
 This is heterogeneous computing since text encoder and Unet will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
 
 Please note that tiny auto encoder will not work in NPU mode.
+
+<a id="gguf-support"></a>
+
+## GGUF support - Flux
+
+[GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md) Flux model supported via [stablediffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) shared library. Currently Flux Schenell model supported.
+To use GGUF model use web UI and select GGUF mode.
+Tested on Windows, it should work on Linux.
+:exclamation: Main advantage here we reduced minimum system RAM required for Flux workflow to around __12 GB__.
+Supported mode - Text to image
+
+### How to run Flux GGUF model
+
+- Download stablediffusion.cpp prebuilt shared library and place it inside fastsdcpu folder
+  For Windows users, download [stable-diffusion.dll](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/stable-diffusion.dll)
+
+  For Linux users download [libstable-diffusion.so](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/libstable-diffusion.so)
+
+  You can also build the library manully by following the guide *"Build stablediffusion.cpp shared library for GGUF flux model support"*
+
+- Download __diffusion model__ from [flux1-schnell-q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/flux1-schnell-q4_0.gguf) and place it inside `models/gguf/diffusion` directory
+- Download __clip model__ from [clip_l_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/clip_l_q4_0.gguf) and place it inside `models/gguf/clip` directory
+- Download __T5-XXL model__ from [t5xxl_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/t5xxl_q4_0.gguf) and place it inside `models/gguf/t5xxl` directory
+- Download __VAE model__ from [ae.safetensors](https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/ae.safetensors) and place it inside `models/gguf/vae` directory
+- Start web UI and select GGUF mode
+- Select the models settings tab and select GGUF diffusion,clip_l,t5xxl and VAE models.
+- Enter your prompt and generate image
+
+### Build stablediffusion.cpp shared library for GGUF flux model support(Optional)
+
+To build the stablediffusion.cpp library follow these steps
+
+- `git clone https://github.com/leejet/stable-diffusion.cpp`
+- `cd stable-diffusion.cpp`
+- `git checkout 14206fd48832ab600d9db75f15acb5062ae2c296`
+- `cmake . -DSD_BUILD_SHARED_LIBS=ON`
+- `cmake --build . --config Release`
+- Copy the stablediffusion dll/so file to fastsdcpu folder
 
 <a id="real-time-text-to-image"></a>
 
@@ -595,7 +643,13 @@ The fastsdcpu project is available as open source under the terms of the [MIT li
 
 Users are granted the freedom to create images using this tool, but they are obligated to comply with local laws and utilize it responsibly. The developers will not assume any responsibility for potential misuse by users.
 
-## Contributors
+<a id="contributors"></a>
+
+## Thanks to all our contributors
+
+Original Author & Maintainer  - [Rupesh Sreeraman](https://github.com/rupeshs)
+
+We thank all contributors for their time and hard work!
 
 <a href="https://github.com/rupeshs/fastsdcpu/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rupeshs/fastsdcpu" />

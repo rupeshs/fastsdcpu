@@ -93,6 +93,12 @@ class FastStableDiffusionPaths:
         )
         return controlnet_models_path
 
+    @staticmethod
+    def get_gguf_models_path() -> str:
+        models_path = join_paths(get_app_path(), constants.MODELS_DIRECTORY)
+        guuf_models_path = join_paths(models_path, "gguf")
+        return guuf_models_path
+
 
 def get_base_folder_name(path: str) -> str:
     return os.path.basename(path)

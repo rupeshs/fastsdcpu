@@ -34,6 +34,14 @@ class ControlNetSetting(BaseModel):
     _control_image: Image = None  # Control image, PIL image
 
 
+class GGUFModel(BaseModel):
+    gguf_models: str = FastStableDiffusionPaths.get_gguf_models_path()
+    diffusion_path: Optional[str] = None
+    clip_path: Optional[str] = None
+    t5xxl_path: Optional[str] = None
+    vae_path: Optional[str] = None
+
+
 class LCMDiffusionSetting(BaseModel):
     lcm_model_id: str = LCM_DEFAULT_MODEL
     openvino_lcm_model_id: str = LCM_DEFAULT_MODEL_OPENVINO
@@ -64,3 +72,5 @@ class LCMDiffusionSetting(BaseModel):
         "lora": FastStableDiffusionPaths.get_lora_models_path(),
     }
     rebuild_pipeline: bool = False
+    use_gguf_model: bool = False
+    gguf_model: Optional[GGUFModel] = GGUFModel()

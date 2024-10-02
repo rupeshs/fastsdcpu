@@ -1,3 +1,4 @@
+from os import path, listdir
 import platform
 from typing import List
 
@@ -26,3 +27,12 @@ def get_image_file_extension(image_format: str) -> str:
         return ".jpg"
     elif image_format == "PNG":
         return ".png"
+
+
+def get_files_in_dir(root_dir: str) -> List:
+    models = []
+    models.append("None")
+    for file in listdir(root_dir):
+        if file.endswith((".gguf", ".safetensors")):
+            models.append(path.join(root_dir, file))
+    return models
