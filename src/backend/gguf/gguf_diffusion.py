@@ -94,6 +94,28 @@ class GGUFDiffusion:
             print(f"Failed to load library {sdcpp_shared_lib_path}")
             raise ValueError(f"Error: {e}")
 
+        if not config.clip_l_path or not path.exists(config.clip_l_path):
+            raise ValueError(
+                "Clip model file not found,please check readme.md for GGUF model usage"
+            )
+
+        if not config.t5xxl_path or not path.exists(config.t5xxl_path):
+            raise ValueError(
+                "T5XXL model file not found,please check readme.md for GGUF model usage"
+            )
+
+        if not config.diffusion_model_path or not path.exists(
+            config.diffusion_model_path
+        ):
+            raise ValueError(
+                "Diffusion model file not found,please check readme.md for GGUF model usage"
+            )
+
+        if not config.vae_path or not path.exists(config.vae_path):
+            raise ValueError(
+                "VAE model file not found,please check readme.md for GGUF model usage"
+            )
+
         self.model_config = config
 
         self.libsdcpp.new_sd_ctx.argtypes = [
@@ -204,7 +226,7 @@ class GGUFDiffusion:
         else:
             return b""
 
-    def generate_text2mg(self, txt2img_cfg: Txt2ImgConfig) -> List[Image]:
+    def generate_text2mg(self, txt2img_cfg: Txt2ImgConfig) -> List[Any]:
         self.libsdcpp.txt2img.restype = POINTER(SDImage)
         self.libsdcpp.txt2img.argtypes = [
             c_void_p,  # sd_ctx_t* sd_ctx (pointer to context object)
@@ -257,7 +279,7 @@ class GGUFDiffusion:
         self,
         image_buffer: Any,
         batch_count: int,
-    ) -> List[Image]:
+    ) -> List[Any]:
         images = []
         if image_buffer:
             for i in range(batch_count):
