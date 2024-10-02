@@ -202,10 +202,10 @@ class GGUFDiffusion:
         if system_name == "Windows":
             sdcpp_lib_path = path.join(root_path, lib_name)
         elif system_name == "Linux":
-            lib_name = "stable-diffusion.so"
+            lib_name = "libstable-diffusion.so"
             sdcpp_lib_path = path.join(root_path, lib_name)
         elif system_name == "Darwin":
-            lib_name = "stable-diffusion.dylib"
+            lib_name = "libstable-diffusion.dylib"
             sdcpp_lib_path = path.join(root_path, lib_name)
         else:
             print("Unknown platform.")

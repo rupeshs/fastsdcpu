@@ -19,6 +19,7 @@ The following interfaces are available :
 ## Table of Contents
 
 - [Supported&nbsp;Platforms](#Supported&nbsp;platforms)
+- [Dependencies](#dependencies)
 - [Memory requirements](#memory-requirements)
 - [Features](#features)
 - [Benchmarks](#fast-inference-benchmarks)
@@ -46,6 +47,10 @@ FastSD CPU works on the following platforms:
 - Mac
 - Android + Termux
 - Raspberry PI 4
+
+## Dependencies
+
+- Python 3.10 or Python 3.11 (Please ensure that you have a working Python 3.10 or Python 3.11 installation available on the system)
 
 ## Memory requirements
 
@@ -314,14 +319,21 @@ Please note that tiny auto encoder will not work in NPU mode.
 
 ## GGUF support - Flux
 
-GGUF Flux model supported via [stablediffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) shared library. Currently Flux Schenell model supported.
+[GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md) Flux model supported via [stablediffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) shared library. Currently Flux Schenell model supported.
 To use GGUF model use web UI and select GGUF mode.
 Tested on Windows, it should work on Linux.
 :exclamation: Main advantage here we reduced minimum system RAM required for Flux workflow to around __12 GB__.
+Supported mode - Text to image
 
 ### How to run Flux GGUF model
 
-- Download [stable-diffusion.dll](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/stable-diffusion.dll) and place it inside fastsdcpu folder.
+- Download stablediffusion.cpp prebuilt shared library and place it inside fastsdcpu folder
+  For Windows users, download [stable-diffusion.dll](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/stable-diffusion.dll)
+
+  For Linux users download [libstable-diffusion.so](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/libstable-diffusion.so)
+
+  You can also build the library manully by following the guide *"Build stablediffusion.cpp shared library for GGUF flux model support"*
+
 - Download __diffusion model__ from [flux1-schnell-q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/flux1-schnell-q4_0.gguf) and place it inside `models/gguf/diffusion` directory
 - Download __clip model__ from [clip_l_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/clip_l_q4_0.gguf) and place it inside `models/gguf/clip` directory
 - Download __T5-XXL model__ from [t5xxl_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/t5xxl_q4_0.gguf) and place it inside `models/gguf/t5xxl` directory
@@ -631,7 +643,13 @@ The fastsdcpu project is available as open source under the terms of the [MIT li
 
 Users are granted the freedom to create images using this tool, but they are obligated to comply with local laws and utilize it responsibly. The developers will not assume any responsibility for potential misuse by users.
 
-## Contributors
+<a id="contributors"></a>
+
+## Thanks to all our contributors
+
+Original Author & Maintainer  - [Rupesh Sreeraman](https://github.com/rupeshs)
+
+We thank all contributors for their time and hard work!
 
 <a href="https://github.com/rupeshs/fastsdcpu/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=rupeshs/fastsdcpu" />
