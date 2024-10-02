@@ -8,7 +8,7 @@ optimum-intel==1.18.2
 onnx==1.16.0
 onnxruntime==1.17.3
 pydantic==2.4.2
-typing-extensions
+typing-extensions==4.8.0
 pyyaml==6.0.1
 gradio==4.43.0
 peft==0.6.1
