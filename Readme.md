@@ -352,6 +352,9 @@ To build the stablediffusion.cpp library follow these steps
 
 - `git clone https://github.com/leejet/stable-diffusion.cpp`
 - `cd stable-diffusion.cpp`
+- `git pull origin master`
+- `git submodule init`
+- `git submodule update`
 - `git checkout 14206fd48832ab600d9db75f15acb5062ae2c296`
 - `cmake . -DSD_BUILD_SHARED_LIBS=ON`
 - `cmake --build . --config Release`
