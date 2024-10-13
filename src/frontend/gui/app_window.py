@@ -28,6 +28,7 @@ from constants import (
     APP_VERSION,
 )
 from frontend.gui.image_generator_worker import ImageGeneratorWorker
+from frontend.gui.img2img_widget import Img2ImgWidget
 from app_settings import AppSettings
 from paths import FastStableDiffusionPaths
 from frontend.utils import is_reshape_required
@@ -202,8 +203,10 @@ class MainWindow(QMainWindow):
         self.tab_settings = QWidget()
         self.tab_about = QWidget()
         self.tab_main.setLayout(vlayout)
+        self.img2img_tab = Img2ImgWidget(self.config, self)
 
         self.tab_widget.addTab(self.tab_main, "Text to Image")
+        self.tab_widget.addTab(self.img2img_tab, "Image to Image")
         self.tab_widget.addTab(self.tab_settings, "Settings")
         self.tab_widget.addTab(self.tab_about, "About")
 
@@ -645,3 +648,43 @@ class MainWindow(QMainWindow):
         self.results_path.setText(FastStableDiffusionPaths().get_results_path())
         self.use_tae_sd.setChecked(False)
         self.use_lcm_lora.setChecked(False)
+
+    def prepare_generation_settings(self, config):
+        """ Populate config settings with the values set by the user in the GUI """
+        config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
+        config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
+        config.settings.lcm_diffusion_setting.negative_prompt = (
+            self.neg_prompt.toPlainText()
+        )
+        config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = (
+            self.lcm_lora_id.currentText()
+        )
+        config.settings.lcm_diffusion_setting.lcm_lora.base_model_id = (
+            self.base_model_id.currentText()
+        )
+
+        if config.settings.lcm_diffusion_setting.use_openvino:
+            model_id = self.openvino_lcm_model_id.currentText()
+            config.settings.lcm_diffusion_setting.openvino_lcm_model_id = model_id
+        else:
+            model_id = self.lcm_model.currentText()
+            config.settings.lcm_diffusion_setting.lcm_model_id = model_id
+
+        config.reshape_required = False
+        config.model_id = model_id
+        if config.settings.lcm_diffusion_setting.use_openvino:
+            # Detect dimension change
+            config.reshape_required = is_reshape_required(
+                self.previous_width,
+                config.settings.lcm_diffusion_setting.image_width,
+                self.previous_height,
+                config.settings.lcm_diffusion_setting.image_height,
+                self.previous_model,
+                model_id,
+                self.previous_num_of_images,
+                config.settings.lcm_diffusion_setting.number_of_images,
+            )
+        config.settings.lcm_diffusion_setting.diffusion_task = (
+            DiffusionTask.text_to_image.value
+        )
+
