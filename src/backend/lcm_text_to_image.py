@@ -228,7 +228,10 @@ class LCMTextToImage:
                     )
                     if "flux" in self.ov_model_id.lower():
                         print("Loading OpenVINO Flux pipeline")
-                        self.pipeline = get_flux_pipeline(self.ov_model_id)
+                        self.pipeline = get_flux_pipeline(
+                            self.ov_model_id,
+                            lcm_diffusion_setting.use_tiny_auto_encoder,
+                        )
                     elif self._is_hetero_pipeline():
                         self._load_ov_hetero_pipeline()
                     else:
@@ -296,11 +299,12 @@ class LCMTextToImage:
 
             if use_tiny_auto_encoder:
                 if self.use_openvino and is_openvino_device():
-                    print("Using Tiny Auto Encoder (OpenVINO)")
-                    ov_load_taesd(
-                        self.pipeline,
-                        use_local_model,
-                    )
+                    if self.pipeline.__class__.__name__ != "OVFluxPipeline":
+                        print("Using Tiny Auto Encoder (OpenVINO)")
+                        ov_load_taesd(
+                            self.pipeline,
+                            use_local_model,
+                        )
                 else:
                     print("Using Tiny Auto Encoder")
                     load_taesd(
