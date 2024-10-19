@@ -1,6 +1,7 @@
 import gc
 from math import ceil
 from typing import Any, List
+import random
 
 import numpy as np
 import torch
@@ -262,12 +263,10 @@ class LCMTextToImage:
                 #     self.pipeline = None
                 self._init_gguf_diffusion(lcm_diffusion_setting)
             else:
-                if self.pipeline:
-                    del self.pipeline
+                if self.pipeline or self.img_to_img_pipeline:
                     self.pipeline = None
-                if self.img_to_img_pipeline:
-                    del self.img_to_img_pipeline
                     self.img_to_img_pipeline = None
+                    gc.collect()
 
                 controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
                 if use_lora:
@@ -397,15 +396,22 @@ class LCMTextToImage:
                 f"Strength: {lcm_diffusion_setting.strength},{img_to_img_inference_steps}"
             )
 
+        pipeline_extra_args = {}
+
         if lcm_diffusion_setting.use_seed:
             cur_seed = lcm_diffusion_setting.seed
-            if self.use_openvino:
-                if self._is_hetero_pipeline():
-                    torch.manual_seed(cur_seed)
-                else:
-                    np.random.seed(cur_seed)
-            else:
-                torch.manual_seed(cur_seed)
+            # for multiple images with a fixed seed, use sequential seeds
+            seeds = [(cur_seed + i) for i in range(lcm_diffusion_setting.number_of_images)]
+        else:
+            seeds = [random.randint(0,999999999) for i in range(lcm_diffusion_setting.number_of_images)]
+
+        if self.use_openvino and not self._is_hetero_pipeline():
+            # no support for generators; try at least to ensure reproducible results for single images
+            np.random.seed(seeds[0])
+
+        else:
+            pipeline_extra_args['generator'] = [
+                torch.Generator(device=self.device).manual_seed(s) for s in seeds]
 
         is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
         if is_openvino_pipe and not self._is_hetero_pipeline():
@@ -428,7 +434,6 @@ class LCMTextToImage:
         elif lcm_diffusion_setting.use_gguf_model:
             return self._generate_images_gguf(lcm_diffusion_setting)
 
-        pipeline_extra_args = {}
         if lcm_diffusion_setting.clip_skip > 1:
             # We follow the convention that "CLIP Skip == 2" means "skip
             # the last layer", so "CLIP Skip == 1" means "no skipping"
@@ -515,6 +520,10 @@ class LCMTextToImage:
                     **pipeline_extra_args,
                     **controlnet_args,
                 ).images
+
+        for (i, seed) in enumerate(seeds):
+            result_images[i].info['image_seed'] = seed
+
         return result_images
 
     def _init_gguf_diffusion(
