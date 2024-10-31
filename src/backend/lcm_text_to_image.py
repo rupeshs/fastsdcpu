@@ -121,7 +121,11 @@ class LCMTextToImage:
 
     def _load_ov_hetero_pipeline(self):
         print("Loading Heterogeneous Compute pipeline")
-        self.pipeline = OvHcLatentConsistency(self.ov_model_id)
+        if DEVICE.upper()=="NPU":
+            device = ["NPU", "NPU", "NPU"]
+            self.pipeline = OvHcLatentConsistency(self.ov_model_id,device)
+        else:
+            self.pipeline = OvHcLatentConsistency(self.ov_model_id)
 
     def _generate_images_hetero_compute(
         self,

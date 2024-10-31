@@ -1,4 +1,5 @@
 import gradio as gr
+from backend.device import get_device_name
 from constants import APP_VERSION
 from frontend.webui.text_to_image_ui import get_text_to_image_ui
 from frontend.webui.image_to_image_ui import get_image_to_image_ui
@@ -10,6 +11,7 @@ from frontend.webui.lora_models_ui import get_lora_models_ui
 from frontend.webui.controlnet_ui import get_controlnet_ui
 from paths import FastStableDiffusionPaths
 from state import get_settings
+
 
 app_settings = get_settings()
 
@@ -43,11 +45,16 @@ def get_web_ui() -> gr.Blocks:
     if app_settings.settings.lcm_diffusion_setting.controlnet:
         app_settings.settings.lcm_diffusion_setting.controlnet.enabled = False
 
+    
     with gr.Blocks(
         css=FastStableDiffusionPaths.get_css_path(),
         title="FastSD CPU",
     ) as fastsd_web_ui:
         gr.HTML("<center><H1>FastSD CPU</H1></center>")
+        gr.Markdown(
+            f"**Processor :  {get_device_name()}**",
+            elem_id="processor",
+        )
         current_mode = "LCM"
         if app_settings.settings.lcm_diffusion_setting.use_openvino:
             current_mode = "LCM-OpenVINO"
