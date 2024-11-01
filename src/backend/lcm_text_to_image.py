@@ -409,16 +409,12 @@ class LCMTextToImage:
         else:
             seeds = [random.randint(0,999999999) for i in range(lcm_diffusion_setting.number_of_images)]
 
-        if self.use_openvino and not self._is_hetero_pipeline():
+        if self.use_openvino:
             # no support for generators; try at least to ensure reproducible results for single images
             np.random.seed(seeds[0])
-
         else:
-            if  lcm_diffusion_setting.use_seed and self._is_hetero_pipeline():
-                torch.manual_seed(cur_seed)
-            else:
-                pipeline_extra_args['generator'] = [
-                torch.Generator(device=self.device).manual_seed(s) for s in seeds]
+            pipeline_extra_args['generator'] = [
+                    torch.Generator(device=self.device).manual_seed(s) for s in seeds]
 
         is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
         if is_openvino_pipe and not self._is_hetero_pipeline():
