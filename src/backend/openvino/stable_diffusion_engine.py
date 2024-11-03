@@ -1115,9 +1115,7 @@ class LatentConsistencyEngineAdvanced(DiffusionPipeline):
         self.image_processor = VaeImageProcessor(vae_scale_factor=self.vae_scale_factor)
 
     def load_model(self, model, model_name, device):
-        if "NPU" in device:
-            with open(os.path.join(model, f"{model_name}.blob"), "rb") as f:
-                return self.core.import_model(f.read(), device)
+        print(f"Compiling the {model_name} to {device} ...")
         return self.core.compile_model(os.path.join(model, f"{model_name}.xml"), device)
     
     def get_timesteps(self, num_inference_steps:int, strength:float, scheduler):
