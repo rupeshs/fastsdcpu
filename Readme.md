@@ -322,6 +322,8 @@ This is heterogeneous computing since text encoder and Unet will use NPU and VAE
 
 Please note that tiny auto encoder will not work in NPU mode.
 
+*Thanks to Intel for providing AI PC dev kit and Tiber cloud access to test FastSD, special thanks to [Pooja Baraskar](https://github.com/Pooja-B),[Dmitriy Pastushenkov](https://github.com/DimaPastushenkov).*
+
 <a id="gguf-support"></a>
 
 ## GGUF support - Flux
