@@ -412,6 +412,9 @@ class LCMTextToImage:
         if self.use_openvino:
             # no support for generators; try at least to ensure reproducible results for single images
             np.random.seed(seeds[0])
+            if self._is_hetero_pipeline():
+                torch.manual_seed(seeds[0])
+                lcm_diffusion_setting.seed=seeds[0]
         else:
             pipeline_extra_args['generator'] = [
                     torch.Generator(device=self.device).manual_seed(s) for s in seeds]
