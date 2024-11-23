@@ -44,11 +44,13 @@ def get_web_ui() -> gr.Blocks:
         app_settings.settings.lcm_diffusion_setting.lora.enabled = False
     if app_settings.settings.lcm_diffusion_setting.controlnet:
         app_settings.settings.lcm_diffusion_setting.controlnet.enabled = False
-
-    
+    theme = gr.themes.Default(
+        primary_hue="blue",
+    )
     with gr.Blocks(
-        css=FastStableDiffusionPaths.get_css_path(),
         title="FastSD CPU",
+        theme=theme,
+        css="footer {visibility: hidden}",
     ) as fastsd_web_ui:
         gr.HTML("<center><H1>FastSD CPU</H1></center>")
         gr.Markdown(
