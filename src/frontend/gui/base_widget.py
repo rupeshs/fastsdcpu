@@ -73,7 +73,6 @@ class BaseWidget(QWidget):
         ilayout.addWidget(self.prev_btn)
         ilayout.addWidget(self.img)
         ilayout.addWidget(self.next_btn)
-        #ilayout.setSizeConstraint(QLayout.SetMaximumSize)
 
         # Create the generate button layout
         hlayout = QHBoxLayout()

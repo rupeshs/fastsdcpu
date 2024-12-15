@@ -29,6 +29,7 @@ from constants import (
 )
 from frontend.gui.image_generator_worker import ImageGeneratorWorker
 from frontend.gui.img2img_widget import Img2ImgWidget
+from frontend.gui.image_variations_widget import ImageVariationsWidget
 from app_settings import AppSettings
 from paths import FastStableDiffusionPaths
 from frontend.utils import is_reshape_required
@@ -204,9 +205,12 @@ class MainWindow(QMainWindow):
         self.tab_about = QWidget()
         self.tab_main.setLayout(vlayout)
         self.img2img_tab = Img2ImgWidget(self.config, self)
+        self.variations_tab = ImageVariationsWidget(self.config, self)
 
+        # Add main window tabs here
         self.tab_widget.addTab(self.tab_main, "Text to Image")
         self.tab_widget.addTab(self.img2img_tab, "Image to Image")
+        self.tab_widget.addTab(self.variations_tab, "Image Variations")
         self.tab_widget.addTab(self.tab_settings, "Settings")
         self.tab_widget.addTab(self.tab_about, "About")
 
