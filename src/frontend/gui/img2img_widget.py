@@ -64,6 +64,7 @@ class Img2ImgWidget(BaseWidget):
             self.neg_prompt.toPlainText()
         )
         self.config.settings.lcm_diffusion_setting.init_image = self.image_from_pixmap(self.pixmap)
+        self.config.settings.lcm_diffusion_setting.strength = self.strength.value() / 10
 
         images = self.parent.context.generate_text_to_image(
             self.config.settings,

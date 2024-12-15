@@ -47,6 +47,7 @@ class ImageVariationsWidget(Img2ImgWidget):
         self.config.settings.lcm_diffusion_setting.prompt = ""
         self.config.settings.lcm_diffusion_setting.negative_prompt = ""
         self.config.settings.lcm_diffusion_setting.init_image = self.image_from_pixmap(self.pixmap)
+        self.config.settings.lcm_diffusion_setting.strength = self.strength.value() / 10
 
         images = generate_image_variations(
             self.config.settings.lcm_diffusion_setting.init_image,
