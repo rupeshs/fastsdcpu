@@ -54,6 +54,8 @@ def on_click_load_lora(lora_name, lora_weight):
     settings = app_settings.settings.lcm_diffusion_setting
     settings.lora.fuse = False
     settings.lora.enabled = False
+    print(f"Selected Lora Model :{lora_name}")
+    print(f"Lora weight :{lora_weight}")
     settings.lora.path = lora_models_map[lora_name]
     settings.lora.weight = lora_weight
     if not path.exists(settings.lora.path):

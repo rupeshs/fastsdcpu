@@ -634,14 +634,22 @@ class OVFluxPipeline(DiffusionPipeline):
         return FluxPipelineOutput(images=image)
 
 
-def init_pipeline(model_dir, models_dict: Dict[str, Any], device: str):
+def init_pipeline(
+    model_dir,
+    models_dict: Dict[str, Any],
+    device: str,
+    use_taef1: bool = False,
+):
     pipeline_args = {}
 
     print("OpenVINO FLUX Model compilation")
     core = ov.Core()
     for model_name, model_path in models_dict.items():
         pipeline_args[model_name] = core.compile_model(model_path, device)
-        print(f"✅ {model_name} - Done!")
+        if model_name == "vae" and use_taef1:
+            print(f"✅ VAE(TAEF1) - Done!")
+        else:
+            print(f"✅ {model_name} - Done!")
 
     transformer_path = models_dict["transformer"]
     transformer_config_path = transformer_path.parent / "config.json"

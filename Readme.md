@@ -131,6 +131,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add token merging support
 - Add Intel AI PC support
 - AI PC NPU(Power efficient inference using OpenVINO) supports, text to image ,image to image and image variations support
+- Add [TAEF1 (Tiny autoencoder for FLUX.1) openvino](https://huggingface.co/rupeshs/taef1-openvino) support
 
 <a id="fast-inference-benchmarks"></a>
 
@@ -234,7 +235,6 @@ FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It work
 - As of now only text to image generation mode is supported
 - Use OpenVINO mode
 - Use int4 model - *rupeshs/FLUX.1-schnell-openvino-int4*
-- Tiny decoder will not work with FLUX
 - 512x512 image generation needs around __30GB__ system RAM
 
 Tested on Intel Core i7-12700 to generate __512x512__ image(3 steps).
@@ -296,7 +296,13 @@ For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as sh
 ### NPU
 
 FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
-Please note that NPU support is experimental currently support [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
+
+FastSD tested with following Intel processor's NPUs:
+
+- Intel Core Ultra Series 1 (Meteor Lake)
+- Intel Core Ultra Series 2 (Lunar Lake)
+
+Currently FastSD support this model for NPU  [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
 
 Supports following modes on NPU :
 
@@ -308,12 +314,15 @@ To run model in NPU follow these steps (Please make sure that your AI PC's NPU d
 
 - Start webui
 - Select LCM-OpenVINO mode
-- Select the models settings tab and select OpenVINO model `sd15-lcm-square-openvino-int8`
+- Select the models settings tab and select OpenVINO model `rupeshs/sd15-lcm-square-openvino-int8`
+- Set device envionment variable `set DEVICE=NPU`
 - Now it will run on the NPU
 
 This is heterogeneous computing since text encoder and Unet will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
 
 Please note that tiny auto encoder will not work in NPU mode.
+
+*Thanks to Intel for providing AI PC dev kit and Tiber cloud access to test FastSD, special thanks to [Pooja Baraskar](https://github.com/Pooja-B),[Dmitriy Pastushenkov](https://github.com/DimaPastushenkov).*
 
 <a id="gguf-support"></a>
 
@@ -352,6 +361,9 @@ To build the stablediffusion.cpp library follow these steps
 
 - `git clone https://github.com/leejet/stable-diffusion.cpp`
 - `cd stable-diffusion.cpp`
+- `git pull origin master`
+- `git submodule init`
+- `git submodule update`
 - `git checkout 14206fd48832ab600d9db75f15acb5062ae2c296`
 - `cmake . -DSD_BUILD_SHARED_LIBS=ON`
 - `cmake --build . --config Release`
