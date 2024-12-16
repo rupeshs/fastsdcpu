@@ -50,7 +50,6 @@ class Img2ImgWidget(BaseWidget):
         self.layout().addWidget(self.strength_label)
         self.layout().addWidget(self.strength)
 
-
     def img2img_click(self):
         self.img.setText("Please wait...")
         worker = ImageGeneratorWorker(self.generate_image)
@@ -58,12 +57,16 @@ class Img2ImgWidget(BaseWidget):
 
     def generate_image(self):
         self.parent.prepare_generation_settings(self.config)
-        self.config.settings.lcm_diffusion_setting.diffusion_task = DiffusionTask.image_to_image.value
+        self.config.settings.lcm_diffusion_setting.diffusion_task = (
+            DiffusionTask.image_to_image.value
+        )
         self.config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
         self.config.settings.lcm_diffusion_setting.negative_prompt = (
             self.neg_prompt.toPlainText()
         )
-        self.config.settings.lcm_diffusion_setting.init_image = self.image_from_pixmap(self.pixmap)
+        self.config.settings.lcm_diffusion_setting.init_image = self.image_from_pixmap(
+            self.pixmap
+        )
         self.config.settings.lcm_diffusion_setting.strength = self.strength.value() / 10
 
         images = self.parent.context.generate_text_to_image(
@@ -74,8 +77,12 @@ class Img2ImgWidget(BaseWidget):
         self.prepare_images(images)
 
         # TODO Is it possible to move the next lines to a separate function?
-        self.parent.previous_width = self.config.settings.lcm_diffusion_setting.image_width
-        self.parent.previous_height = self.config.settings.lcm_diffusion_setting.image_height
+        self.parent.previous_width = (
+            self.config.settings.lcm_diffusion_setting.image_width
+        )
+        self.parent.previous_height = (
+            self.config.settings.lcm_diffusion_setting.image_height
+        )
         self.parent.previous_model = self.config.model_id
         self.parent.previous_num_of_images = (
             self.config.settings.lcm_diffusion_setting.number_of_images
@@ -95,4 +102,3 @@ if __name__ == "__main__":
     widget = Img2ImgWidget(None, None)
     widget.show()
     app.exec()
-

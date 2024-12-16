@@ -43,21 +43,29 @@ class ImageVariationsWidget(Img2ImgWidget):
 
     def generate_image(self):
         self.parent.prepare_generation_settings(self.config)
-        self.config.settings.lcm_diffusion_setting.diffusion_task = DiffusionTask.image_to_image.value
+        self.config.settings.lcm_diffusion_setting.diffusion_task = (
+            DiffusionTask.image_to_image.value
+        )
         self.config.settings.lcm_diffusion_setting.prompt = ""
         self.config.settings.lcm_diffusion_setting.negative_prompt = ""
-        self.config.settings.lcm_diffusion_setting.init_image = self.image_from_pixmap(self.pixmap)
+        self.config.settings.lcm_diffusion_setting.init_image = self.image_from_pixmap(
+            self.pixmap
+        )
         self.config.settings.lcm_diffusion_setting.strength = self.strength.value() / 10
 
         images = generate_image_variations(
             self.config.settings.lcm_diffusion_setting.init_image,
-            self.config.settings.lcm_diffusion_setting.strength
+            self.config.settings.lcm_diffusion_setting.strength,
         )
         self.prepare_images(images)
 
         # TODO Is it possible to move the next lines to a separate function?
-        self.parent.previous_width = self.config.settings.lcm_diffusion_setting.image_width
-        self.parent.previous_height = self.config.settings.lcm_diffusion_setting.image_height
+        self.parent.previous_width = (
+            self.config.settings.lcm_diffusion_setting.image_width
+        )
+        self.parent.previous_height = (
+            self.config.settings.lcm_diffusion_setting.image_height
+        )
         self.parent.previous_model = self.config.model_id
         self.parent.previous_num_of_images = (
             self.config.settings.lcm_diffusion_setting.number_of_images
@@ -72,4 +80,3 @@ if __name__ == "__main__":
     widget = ImageVariationsWidget(None, None)
     widget.show()
     app.exec()
-

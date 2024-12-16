@@ -45,7 +45,9 @@ class BaseWidget(QWidget):
         self.img = QLabel("<<Image>>")
         self.img.setAlignment(Qt.AlignCenter)
         self.img.resize(512, 512)
-        self.img.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
+        self.img.setSizePolicy(
+            QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding
+        )
         self.img.sizeHint = QSize(512, 512)
         self.next_btn = QToolButton()
         self.next_btn.setText(">")
@@ -67,7 +69,7 @@ class BaseWidget(QWidget):
         self.browse_results.setFixedWidth(30)
         self.browse_results.clicked.connect(self.on_open_results_folder)
         self.browse_results.setToolTip("Open output folder")
-        
+
         # Create the image navigation layout
         ilayout = QHBoxLayout()
         ilayout.addWidget(self.prev_btn)
@@ -88,19 +90,16 @@ class BaseWidget(QWidget):
         vlayout.addWidget(self.neg_prompt_label)
         vlayout.addLayout(hlayout)
         self.setLayout(vlayout)
-    
 
     def dragEnterEvent(self, event: QDragEnterEvent):
-        if (event.mimeData().hasFormat("text/plain")):
-            event.acceptProposedAction();
-
+        if event.mimeData().hasFormat("text/plain"):
+            event.acceptProposedAction()
 
     def dropEvent(self, event: QDropEvent):
-        event.acceptProposedAction();
+        event.acceptProposedAction()
         pixmap = QPixmap(unquote(urlparse(event.mimeData().text()).path))
         self.show_image(pixmap)
         self.update()
-
 
     def prepare_images(self, images):
         """Prepares the generated images to be displayed in the Qt widget"""
@@ -120,7 +119,6 @@ class BaseWidget(QWidget):
 
         self.show_image(self.gen_images[0])
 
-
     def show_image(self, pixmap):
         image_width = pixmap.width()
         image_height = pixmap.height()
@@ -138,7 +136,6 @@ class BaseWidget(QWidget):
             self.img.setPixmap(pixmap)
         self.pixmap = pixmap
 
-
     def on_show_next_image(self):
         if self.image_index != len(self.gen_images) - 1 and len(self.gen_images) > 0:
             self.prev_btn.setEnabled(True)
@@ -146,7 +143,6 @@ class BaseWidget(QWidget):
             self.show_image(self.gen_images[self.image_index])
             if self.image_index == len(self.gen_images) - 1:
                 self.next_btn.setEnabled(False)
-
 
     def on_show_previous_image(self):
         if self.image_index != 0:
@@ -156,12 +152,10 @@ class BaseWidget(QWidget):
             if self.image_index == 0:
                 self.prev_btn.setEnabled(False)
 
-
     def on_open_results_folder(self):
         QDesktopServices.openUrl(
             QUrl.fromLocalFile(self.config.settings.generated_images.path)
         )
-
 
     def image_from_pixmap(self, pixmap: QPixmap) -> Image:
         pixmap_buffer = QBuffer()
@@ -170,7 +164,6 @@ class BaseWidget(QWidget):
         image = Image.open(io.BytesIO(pixmap_buffer.data()))
         pixmap_buffer.close()
         return image
-
 
     def dummy_on_click(self):
         print("Generate button clicked!")
@@ -184,4 +177,3 @@ if __name__ == "__main__":
     widget = BaseWidget(None)
     widget.show()
     app.exec()
-

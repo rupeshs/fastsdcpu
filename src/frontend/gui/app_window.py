@@ -654,7 +654,7 @@ class MainWindow(QMainWindow):
         self.use_lcm_lora.setChecked(False)
 
     def prepare_generation_settings(self, config):
-        """ Populate config settings with the values set by the user in the GUI """
+        """Populate config settings with the values set by the user in the GUI"""
         config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
         config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
         config.settings.lcm_diffusion_setting.negative_prompt = (
@@ -691,4 +691,3 @@ class MainWindow(QMainWindow):
         config.settings.lcm_diffusion_setting.diffusion_task = (
             DiffusionTask.text_to_image.value
         )
-
