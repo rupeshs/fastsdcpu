@@ -18,7 +18,13 @@ from PyQt5.QtWidgets import (
     QApplication,
 )
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QPixmap, QDesktopServices, QDragEnterEvent, QDropEvent
+from PyQt5.QtGui import (
+    QPixmap,
+    QDesktopServices,
+    QDragEnterEvent,
+    QDropEvent,
+    QMouseEvent,
+)
 from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl, QBuffer
 
 import io
@@ -39,6 +45,11 @@ class Img2ImgWidget(BaseWidget):
         self.parent = parent
         self.generate.clicked.connect(self.img2img_click)
 
+        self.img.setTextFormat(Qt.RichText)
+        self.img.setText(
+            'Drop an init image<br>or <a href="#;">click to select an init image</a>'
+        )
+        self.img.linkActivated.connect(self.img2img_file_dialog)
         self.strength_label = QLabel("Denoising strength: 0.3")
         self.strength = QSlider(orientation=Qt.Orientation.Horizontal)
         self.strength.setMaximum(10)
@@ -52,8 +63,24 @@ class Img2ImgWidget(BaseWidget):
 
     def img2img_click(self):
         self.img.setText("Please wait...")
+        self.img.setEnabled(False)
         worker = ImageGeneratorWorker(self.generate_image)
         self.parent.threadpool.start(worker)
+
+    def img2img_file_dialog(self):
+        fileName = QFileDialog.getOpenFileName(
+            self, "Open Image", "results", "Image Files (*.png *.jpg *.bmp)"
+        )
+        if fileName[0] != "":
+            pixmap = QPixmap(fileName[0])
+            self.show_image(pixmap)
+            self.update()
+            self.img.setEnabled(True)
+
+    def mousePressEvent(self, event: QMouseEvent):
+        super()
+        if self.pixmap and self.img.isEnabled() and (event.button() == Qt.LeftButton):
+            self.img2img_file_dialog()
 
     def generate_image(self):
         self.parent.prepare_generation_settings(self.config)

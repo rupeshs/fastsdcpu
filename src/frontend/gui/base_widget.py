@@ -98,8 +98,10 @@ class BaseWidget(QWidget):
     def dropEvent(self, event: QDropEvent):
         event.acceptProposedAction()
         pixmap = QPixmap(unquote(urlparse(event.mimeData().text()).path))
-        self.show_image(pixmap)
-        self.update()
+        if not pixmap.isNull():
+            self.img.setEnabled(True)
+            self.show_image(pixmap)
+            self.update()
 
     def prepare_images(self, images):
         """Prepares the generated images to be displayed in the Qt widget"""
@@ -118,6 +120,7 @@ class BaseWidget(QWidget):
             self.prev_btn.setEnabled(False)
 
         self.show_image(self.gen_images[0])
+        self.img.setEnabled(True)
 
     def show_image(self, pixmap):
         image_width = pixmap.width()
