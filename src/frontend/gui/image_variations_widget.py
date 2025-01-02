@@ -49,7 +49,7 @@ class ImageVariationsWidget(Img2ImgWidget):
         self.config.settings.lcm_diffusion_setting.prompt = ""
         self.config.settings.lcm_diffusion_setting.negative_prompt = ""
         self.config.settings.lcm_diffusion_setting.init_image = self.image_from_pixmap(
-            self.pixmap
+            self.img.current_pixmap
         )
         self.config.settings.lcm_diffusion_setting.strength = self.strength.value() / 10
 
@@ -58,6 +58,7 @@ class ImageVariationsWidget(Img2ImgWidget):
             self.config.settings.lcm_diffusion_setting.strength,
         )
         self.prepare_images(images)
+        self.after_generation()
 
         # TODO Is it possible to move the next lines to a separate function?
         self.parent.previous_width = (
