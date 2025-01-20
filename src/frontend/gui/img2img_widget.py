@@ -25,7 +25,7 @@ from PyQt5.QtGui import (
     QDropEvent,
     QMouseEvent,
 )
-from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl, QBuffer
+from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl, QBuffer, QObject, QEvent
 
 import io
 from PIL import Image
@@ -45,24 +45,16 @@ class Img2ImgWidget(BaseWidget):
         self.parent = parent
         self.generate.clicked.connect(self.img2img_click)
 
-        current_label = self.img
-        current_label.deleteLater()
-        self.img = ImageLabel(
-            'Drop an init image<br>or <a href="#;">click to select an init image</a>'
-        )
-        self.img.setAcceptDrops(True)
-        self.img.changed.connect(self.on_changed)
-        self.img.linkActivated.connect(self.img.show_file_selection_dialog)
-        self.layout().replaceWidget(current_label, self.img)
-
         # Create init image selection widgets
         self.img_label = QLabel("Init image:")
         self.img_path = QLineEdit()
         self.img_path.setReadOnly(True)
+        self.img_path.setAcceptDrops(True)
+        self.img_path.installEventFilter(self)
         self.img_browse = QToolButton()
         self.img_browse.setText("...")
         self.img_browse.setToolTip("Browse for an init image")
-        self.img_browse.clicked.connect(self.img.show_file_selection_dialog)
+        self.img_browse.clicked.connect(self.browse_click)
         # Create the init image selection layout
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.img_label)
@@ -87,6 +79,31 @@ class Img2ImgWidget(BaseWidget):
         worker = ImageGeneratorWorker(self.generate_image)
         self.parent.threadpool.start(worker)
 
+    def browse_click(self):
+        filename = self.show_file_selection_dialog()
+        if filename[0] != "":
+            self.img_path.setText(filename[0])
+
+    def show_file_selection_dialog(self) -> str:
+        filename = QFileDialog.getOpenFileName(
+            self, "Open Image", "results", "Image Files (*.png *.jpg *.bmp)"
+        )
+        return filename
+
+    def eventFilter(self, source, event: QEvent):
+        """This is the Drag and Drop event filter for the init image QLineEdit"""
+        if event.type() == QEvent.DragEnter:
+            if event.mimeData().hasFormat("text/plain"):
+                event.acceptProposedAction()
+            return True
+        elif event.type() == QEvent.Drop:
+            event.acceptProposedAction()
+            path = unquote(urlparse(event.mimeData().text()).path)
+            self.img_path.setText(path)
+            return True
+
+        return False
+
     def before_generation(self):
         super().before_generation()
         self.img_browse.setEnabled(False)
@@ -106,8 +123,8 @@ class Img2ImgWidget(BaseWidget):
         self.config.settings.lcm_diffusion_setting.negative_prompt = (
             self.neg_prompt.toPlainText()
         )
-        self.config.settings.lcm_diffusion_setting.init_image = self.image_from_pixmap(
-            self.img.current_pixmap
+        self.config.settings.lcm_diffusion_setting.init_image = Image.open(
+            self.img_path.text()
         )
         self.config.settings.lcm_diffusion_setting.strength = self.strength.value() / 10
 
@@ -135,20 +152,6 @@ class Img2ImgWidget(BaseWidget):
         val = round(int(value) / 10, 1)
         self.strength_label.setText(f"Denoising strength: {val}")
         self.config.settings.lcm_diffusion_setting.strength = val
-
-    def image_from_pixmap(self, pixmap: QPixmap) -> Image:
-        pixmap_buffer = QBuffer()
-        pixmap_buffer.open(QBuffer.ReadWrite)
-        pixmap.save(pixmap_buffer, "PNG")
-        image = Image.open(io.BytesIO(pixmap_buffer.data()))
-        pixmap_buffer.close()
-        return image
-
-    def on_changed(self):
-        if self.img.current_filename == "":
-            self.img_path.setText("<<Generated image>>")
-        else:
-            self.img_path.setText(self.img.current_filename)
 
 
 # Test the widget

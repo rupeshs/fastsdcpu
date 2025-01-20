@@ -36,7 +36,7 @@ from urllib.parse import urlparse, unquote
 
 
 class ImageLabel(QLabel):
-    """Defines a simple QLabel widget that accepts mouse events for image selection"""
+    """Defines a simple QLabel widget"""
 
     changed = QtCore.pyqtSignal()
 
@@ -48,38 +48,12 @@ class ImageLabel(QLabel):
         self.sizeHint = QSize(512, 512)
         self.setAcceptDrops(False)
 
-    def mousePressEvent(self, event: QMouseEvent):
-        super().mousePressEvent(event)
-        if self.pixmap() and (event.button() == Qt.LeftButton):
-            self.show_file_selection_dialog()
-
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        if event.mimeData().hasFormat("text/plain"):
-            event.acceptProposedAction()
-
-    def dropEvent(self, event: QDropEvent):
-        event.acceptProposedAction()
-        path = unquote(urlparse(event.mimeData().text()).path)
-        self.show_image(path)
-
-    def show_image(self, filename: str, pixmap: QPixmap = None):
-        """Updates the widget pixamp
-
-        Either \c filename or \c pixmap can be \c None; if both are set, \c filename is used.
-        Additionaly, if \c filename is used, the instance variable \c filename is set accordingly
-        """
-        if filename != None:
-            self.current_pixmap = QPixmap(filename)
-            if self.current_pixmap.isNull():
-                return
-            self.current_filename = filename
-            self.changed.emit()
-        else:
-            if pixmap == None or pixmap.isNull():
-                return
-            self.current_pixmap = pixmap
-            self.current_filename = ""
-            self.changed.emit()
+    def show_image(self, pixmap: QPixmap = None):
+        """Updates the widget pixamp"""
+        if pixmap == None or pixmap.isNull():
+            return
+        self.current_pixmap = pixmap
+        self.changed.emit()
 
         # Resize the pixmap to the widget dimensions
         image_width = self.current_pixmap.width()
@@ -97,12 +71,6 @@ class ImageLabel(QLabel):
         else:
             self.setPixmap(self.current_pixmap)
 
-    def show_file_selection_dialog(self):
-        filename = QFileDialog.getOpenFileName(
-            self, "Open Image", "results", "Image Files (*.png *.jpg *.bmp)"
-        )
-        self.show_image(filename[0])
-
 
 class BaseWidget(QWidget):
     def __init__(self, config: AppSettings):
@@ -119,7 +87,6 @@ class BaseWidget(QWidget):
         self.next_btn = QToolButton()
         self.next_btn.setText(">")
         self.next_btn.clicked.connect(self.on_show_next_image)
-        # self.vspacer = QSpacerItem(20, 40, QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.prompt = QTextEdit()
         self.prompt.setPlaceholderText("A fantasy landscape")
         self.prompt.setAcceptRichText(False)
@@ -174,13 +141,13 @@ class BaseWidget(QWidget):
             self.next_btn.setEnabled(False)
             self.prev_btn.setEnabled(False)
 
-        self.img.show_image(None, pixmap=self.gen_images[0])
+        self.img.show_image(pixmap=self.gen_images[0])
 
     def on_show_next_image(self):
         if self.image_index != len(self.gen_images) - 1 and len(self.gen_images) > 0:
             self.prev_btn.setEnabled(True)
             self.image_index += 1
-            self.img.show_image(None, pixmap=self.gen_images[self.image_index])
+            self.img.show_image(pixmap=self.gen_images[self.image_index])
             if self.image_index == len(self.gen_images) - 1:
                 self.next_btn.setEnabled(False)
 
@@ -188,7 +155,7 @@ class BaseWidget(QWidget):
         if self.image_index != 0:
             self.next_btn.setEnabled(True)
             self.image_index -= 1
-            self.img.show_image(None, pixmap=self.gen_images[self.image_index])
+            self.img.show_image(pixmap=self.gen_images[self.image_index])
             if self.image_index == 0:
                 self.prev_btn.setEnabled(False)
 
