@@ -132,6 +132,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add Intel AI PC support
 - AI PC NPU(Power efficient inference using OpenVINO) supports, text to image ,image to image and image variations support
 - Add [TAEF1 (Tiny autoencoder for FLUX.1) openvino](https://huggingface.co/rupeshs/taef1-openvino) support
+- Add Image to Image and Image Variations Qt GUI support,thanks [monstruosoft](https://github.com/monstruosoft)
 
 <a id="fast-inference-benchmarks"></a>
 
