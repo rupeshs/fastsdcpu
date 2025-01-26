@@ -1,43 +1,48 @@
+from datetime import datetime
+
+from app_settings import AppSettings
+from backend.models.lcmdiffusion_setting import DiffusionTask
+from constants import (
+    APP_NAME,
+    APP_VERSION,
+    DEVICE,
+    LCM_DEFAULT_MODEL,
+    LCM_DEFAULT_MODEL_OPENVINO,
+)
+from context import Context
+from frontend.gui.image_generator_worker import ImageGeneratorWorker
+from frontend.gui.image_variations_widget import ImageVariationsWidget
+from frontend.gui.img2img_widget import Img2ImgWidget
+from frontend.utils import (
+    enable_openvino_controls,
+    get_valid_model_id,
+    is_reshape_required,
+)
+from paths import FastStableDiffusionPaths
+from PIL.ImageQt import ImageQt
+from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QSize, Qt, QThreadPool, QUrl
+from PyQt5.QtGui import QDesktopServices, QPixmap
 from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
+    QCheckBox,
+    QComboBox,
+    QFileDialog,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QMainWindow,
-    QSlider,
-    QTabWidget,
-    QSpacerItem,
+    QPushButton,
     QSizePolicy,
-    QComboBox,
-    QCheckBox,
+    QSlider,
+    QSpacerItem,
+    QTabWidget,
     QTextEdit,
     QToolButton,
-    QFileDialog,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QPixmap, QDesktopServices
-from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl
 
-from PIL.ImageQt import ImageQt
-from constants import (
-    LCM_DEFAULT_MODEL,
-    LCM_DEFAULT_MODEL_OPENVINO,
-    APP_NAME,
-    APP_VERSION,
-)
-from frontend.gui.image_generator_worker import ImageGeneratorWorker
-from frontend.gui.img2img_widget import Img2ImgWidget
-from frontend.gui.image_variations_widget import ImageVariationsWidget
-from app_settings import AppSettings
-from paths import FastStableDiffusionPaths
-from frontend.utils import is_reshape_required
-from context import Context
 from models.interface_types import InterfaceType
-from constants import DEVICE
-from frontend.utils import enable_openvino_controls, get_valid_model_id
-from backend.models.lcmdiffusion_setting import DiffusionTask
 
 # DPI scale fix
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -390,9 +395,10 @@ class MainWindow(QMainWindow):
     def create_about_tab(self):
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignCenter)
+        current_year = datetime.now().year
         self.label.setText(
             f"""<h1>FastSD CPU {APP_VERSION}</h1> 
-               <h3>(c)2023 - 2024 Rupesh Sreeraman</h3>
+               <h3>(c)2023 - {current_year} Rupesh Sreeraman</h3>
                 <h3>Faster stable diffusion on CPU</h3>
                  <h3>Based on Latent Consistency Models</h3>
                 <h3>GitHub : https://github.com/rupeshs/fastsdcpu/</h3>"""

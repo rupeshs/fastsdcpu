@@ -256,6 +256,7 @@ if args.version:
     exit()
 
 # parser.print_help()
+print("FastSD CPU - ", APP_VERSION)
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
 

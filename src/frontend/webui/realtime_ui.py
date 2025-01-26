@@ -1,14 +1,14 @@
-import gradio as gr
-from backend.lcm_text_to_image import LCMTextToImage
-from backend.models.lcmdiffusion_setting import LCMLora, LCMDiffusionSetting
-from constants import DEVICE, LCM_DEFAULT_MODEL_OPENVINO
-from time import perf_counter
-import numpy as np
-from cv2 import imencode
 import base64
-from backend.device import get_device_name
-from constants import APP_VERSION
-from backend.device import is_openvino_device
+from datetime import datetime
+from time import perf_counter
+
+import gradio as gr
+import numpy as np
+from backend.device import get_device_name, is_openvino_device
+from backend.lcm_text_to_image import LCMTextToImage
+from backend.models.lcmdiffusion_setting import LCMDiffusionSetting, LCMLora
+from constants import APP_VERSION, DEVICE, LCM_DEFAULT_MODEL_OPENVINO
+from cv2 import imencode
 
 lcm_text_to_image = LCMTextToImage()
 lcm_lora = LCMLora(
@@ -83,8 +83,9 @@ footer {
 
 def _get_footer_message() -> str:
     version = f"<center><p> {APP_VERSION} "
+    current_year = datetime.now().year
     footer_msg = version + (
-        '  © 2023 - 2024 <a href="https://github.com/rupeshs">'
+        f'  © 2023 - {current_year} <a href="https://github.com/rupeshs">'
         " Rupesh Sreeraman</a></p></center>"
     )
     return footer_msg

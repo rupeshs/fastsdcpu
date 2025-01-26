@@ -1,25 +1,26 @@
+from datetime import datetime
+
 import gradio as gr
 from backend.device import get_device_name
 from constants import APP_VERSION
-from frontend.webui.text_to_image_ui import get_text_to_image_ui
-from frontend.webui.image_to_image_ui import get_image_to_image_ui
-from frontend.webui.generation_settings_ui import get_generation_settings_ui
-from frontend.webui.models_ui import get_models_ui
-from frontend.webui.image_variations_ui import get_image_variations_ui
-from frontend.webui.upscaler_ui import get_upscaler_ui
-from frontend.webui.lora_models_ui import get_lora_models_ui
 from frontend.webui.controlnet_ui import get_controlnet_ui
-from paths import FastStableDiffusionPaths
+from frontend.webui.generation_settings_ui import get_generation_settings_ui
+from frontend.webui.image_to_image_ui import get_image_to_image_ui
+from frontend.webui.image_variations_ui import get_image_variations_ui
+from frontend.webui.lora_models_ui import get_lora_models_ui
+from frontend.webui.models_ui import get_models_ui
+from frontend.webui.text_to_image_ui import get_text_to_image_ui
+from frontend.webui.upscaler_ui import get_upscaler_ui
 from state import get_settings
-
 
 app_settings = get_settings()
 
 
 def _get_footer_message() -> str:
     version = f"<center><p> {APP_VERSION} "
+    current_year = datetime.now().year
     footer_msg = version + (
-        '  © 2023 - 2024 <a href="https://github.com/rupeshs">'
+        f'  © 2023 - {current_year} <a href="https://github.com/rupeshs">'
         " Rupesh Sreeraman</a></p></center>"
     )
     return footer_msg
