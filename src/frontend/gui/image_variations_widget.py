@@ -60,19 +60,6 @@ class ImageVariationsWidget(Img2ImgWidget):
         self.prepare_images(images)
         self.after_generation()
 
-        # TODO Is it possible to move the next lines to a separate function?
-        self.parent.previous_width = (
-            self.config.settings.lcm_diffusion_setting.image_width
-        )
-        self.parent.previous_height = (
-            self.config.settings.lcm_diffusion_setting.image_height
-        )
-        self.parent.previous_model = self.config.model_id
-        self.parent.previous_num_of_images = (
-            self.config.settings.lcm_diffusion_setting.number_of_images
-        )
-
-
 # Test the widget
 if __name__ == "__main__":
     import sys

@@ -40,10 +40,7 @@ from frontend.gui.image_generator_worker import ImageGeneratorWorker
 
 class Img2ImgWidget(BaseWidget):
     def __init__(self, config: AppSettings, parent):
-        super().__init__(config)
-        self.config = config
-        self.parent = parent
-        self.generate.clicked.connect(self.img2img_click)
+        super().__init__(config, parent)
 
         # Create init image selection widgets
         self.img_label = QLabel("Init image:")
@@ -72,12 +69,6 @@ class Img2ImgWidget(BaseWidget):
         self.layout().addLayout(hlayout)
         self.layout().addWidget(self.strength_label)
         self.layout().addWidget(self.strength)
-
-    def img2img_click(self):
-        self.img.setText("Please wait...")
-        self.before_generation()
-        worker = ImageGeneratorWorker(self.generate_image)
-        self.parent.threadpool.start(worker)
 
     def browse_click(self):
         filename = self.show_file_selection_dialog()
@@ -113,6 +104,7 @@ class Img2ImgWidget(BaseWidget):
         super().after_generation()
         self.img_browse.setEnabled(True)
         self.img_path.setEnabled(True)
+        
 
     def generate_image(self):
         self.parent.prepare_generation_settings(self.config)
@@ -135,18 +127,6 @@ class Img2ImgWidget(BaseWidget):
         )
         self.prepare_images(images)
         self.after_generation()
-
-        # TODO Is it possible to move the next lines to a separate function?
-        self.parent.previous_width = (
-            self.config.settings.lcm_diffusion_setting.image_width
-        )
-        self.parent.previous_height = (
-            self.config.settings.lcm_diffusion_setting.image_height
-        )
-        self.parent.previous_model = self.config.model_id
-        self.parent.previous_num_of_images = (
-            self.config.settings.lcm_diffusion_setting.number_of_images
-        )
 
     def update_strength_label(self, value):
         val = round(int(value) / 10, 1)
