@@ -60,6 +60,7 @@ class ImageVariationsWidget(Img2ImgWidget):
         self.prepare_images(images)
         self.after_generation()
 
+
 # Test the widget
 if __name__ == "__main__":
     import sys

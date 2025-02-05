@@ -51,6 +51,12 @@ QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps, True)
 
 
 class MainWindow(QMainWindow):
+    settings_changed = QtCore.pyqtSignal()
+    """ This signal is used for enabling/disabling the negative prompt field for 
+    modes that support it; in particular, negative prompt is supported with OpenVINO models 
+    and in LCM-LoRA mode but not in LCM mode
+    """
+
     def __init__(self, config: AppSettings):
         super().__init__()
         self.config = config
@@ -146,10 +152,6 @@ class MainWindow(QMainWindow):
                 LCM_DEFAULT_MODEL_OPENVINO,
             )
         )
-        #self.neg_prompt.setEnabled(
-        #    self.config.settings.lcm_diffusion_setting.use_lcm_lora
-        #    or self.config.settings.lcm_diffusion_setting.use_openvino
-        #)
         self.openvino_lcm_model_id.setEnabled(
             self.config.settings.lcm_diffusion_setting.use_openvino
         )
@@ -446,7 +448,6 @@ class MainWindow(QMainWindow):
             self.use_lcm_lora.setEnabled(False)
             self.lcm_lora_id.setEnabled(False)
             self.base_model_id.setEnabled(False)
-            #self.neg_prompt.setEnabled(True)
             self.openvino_lcm_model_id.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_openvino = True
         else:
@@ -454,9 +455,9 @@ class MainWindow(QMainWindow):
             self.use_lcm_lora.setEnabled(True)
             self.lcm_lora_id.setEnabled(True)
             self.base_model_id.setEnabled(True)
-            #self.neg_prompt.setEnabled(False)
             self.openvino_lcm_model_id.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_openvino = False
+        self.settings_changed.emit()
 
     def use_tae_sd_changed(self, state):
         if state == 2:
@@ -475,14 +476,13 @@ class MainWindow(QMainWindow):
             self.lcm_model.setEnabled(False)
             self.lcm_lora_id.setEnabled(True)
             self.base_model_id.setEnabled(True)
-            #self.neg_prompt.setEnabled(True)
             self.config.settings.lcm_diffusion_setting.use_lcm_lora = True
         else:
             self.lcm_model.setEnabled(True)
             self.lcm_lora_id.setEnabled(False)
             self.base_model_id.setEnabled(False)
-            #self.neg_prompt.setEnabled(False)
             self.config.settings.lcm_diffusion_setting.use_lcm_lora = False
+        self.settings_changed.emit()
 
     def update_clip_skip_label(self, value):
         self.clip_skip_value.setText(f"CLIP Skip: {value}")
@@ -525,7 +525,7 @@ class MainWindow(QMainWindow):
         seed_value = int(self.seed_value.text()) if use_seed else -1
         return seed_value
 
-    #def text_to_image(self):
+    # def text_to_image(self):
     #    self.img.setText("Please wait...")
     #    worker = ImageGeneratorWorker(self.generate_image)
     #    self.threadpool.start(worker)
@@ -554,10 +554,6 @@ class MainWindow(QMainWindow):
     def prepare_generation_settings(self, config):
         """Populate config settings with the values set by the user in the GUI"""
         config.settings.lcm_diffusion_setting.seed = self.get_seed_value()
-        #config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
-        #config.settings.lcm_diffusion_setting.negative_prompt = (
-        #    self.neg_prompt.toPlainText()
-        #)
         config.settings.lcm_diffusion_setting.lcm_lora.lcm_lora_id = (
             self.lcm_lora_id.currentText()
         )
@@ -591,17 +587,10 @@ class MainWindow(QMainWindow):
         )
 
     def store_dimension_settings(self):
-        """ These values are only needed for OpenVINO model reshape """
-        self.previous_width = (
-            self.config.settings.lcm_diffusion_setting.image_width
-        )
-        self.previous_height = (
-            self.config.settings.lcm_diffusion_setting.image_height
-        )
+        """These values are only needed for OpenVINO model reshape"""
+        self.previous_width = self.config.settings.lcm_diffusion_setting.image_width
+        self.previous_height = self.config.settings.lcm_diffusion_setting.image_height
         self.previous_model = self.config.model_id
         self.previous_num_of_images = (
             self.config.settings.lcm_diffusion_setting.number_of_images
         )
-
-
-

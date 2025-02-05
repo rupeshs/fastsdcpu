@@ -129,6 +129,8 @@ class BaseWidget(QWidget):
         vlayout.addLayout(hlayout)
         self.setLayout(vlayout)
 
+        self.parent.settings_changed.connect(self.on_settings_changed)
+
     def generate_image(self):
         self.parent.prepare_generation_settings(self.config)
         self.config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
@@ -200,6 +202,13 @@ class BaseWidget(QWidget):
         self.generate.setEnabled(True)
         self.browse_results.setEnabled(True)
         self.parent.store_dimension_settings()
+
+    def on_settings_changed(self):
+        self.neg_prompt.setEnabled(
+            self.config.settings.lcm_diffusion_setting.use_openvino
+            or self.config.settings.lcm_diffusion_setting.use_lcm_lora
+        )
+
 
 # Test the widget
 if __name__ == "__main__":

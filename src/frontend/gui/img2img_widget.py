@@ -104,7 +104,6 @@ class Img2ImgWidget(BaseWidget):
         super().after_generation()
         self.img_browse.setEnabled(True)
         self.img_path.setEnabled(True)
-        
 
     def generate_image(self):
         self.parent.prepare_generation_settings(self.config)
