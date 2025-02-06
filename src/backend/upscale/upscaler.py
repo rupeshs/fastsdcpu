@@ -17,9 +17,9 @@ def upscale_image(
     dst_image_path: str,
     scale_factor: int = 2,
     upscale_mode: UpscaleMode = UpscaleMode.normal.value,
+    strength: float = 0.1,
 ):
     if upscale_mode == UpscaleMode.normal.value:
-
         upscaled_img = upscale_edsr_2x(src_image_path)
         upscaled_img.save(dst_image_path)
         print(f"Upscaled image saved {dst_image_path}")
@@ -29,7 +29,7 @@ def upscale_image(
         print(f"Upscaled image saved {dst_image_path}")
     else:
         config.settings.lcm_diffusion_setting.strength = (
-            0.3 if config.settings.lcm_diffusion_setting.use_openvino else 0.1
+            0.3 if config.settings.lcm_diffusion_setting.use_openvino else strength
         )
         config.settings.lcm_diffusion_setting.diffusion_task = (
             DiffusionTask.image_to_image.value
