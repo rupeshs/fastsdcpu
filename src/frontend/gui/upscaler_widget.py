@@ -48,6 +48,7 @@ class UpscalerWidget(Img2ImgWidget):
         self.neg_prompt.hide()
         # self.neg_prompt.deleteLater()
         # Create upscaler widgets
+        self.generate.setText("Upscale")
         self.edsr_button = QRadioButton("EDSR", self)
         self.edsr_button.toggled.connect(self.on_mode_change)
         self.edsr_button.toggle()
@@ -55,10 +56,8 @@ class UpscalerWidget(Img2ImgWidget):
         self.sd_button.toggled.connect(self.on_mode_change)
         self.aura_button = QRadioButton("AURA-SR", self)
         self.aura_button.toggled.connect(self.on_mode_change)
-        self.aura_button.setEnabled(False)
-        self.aura_button.setToolTip("AURA-SR upscale not implemented")
 
-        self.neg_prompt_label.setText("Upscale mode (2x):")
+        self.neg_prompt_label.setText("Upscale mode (2x) | AURA-SR (4x):")
         # Create upscaler buttons layout
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.edsr_button)
@@ -106,12 +105,14 @@ class UpscalerWidget(Img2ImgWidget):
         self.config.settings.lcm_diffusion_setting.init_image = None
 
     def on_mode_change(self):
+        self.scale_factor = 2.0
         if self.edsr_button.isChecked():
             self.upscale_mode = UpscaleMode.normal.value
         elif self.sd_button.isChecked():
             self.upscale_mode = UpscaleMode.sd_upscale.value
         else:
             self.upscale_mode = UpscaleMode.aura_sr.value
+            self.scale_factor = 4.0
 
 
 # Test the widget
