@@ -47,8 +47,10 @@ class UpscalerWidget(Img2ImgWidget):
         self.prompt.hide()
         self.neg_prompt.hide()
         # self.neg_prompt.deleteLater()
-        # Create upscaler widgets
+        self.strength_label.hide()
+        self.strength.hide()
         self.generate.setText("Upscale")
+        # Create upscaler widgets
         self.edsr_button = QRadioButton("EDSR", self)
         self.edsr_button.toggled.connect(self.on_mode_change)
         self.edsr_button.toggle()
@@ -87,7 +89,7 @@ class UpscalerWidget(Img2ImgWidget):
             src_image_path=self.img_path.text(),
             dst_image_path=upscaled_filepath,
             upscale_mode=self.upscale_mode,
-            strength=self.strength.value() / 10,
+            strength=0.1,
         )
         self.prepare_images(images)
         self.after_generation()
