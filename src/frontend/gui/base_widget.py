@@ -30,9 +30,11 @@ from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl, QBuffer
 
 import io
 from PIL import Image
+from constants import DEVICE
 from PIL.ImageQt import ImageQt
 from app_settings import AppSettings
 from urllib.parse import urlparse, unquote
+from frontend.gui.image_generator_worker import ImageGeneratorWorker
 
 
 class ImageLabel(QLabel):
@@ -73,11 +75,13 @@ class ImageLabel(QLabel):
 
 
 class BaseWidget(QWidget):
-    def __init__(self, config: AppSettings):
+    def __init__(self, config: AppSettings, parent):
         super().__init__()
         self.config = config
         self.gen_images = []
         self.image_index = 0
+        self.config = config
+        self.parent = parent
 
         # Initialize GUI widgets
         self.prev_btn = QToolButton()
@@ -98,7 +102,7 @@ class BaseWidget(QWidget):
         self.neg_prompt.setFixedHeight(35)
         self.neg_prompt.setEnabled(False)
         self.generate = QPushButton("Generate")
-        self.generate.clicked.connect(self.dummy_on_click)
+        self.generate.clicked.connect(self.generate_click)
         self.browse_results = QPushButton("...")
         self.browse_results.setFixedWidth(30)
         self.browse_results.clicked.connect(self.on_open_results_folder)
@@ -124,6 +128,22 @@ class BaseWidget(QWidget):
         vlayout.addWidget(self.neg_prompt_label)
         vlayout.addLayout(hlayout)
         self.setLayout(vlayout)
+
+        self.parent.settings_changed.connect(self.on_settings_changed)
+
+    def generate_image(self):
+        self.parent.prepare_generation_settings(self.config)
+        self.config.settings.lcm_diffusion_setting.prompt = self.prompt.toPlainText()
+        self.config.settings.lcm_diffusion_setting.negative_prompt = (
+            self.neg_prompt.toPlainText()
+        )
+        images = self.parent.context.generate_text_to_image(
+            self.config.settings,
+            self.config.reshape_required,
+            DEVICE,
+        )
+        self.prepare_images(images)
+        self.after_generation()
 
     def prepare_images(self, images):
         """Prepares the generated images to be displayed in the Qt widget"""
@@ -164,8 +184,11 @@ class BaseWidget(QWidget):
             QUrl.fromLocalFile(self.config.settings.generated_images.path)
         )
 
-    def dummy_on_click(self):
-        print("Generate button clicked!")
+    def generate_click(self):
+        self.img.setText("Please wait...")
+        self.before_generation()
+        worker = ImageGeneratorWorker(self.generate_image)
+        self.parent.threadpool.start(worker)
 
     def before_generation(self):
         """Call this function before running a generation task"""
@@ -178,6 +201,13 @@ class BaseWidget(QWidget):
         self.img.setEnabled(True)
         self.generate.setEnabled(True)
         self.browse_results.setEnabled(True)
+        self.parent.store_dimension_settings()
+
+    def on_settings_changed(self):
+        self.neg_prompt.setEnabled(
+            self.config.settings.lcm_diffusion_setting.use_openvino
+            or self.config.settings.lcm_diffusion_setting.use_lcm_lora
+        )
 
 
 # Test the widget
