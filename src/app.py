@@ -231,6 +231,12 @@ parser.add_argument(
     help="Disable image saving",
 )
 parser.add_argument(
+    "--imagequality",
+    type=int,
+    help="Output image quality [0 to 100]",
+    default=90
+)
+parser.add_argument(
     "--lora",
     type=str,
     help="LoRA model full path e.g D:\lora_models\CuteCartoon15V-LiberteRedmodModel-Cartoon-CuteCartoonAF.safetensors",
@@ -280,6 +286,8 @@ if args.noimagesave:
     app_settings.settings.generated_images.save_image = False
 else:
     app_settings.settings.generated_images.save_image = True
+
+app_settings.settings.generated_images.save_image_quality = args.imagequality
 
 if not args.realtime:
     # To minimize realtime mode dependencies
