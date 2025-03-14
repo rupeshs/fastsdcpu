@@ -68,6 +68,7 @@ class Context:
                 images=images,
                 lcm_diffusion_setting=settings.lcm_diffusion_setting,
                 format=settings.generated_images.format,
+                jpeg_quality=settings.generated_images.save_image_quality,
             )
         self._latency = elapsed
         print(f"Latency : {elapsed:.2f} seconds")

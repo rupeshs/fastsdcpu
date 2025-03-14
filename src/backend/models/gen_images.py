@@ -14,3 +14,4 @@ class GeneratedImages(BaseModel):
     path: str = FastStableDiffusionPaths.get_results_path()
     format: str = ImageFormat.PNG.value.upper()
     save_image: bool = True
+    save_image_quality: int = 90
