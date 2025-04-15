@@ -458,6 +458,7 @@ else:
                 settings=config,
                 device=DEVICE,
             )
+            
             latencies = []
 
             print("Starting benchmark please wait...")

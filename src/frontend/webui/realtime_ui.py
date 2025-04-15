@@ -7,7 +7,7 @@ import numpy as np
 from backend.device import get_device_name, is_openvino_device
 from backend.lcm_text_to_image import LCMTextToImage
 from backend.models.lcmdiffusion_setting import LCMDiffusionSetting, LCMLora
-from constants import APP_VERSION, DEVICE, LCM_DEFAULT_MODEL_OPENVINO
+from constants import APP_VERSION, DEVICE
 from cv2 import imencode
 
 lcm_text_to_image = LCMTextToImage()

@@ -4,8 +4,7 @@ from models.interface_types import InterfaceType
 from state import get_settings, get_context
 from backend.upscale.upscaler import upscale_image
 from backend.models.upscale import UpscaleMode
-from paths import FastStableDiffusionPaths, join_paths
-from time import time
+from paths import FastStableDiffusionPaths
 
 app_settings = get_settings()
 

@@ -1,7 +1,6 @@
 from typing import Any
 import gradio as gr
 from backend.models.lcmdiffusion_setting import DiffusionTask
-from context import Context
 from models.interface_types import InterfaceType
 from frontend.utils import is_reshape_required
 from constants import DEVICE
@@ -22,7 +21,12 @@ def generate_image_variations(
     variation_strength,
 ) -> Any:
     context = get_context(InterfaceType.WEBUI)
-    global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
+    global \
+        previous_height, \
+        previous_width, \
+        previous_model_id, \
+        previous_num_of_images, \
+        app_settings
 
     app_settings.settings.lcm_diffusion_setting.init_image = init_image
     app_settings.settings.lcm_diffusion_setting.strength = variation_strength
@@ -57,6 +61,7 @@ def generate_image_variations(
             DEVICE,
         )
         images = future.result()
+        context.save_images(images, app_settings.settings)
 
     previous_width = image_width
     previous_height = image_height

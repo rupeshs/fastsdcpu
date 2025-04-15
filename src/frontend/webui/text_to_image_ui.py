@@ -6,7 +6,6 @@ from constants import DEVICE
 from state import get_settings, get_context
 from frontend.utils import is_reshape_required
 from concurrent.futures import ThreadPoolExecutor
-from pprint import pprint
 
 app_settings = get_settings()
 
@@ -21,7 +20,12 @@ def generate_text_to_image(
     neg_prompt,
 ) -> Any:
     context = get_context(InterfaceType.WEBUI)
-    global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
+    global \
+        previous_height, \
+        previous_width, \
+        previous_model_id, \
+        previous_num_of_images, \
+        app_settings
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
     app_settings.settings.lcm_diffusion_setting.negative_prompt = neg_prompt
     app_settings.settings.lcm_diffusion_setting.diffusion_task = (
@@ -52,6 +56,7 @@ def generate_text_to_image(
             DEVICE,
         )
         images = future.result()
+        context.save_images(images, app_settings.settings)
 
     previous_width = image_width
     previous_height = image_height

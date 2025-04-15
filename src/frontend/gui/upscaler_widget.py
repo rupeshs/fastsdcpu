@@ -1,41 +1,16 @@
-from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QHBoxLayout,
-    QVBoxLayout,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QSlider,
-    QTabWidget,
-    QSpacerItem,
-    QSizePolicy,
-    QComboBox,
-    QCheckBox,
-    QTextEdit,
-    QToolButton,
-    QFileDialog,
-    QApplication,
-    QRadioButton,
-    QFrame,
-)
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QPixmap, QDesktopServices, QDragEnterEvent, QDropEvent
-from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl, QBuffer
-
-import io
 from PIL import Image
-from constants import DEVICE
-from PIL.ImageQt import ImageQt
+from PyQt5.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QRadioButton,
+    QWidget,
+)
+
 from app_settings import AppSettings
-from urllib.parse import urlparse, unquote
 from backend.models.upscale import UpscaleMode
 from backend.upscale.upscaler import upscale_image
 from frontend.gui.img2img_widget import Img2ImgWidget
-from paths import FastStableDiffusionPaths, join_paths
-from backend.models.lcmdiffusion_setting import DiffusionTask
-from frontend.gui.image_generator_worker import ImageGeneratorWorker
-from frontend.webui.image_variations_ui import generate_image_variations
+from paths import FastStableDiffusionPaths
 
 
 class UpscalerWidget(Img2ImgWidget):
@@ -115,13 +90,3 @@ class UpscalerWidget(Img2ImgWidget):
         else:
             self.upscale_mode = UpscaleMode.aura_sr.value
             self.scale_factor = 4.0
-
-
-# Test the widget
-if __name__ == "__main__":
-    import sys
-
-    app = QApplication(sys.argv)
-    widget = ImageVariationsWidget(None, None)
-    widget.show()
-    app.exec()

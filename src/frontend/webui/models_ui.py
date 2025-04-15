@@ -1,7 +1,5 @@
-from app_settings import AppSettings
-from typing import Any
 import gradio as gr
-from constants import LCM_DEFAULT_MODEL, LCM_DEFAULT_MODEL_OPENVINO
+from constants import LCM_DEFAULT_MODEL
 from state import get_settings
 from frontend.utils import get_valid_model_id
 

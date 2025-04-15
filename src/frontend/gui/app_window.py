@@ -5,12 +5,10 @@ from backend.models.lcmdiffusion_setting import DiffusionTask
 from constants import (
     APP_NAME,
     APP_VERSION,
-    DEVICE,
     LCM_DEFAULT_MODEL,
     LCM_DEFAULT_MODEL_OPENVINO,
 )
 from context import Context
-from frontend.gui.image_generator_worker import ImageGeneratorWorker
 from frontend.gui.image_variations_widget import ImageVariationsWidget
 from frontend.gui.upscaler_widget import UpscalerWidget
 from frontend.gui.img2img_widget import Img2ImgWidget
@@ -20,10 +18,9 @@ from frontend.utils import (
     is_reshape_required,
 )
 from paths import FastStableDiffusionPaths
-from PIL.ImageQt import ImageQt
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QSize, Qt, QThreadPool, QUrl
-from PyQt5.QtGui import QDesktopServices, QPixmap
+from PyQt5.QtGui import QDesktopServices
 from PyQt5.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -37,14 +34,13 @@ from PyQt5.QtWidgets import (
     QSlider,
     QSpacerItem,
     QTabWidget,
-    QTextEdit,
     QToolButton,
     QVBoxLayout,
     QWidget,
 )
 
 from models.interface_types import InterfaceType
-from frontend.gui.base_widget import BaseWidget, ImageLabel
+from frontend.gui.base_widget import BaseWidget
 
 # DPI scale fix
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -81,7 +77,7 @@ class MainWindow(QMainWindow):
         self.init_ui_values()
         self.gen_images = []
         self.image_index = 0
-        print(f"Output path : {  self.config.settings.generated_images.path}")
+        print(f"Output path : {self.config.settings.generated_images.path}")
 
     def init_ui_values(self):
         self.lcm_model.setEnabled(

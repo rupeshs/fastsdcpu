@@ -9,7 +9,6 @@ from backend.lora import (
 from state import get_settings, get_context
 from frontend.utils import get_valid_lora_model
 from models.interface_types import InterfaceType
-from backend.models.lcmdiffusion_setting import LCMDiffusionSetting
 
 
 _MAX_LORA_WEIGHTS = 5
@@ -94,7 +93,6 @@ def get_lora_models_ui() -> None:
             "Download and place your LoRA model weights in <b>lora_models</b> folders and restart App"
         )
         with gr.Row():
-
             with gr.Column():
                 with gr.Row():
                     lora_models_map = get_lora_models(

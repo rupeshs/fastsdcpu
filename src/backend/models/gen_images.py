@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from enum import Enum, auto
+from enum import Enum
 from paths import FastStableDiffusionPaths
 
 

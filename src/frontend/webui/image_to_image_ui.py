@@ -23,7 +23,12 @@ def generate_image_to_image(
     strength,
 ) -> Any:
     context = get_context(InterfaceType.WEBUI)
-    global previous_height, previous_width, previous_model_id, previous_num_of_images, app_settings
+    global \
+        previous_height, \
+        previous_width, \
+        previous_model_id, \
+        previous_num_of_images, \
+        app_settings
 
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
     app_settings.settings.lcm_diffusion_setting.negative_prompt = negative_prompt
@@ -58,6 +63,10 @@ def generate_image_to_image(
             DEVICE,
         )
         images = future.result()
+        context.save_images(
+            images,
+            app_settings.settings,
+        )
 
     previous_width = image_width
     previous_height = image_height
