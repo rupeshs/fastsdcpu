@@ -1,6 +1,9 @@
 import platform
 
 import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from backend.api.models.response import StableDiffusionResponse
 from backend.base64_image import base64_image_to_pil, pil_image_to_base64_str
 from backend.device import get_device_name
@@ -8,12 +11,8 @@ from backend.models.device import DeviceInfo
 from backend.models.lcmdiffusion_setting import DiffusionTask, LCMDiffusionSetting
 from constants import APP_VERSION, DEVICE
 from context import Context
-from fastapi import FastAPI
-from fastapi_mcp import FastApiMCP
-from state import get_settings
-from fastapi.middleware.cors import CORSMiddleware
 from models.interface_types import InterfaceType
-from fastapi.staticfiles import StaticFiles
+from state import get_settings
 
 app_settings = get_settings()
 app = FastAPI(
@@ -24,10 +23,12 @@ app = FastAPI(
         "name": "MIT",
         "identifier": "MIT",
     },
-   
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json",
 )
+print(app_settings.settings.lcm_diffusion_setting)
 origins = ["*"]
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -35,10 +36,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-print(app_settings.settings.lcm_diffusion_setting)
-
 context = Context(InterfaceType.API_SERVER)
-app.mount("/results", StaticFiles(directory="results"), name="results")
+
 
 @app.get("/api/")
 async def root():
@@ -85,15 +84,11 @@ async def models():
 
 
 @app.post(
-    "/generate",
+    "/api/generate",
     description="Generate image(Text to image,Image to Image)",
     summary="Generate image(Text to image,Image to Image)",
-    operation_id="generate",
 )
 async def generate(diffusion_config: LCMDiffusionSetting) -> StableDiffusionResponse:
-    """
-    Returns a base64 encoded image and latency in seconds for text prompt.
-    """
     app_settings.settings.lcm_diffusion_setting = diffusion_config
     if diffusion_config.diffusion_task == DiffusionTask.image_to_image:
         app_settings.settings.lcm_diffusion_setting.init_image = base64_image_to_pil(
@@ -101,21 +96,13 @@ async def generate(diffusion_config: LCMDiffusionSetting) -> StableDiffusionResp
         )
 
     images = context.generate_text_to_image(app_settings.settings)
-    image_names = context.save_images(images,app_settings.settings,)
+
     images_base64 = [pil_image_to_base64_str(img) for img in images]
     return StableDiffusionResponse(
         latency=round(context.latency, 2),
         images=images_base64,
     )
 
-mcp = FastApiMCP(
-    app,  
-    name="FastSD MCP",  
-    description="MCP server for FastSD CPU API", 
-    base_url="http://localhost:8000"  
-)
-
-mcp.mount()
 
 def start_web_server(port: int = 8000):
     uvicorn.run(

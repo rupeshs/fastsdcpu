@@ -1,8 +1,11 @@
 import json
 from argparse import ArgumentParser
 
+from PIL import Image
+
 import constants
 from backend.controlnet import controlnet_settings_from_dict
+from backend.device import get_device_name
 from backend.models.gen_images import ImageFormat
 from backend.models.lcmdiffusion_setting import DiffusionTask
 from backend.upscale.tiled_upscale import generate_upscaled_image
@@ -10,10 +13,8 @@ from constants import APP_VERSION, DEVICE
 from frontend.webui.image_variations_ui import generate_image_variations
 from models.interface_types import InterfaceType
 from paths import FastStableDiffusionPaths
-from PIL import Image
 from state import get_context, get_settings
 from utils import show_system_info
-from backend.device import get_device_name
 
 parser = ArgumentParser(description=f"FAST SD CPU {constants.APP_VERSION}")
 parser.add_argument(
@@ -41,6 +42,12 @@ group.add_argument(
     "--api",
     action="store_true",
     help="Start Web API server",
+)
+group.add_argument(
+    "-m",
+    "--mcp",
+    action="store_true",
+    help="Start MCP(Model Context Protocol) server",
 )
 group.add_argument(
     "-r",
@@ -231,10 +238,7 @@ parser.add_argument(
     help="Disable image saving",
 )
 parser.add_argument(
-    "--imagequality",
-    type=int,
-    help="Output image quality [0 to 100]",
-    default=90
+    "--imagequality", type=int, help="Output image quality [0 to 100]", default=90
 )
 parser.add_argument(
     "--lora",
@@ -318,7 +322,10 @@ elif args.api:
     from backend.api.web import start_web_server
 
     start_web_server(args.port)
+elif args.mcp:
+    from backend.api.mcp_server import start_mcp_server
 
+    start_mcp_server(args.port)
 else:
     context = get_context(InterfaceType.CLI)
     config = app_settings.settings
@@ -448,7 +455,6 @@ else:
                 config.lcm_diffusion_setting.init_image, args.strength
             )
     else:
-
         if args.benchmark:
             print("Initializing benchmark...")
             bench_lcm_setting = config.lcm_diffusion_setting
@@ -458,7 +464,7 @@ else:
                 settings=config,
                 device=DEVICE,
             )
-            
+
             latencies = []
 
             print("Starting benchmark please wait...")
@@ -519,11 +525,11 @@ else:
                 ],
                 [
                     "Average Latency",
-                    f"{round(avg_latency,3)} sec",
+                    f"{round(avg_latency, 3)} sec",
                 ],
                 [
                     "Average Latency(TAESD* enabled)",
-                    f"{round(avg_latency_taesd,3)} sec",
+                    f"{round(avg_latency_taesd, 3)} sec",
                 ],
             ]
             print()
