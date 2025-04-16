@@ -12,7 +12,7 @@ from backend.upscale.tiled_upscale import generate_upscaled_image
 from constants import APP_VERSION, DEVICE
 from frontend.webui.image_variations_ui import generate_image_variations
 from models.interface_types import InterfaceType
-from paths import FastStableDiffusionPaths
+from paths import FastStableDiffusionPaths, ensure_path
 from state import get_context, get_settings
 from utils import show_system_info
 
@@ -270,10 +270,14 @@ print("FastSD CPU - ", APP_VERSION)
 show_system_info()
 print(f"Using device : {constants.DEVICE}")
 
+
 if args.webui:
     app_settings = get_settings()
 else:
     app_settings = get_settings()
+
+print(f"Output path : {app_settings.settings.generated_images.path}")
+ensure_path(app_settings.settings.generated_images.path)
 
 print(f"Found {len(app_settings.lcm_models)} LCM models in config/lcm-models.txt")
 print(
