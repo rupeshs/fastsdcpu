@@ -325,19 +325,26 @@ This is heterogeneous computing since text encoder and Unet will use NPU and VAE
 Please note that tiny auto encoder will not work in NPU mode.
 
 *Thanks to Intel for providing AI PC dev kit and Tiber cloud access to test FastSD, special thanks to [Pooja Baraskar](https://github.com/Pooja-B),[Dmitriy Pastushenkov](https://github.com/DimaPastushenkov).*
-<a id="mcp-support"></a>
+
+<a id="mcpsupport"></a>
 
 ## MCP Server Support
 
 FastSDCPU now supports [MCP(Model Context Protocol)](https://modelcontextprotocol.io/introduction) server.
-It enables to integrate FastSD basic text to image generation with following apps :
 
-- Claude desktop
-- VS Code Copilot agent
-- Cursor
-- OpenWebUI
+To start FastAPI in MCP server mode run:
+``python src/app.py --mcp``
+
+or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
 
 FastSDCPU MCP server will be running at <http://127.0.0.1:8000/mcp>
+
+It can be used with AI apps that support MCP protocol for example
+
+- [Claude desktop](https://claude.ai/download)
+- [OpenWebUI](https://github.com/open-webui/open-webui)
+
+Note:  OpenWebUI not directly using MCP protocol it is based on OpenAPI protocol.
 
 ### Claude desktop
 
