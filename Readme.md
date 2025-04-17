@@ -351,7 +351,7 @@ Note:  OpenWebUI not directly using MCP protocol it is based on OpenAPI protocol
 To connect with FastSD MCP server first configure Claude desktop :
 
 - First configure Claude desktop,open File - >Settings -> Developer - Edit config
-- Add below config
+- Add below config(Also ensure that node.js installed on your machine)
 
 ```json
 {
@@ -370,6 +370,9 @@ To connect with FastSD MCP server first configure Claude desktop :
 - Restart Claude desktop
 - Give a sample prompt to generate image "create image of a cat"
 
+Screenshot of Claude desktop accessing __Intel AI PC NPU__ to generate an image using the FastSD MCP server
+
+![Claude desktop FastSD CPU AIPC NPU](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/fastsdcpu_claude.jpg)
 <a id="gguf-support"></a>
 
 ## GGUF support - Flux
