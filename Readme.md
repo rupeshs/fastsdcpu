@@ -705,9 +705,15 @@ First start FastAPI in MCP server:
 
 or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
 
-Update server URL in the settings page as shown below
+- Update server URL in the settings page as shown below
 
-Generate image using text prompt (Qwen 2.5 7B model used for the demo)
+![OpenWebUI Settings](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/openwebui-settings.png)
+
+- Change chat controls setting "Function Calling" to "Native"
+
+- Generate image using text prompt (Qwen 2.5 7B model used for the demo)
+
+![OpenWebUI FastSD MCP Server](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/openwebui-fastsd.jpg)
 
 ## Known issues
 
