@@ -25,7 +25,6 @@ The following interfaces are available :
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
-- [AI PC Support - OpenVINO](#ai-pc-support)
 - [GGUF support (Flux)](#gguf-support)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
@@ -35,7 +34,9 @@ The following interfaces are available :
 - [Raspberry Pi 4](#raspberry)
 - [Orange Pi 5](#orangepi)
 - [API&nbsp;Support](#apisupport)
+- [AI PC Support - OpenVINO](#ai-pc-support)
 - [MCP Server Support](#mcpsupport)
+- [Open WebUI Support](#openwebuisupport)
 - [License](#license)
 - [Contributors](#contributors)
 
@@ -283,96 +284,6 @@ You can directly use these models in FastSD CPU.
 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
-<a id="ai-pc-support"></a>
-
-## Intel AI PC support - OpenVINO (CPU, GPU, NPU)
-
-Fast SD now supports AI PC with Intel® Core™ Ultra Processors. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
-
-### GPU
-
-For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as shown below.
-
-![FastSD AI PC Arc GPU benchmark](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/ARCGPU.png)
-
-### NPU
-
-FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
-
-FastSD tested with following Intel processor's NPUs:
-
-- Intel Core Ultra Series 1 (Meteor Lake)
-- Intel Core Ultra Series 2 (Lunar Lake)
-
-Currently FastSD support this model for NPU  [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
-
-Supports following modes on NPU :
-
-- Text to image
-- Image to image
-- Image variations
-
-To run model in NPU follow these steps (Please make sure that your AI PC's NPU driver is the latest):
-
-- Start webui
-- Select LCM-OpenVINO mode
-- Select the models settings tab and select OpenVINO model `rupeshs/sd15-lcm-square-openvino-int8`
-- Set device envionment variable `set DEVICE=NPU`
-- Now it will run on the NPU
-
-This is heterogeneous computing since text encoder and Unet will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
-
-Please note that tiny auto encoder will not work in NPU mode.
-
-*Thanks to Intel for providing AI PC dev kit and Tiber cloud access to test FastSD, special thanks to [Pooja Baraskar](https://github.com/Pooja-B),[Dmitriy Pastushenkov](https://github.com/DimaPastushenkov).*
-
-<a id="mcpsupport"></a>
-
-## MCP Server Support
-
-FastSDCPU now supports [MCP(Model Context Protocol)](https://modelcontextprotocol.io/introduction) server.
-
-To start FastAPI in MCP server mode run:
-``python src/app.py --mcp``
-
-or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
-
-FastSDCPU MCP server will be running at <http://127.0.0.1:8000/mcp>
-
-It can be used with AI apps that support MCP protocol for example
-
-- [Claude desktop](https://claude.ai/download)
-- [OpenWebUI](https://github.com/open-webui/open-webui)
-
-Note:  OpenWebUI not directly using MCP protocol it is based on OpenAPI protocol.
-
-### Claude desktop
-
-To connect with FastSD MCP server first configure Claude desktop :
-
-- First configure Claude desktop,open File - >Settings -> Developer - Edit config
-- Add below config(Also ensure that node.js installed on your machine)
-
-```json
-{
-  "mcpServers": {
-    "fastsdcpu": {
-      "command": "npx",
-      "args": [
-        "mcp-remote",
-        "http://127.0.0.1:8000/mcp"
-      ]
-    }
-  }
-}
-```
-
-- Restart Claude desktop
-- Give a sample prompt to generate image "create image of a cat"
-
-Screenshot of Claude desktop accessing __Intel AI PC NPU__ to generate an image using the FastSD MCP server
-
-![Claude desktop FastSD CPU AIPC NPU](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/fastsdcpu_claude.jpg)
 <a id="gguf-support"></a>
 
 ## GGUF support - Flux
@@ -695,6 +606,108 @@ To generate an image a minimal request `POST /api/generate` with body :
     "use_openvino": true
 }
 ```
+
+<a id="ai-pc-support"></a>
+
+## Intel AI PC support - OpenVINO (CPU, GPU, NPU)
+
+Fast SD now supports AI PC with Intel® Core™ Ultra Processors. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
+
+### GPU
+
+For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as shown below.
+
+![FastSD AI PC Arc GPU benchmark](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/ARCGPU.png)
+
+### NPU
+
+FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
+
+FastSD tested with following Intel processor's NPUs:
+
+- Intel Core Ultra Series 1 (Meteor Lake)
+- Intel Core Ultra Series 2 (Lunar Lake)
+
+Currently FastSD support this model for NPU  [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
+
+Supports following modes on NPU :
+
+- Text to image
+- Image to image
+- Image variations
+
+To run model in NPU follow these steps (Please make sure that your AI PC's NPU driver is the latest):
+
+- Start webui
+- Select LCM-OpenVINO mode
+- Select the models settings tab and select OpenVINO model `rupeshs/sd15-lcm-square-openvino-int8`
+- Set device envionment variable `set DEVICE=NPU`
+- Now it will run on the NPU
+
+This is heterogeneous computing since text encoder and Unet will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
+
+Please note that tiny auto encoder will not work in NPU mode.
+
+*Thanks to Intel for providing AI PC dev kit and Tiber cloud access to test FastSD, special thanks to [Pooja Baraskar](https://github.com/Pooja-B),[Dmitriy Pastushenkov](https://github.com/DimaPastushenkov).*
+
+<a id="mcpsupport"></a>
+
+## MCP Server Support
+
+FastSDCPU now supports [MCP(Model Context Protocol)](https://modelcontextprotocol.io/introduction) server.
+
+To start FastAPI in MCP server mode run:
+``python src/app.py --mcp``
+
+or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
+
+FastSDCPU MCP server will be running at <http://127.0.0.1:8000/mcp>
+
+It can be used with AI apps that support MCP protocol for example [Claude desktop](https://claude.ai/download)
+
+Note:  OpenWebUI not directly using MCP protocol it is based on OpenAPI protocol.
+
+### Claude desktop
+
+To connect with FastSD MCP server first configure Claude desktop :
+
+- First configure Claude desktop,open File - >Settings -> Developer - Edit config
+- Add below config(Also ensure that node.js installed on your machine)
+
+```json
+{
+  "mcpServers": {
+    "fastsdcpu": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://127.0.0.1:8000/mcp"
+      ]
+    }
+  }
+}
+```
+
+- Restart Claude desktop
+- Give a sample prompt to generate image "create image of a cat"
+
+Screenshot of Claude desktop accessing __Intel AI PC NPU__ to generate an image using the FastSD MCP server
+
+![Claude desktop FastSD CPU AIPC NPU](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/fastsdcpu_claude.jpg)
+
+<a id="openwebuisupport"></a>
+
+## Open WebUI Support
+
+The FastSDCPU can be used with [OpenWebUI](https://github.com/open-webui/open-webui)
+First start FastAPI in MCP server:
+``python src/app.py --mcp``
+
+or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
+
+Update server URL in the settings page as shown below
+
+Generate image using text prompt (Qwen 2.5 7B model used for the demo)
 
 ## Known issues
 

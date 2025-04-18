@@ -58,8 +58,8 @@ async def info() -> dict:
 
 @app.post(
     "/generate",
-    description="Generate image(Text to image)",
-    summary="Generate image(Text to image)",
+    description="Generate image from text prompt",
+    summary="Text to image generation",
     operation_id="generate",
 )
 async def generate(
@@ -71,6 +71,7 @@ async def generate(
     """
 
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
+    print(prompt)
 
     images = context.generate_text_to_image(app_settings.settings)
     image_names = context.save_images(
