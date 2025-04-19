@@ -500,27 +500,9 @@ FastSD CPU running on Google Pixel 7 Pro.
 
 ![FastSD CPU Android Termux Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-android-termux-pixel7.png)
 
-### 1. Prerequisites
+### Install FastSD CPU on Android
 
-First you have to [install Termux](https://wiki.termux.com/wiki/Installing_from_F-Droid) and [install PRoot](https://wiki.termux.com/wiki/PRoot). Then install and login to Ubuntu in PRoot.
-
-### 2. Install FastSD CPU
-
-Run the following command to install without Qt GUI.
-
- `proot-distro login ubuntu`
-
- `./install.sh --disable-gui`
-
- After the installation you can use WebUi.
-
-  `./start-webui.sh`
-
-  Note : If you get `libgl.so.1` import error run `apt-get install ffmpeg`.
-
-  Thanks [patienx](https://github.com/patientx) for this guide  [Step by step guide to installing FASTSDCPU on ANDROID](https://github.com/rupeshs/fastsdcpu/discussions/123)
-
-Another step by step guide to run FastSD on Android is [here](https://nolowiz.com/how-to-install-and-run-fastsd-cpu-on-android-temux-step-by-step-guide/)
+Follow this guide to install FastSD CPU on Android + Termux [How To Install and Run FastSD CPU on Android + Temux – Step By Step Guide [Updated]](https://nolowiz.com/how-to-install-and-run-fastsd-cpu-on-android-temux-step-by-step-guide/)
 
 <a id="raspberry"></a>
 
