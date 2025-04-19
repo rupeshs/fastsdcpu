@@ -71,8 +71,6 @@ async def generate(
     """
 
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
-    print(prompt)
-
     images = context.generate_text_to_image(app_settings.settings)
     image_names = context.save_images(
         images,
