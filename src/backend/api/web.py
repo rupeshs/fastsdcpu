@@ -1,14 +1,16 @@
 import platform
 
 import uvicorn
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
 from backend.api.models.response import StableDiffusionResponse
-from backend.models.device import DeviceInfo
 from backend.base64_image import base64_image_to_pil, pil_image_to_base64_str
 from backend.device import get_device_name
+from backend.models.device import DeviceInfo
 from backend.models.lcmdiffusion_setting import DiffusionTask, LCMDiffusionSetting
 from constants import APP_VERSION, DEVICE
 from context import Context
-from fastapi import FastAPI
 from models.interface_types import InterfaceType
 from state import get_settings
 
@@ -26,7 +28,14 @@ app = FastAPI(
     openapi_url="/api/openapi.json",
 )
 print(app_settings.settings.lcm_diffusion_setting)
-
+origins = ["*"]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 context = Context(InterfaceType.API_SERVER)
 
 

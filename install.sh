@@ -19,19 +19,24 @@ echo "Found $PYTHON_COMMAND command"
 python_version=$($PYTHON_COMMAND --version 2>&1 | awk '{print $2}')  
 echo "Python version : $python_version"
 
+if ! command -v uv &>/dev/null; then
+    echo "Error: uv command not found,please install https://docs.astral.sh/uv/getting-started/installation/#__tabbed_1_1 ,for termux "pkg install uv" and try again."
+    exit 1
+fi
+
 BASEDIR=$(pwd)
 
-$PYTHON_COMMAND -m venv "$BASEDIR/env"
+uv venv --python 3.11.6 "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
-pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
+uv pip install torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
 if [[ "$1" == "--disable-gui" ]]; then
     #! For termux , we don't need Qt based GUI
     packages="$(grep -v "^ *#\|^PyQt5" requirements.txt | grep .)" 
     # shellcheck disable=SC2086
-    pip install $packages
+    uv pip install $packages
 else
-    pip install -r "$BASEDIR/requirements.txt"
+    uv pip install -r "$BASEDIR/requirements.txt"
 fi
 
 chmod +x "start.sh"

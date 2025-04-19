@@ -102,3 +102,9 @@ class FastStableDiffusionPaths:
 
 def get_base_folder_name(path: str) -> str:
     return os.path.basename(path)
+
+
+def ensure_path(path: str) -> None:
+    """Ensure that the directory exists."""
+    if not os.path.exists(path):
+        os.makedirs(path, exist_ok=True)

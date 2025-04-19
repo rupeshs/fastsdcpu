@@ -5,7 +5,6 @@ from typing import Any
 from constants import DEVICE
 from paths import FastStableDiffusionPaths
 from backend.upscale.upscaler import upscale_image
-from backend.controlnet import controlnet_settings_from_dict
 from backend.upscale.tiled_upscale import generate_upscaled_image
 from frontend.webui.image_variations_ui import generate_image_variations
 from backend.lora import (
@@ -15,7 +14,6 @@ from backend.lora import (
 )
 from backend.models.lcmdiffusion_setting import (
     DiffusionTask,
-    LCMDiffusionSetting,
     ControlNetSetting,
 )
 
@@ -353,10 +351,14 @@ def interactive_txt2img(
         elif user_input == "":
             user_input = config.lcm_diffusion_setting.prompt
         config.lcm_diffusion_setting.prompt = user_input
-        for i in range(0, _batch_count):
-            context.generate_text_to_image(
+        for _ in range(0, _batch_count):
+            images = context.generate_text_to_image(
                 settings=config,
                 device=DEVICE,
+            )
+            context.save_images(
+                images,
+                config,
             )
         if _edit_lora_settings:
             interactive_lora(
@@ -391,10 +393,14 @@ def interactive_img2img(
             return
         settings.init_image = Image.open(source_path)
         settings.prompt = user_input
-        for i in range(0, _batch_count):
-            context.generate_text_to_image(
+        for _ in range(0, _batch_count):
+            images = context.generate_text_to_image(
                 settings=config,
                 device=DEVICE,
+            )
+            context.save_images(
+                images,
+                config,
             )
         new_path = input(f"Image path ({source_path}): ")
         if new_path != "":

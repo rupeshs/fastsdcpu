@@ -134,7 +134,6 @@ def get_current_tile(
         settings=config,
         reshape=True,
         device=DEVICE,
-        save_images=False,
         save_config=False,
     )[0]
     return current_tile

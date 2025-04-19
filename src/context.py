@@ -27,7 +27,6 @@ class Context:
         settings: Settings,
         reshape: bool = False,
         device: str = "cpu",
-        save_images=True,
         save_config=True,
     ) -> Any:
         if (
@@ -61,18 +60,26 @@ class Context:
             reshape,
         )
         elapsed = perf_counter() - tick
-
-        if save_images and settings.generated_images.save_image:
-            ImageSaver.save_images(
-                settings.generated_images.path,
-                images=images,
-                lcm_diffusion_setting=settings.lcm_diffusion_setting,
-                format=settings.generated_images.format,
-                jpeg_quality=settings.generated_images.save_image_quality,
-            )
         self._latency = elapsed
         print(f"Latency : {elapsed:.2f} seconds")
         if settings.lcm_diffusion_setting.controlnet:
             if settings.lcm_diffusion_setting.controlnet.enabled:
                 images.append(settings.lcm_diffusion_setting.controlnet._control_image)
         return images
+
+
+    def save_images(
+        self,
+        images: Any,
+        settings: Settings,
+    ) -> list[str]:
+        saved_images = []
+        if images and settings.generated_images.save_image:
+            saved_images = ImageSaver.save_images(
+                settings.generated_images.path,
+                images=images,
+                lcm_diffusion_setting=settings.lcm_diffusion_setting,
+                format=settings.generated_images.format,
+                jpeg_quality=settings.generated_images.save_image_quality,
+            )
+        return saved_images

@@ -1,39 +1,24 @@
+from PIL.ImageQt import ImageQt
+from PyQt5 import QtCore
+from PyQt5.QtCore import QSize, Qt, QUrl
+from PyQt5.QtGui import (
+    QDesktopServices,
+    QPixmap,
+)
 from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QLayout,
+    QApplication,
     QHBoxLayout,
-    QVBoxLayout,
     QLabel,
-    QLineEdit,
-    QMainWindow,
-    QSlider,
-    QTabWidget,
-    QSpacerItem,
+    QPushButton,
     QSizePolicy,
-    QComboBox,
-    QCheckBox,
     QTextEdit,
     QToolButton,
-    QFileDialog,
-    QApplication,
+    QVBoxLayout,
+    QWidget,
 )
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import (
-    QPixmap,
-    QDesktopServices,
-    QDragEnterEvent,
-    QDropEvent,
-    QMouseEvent,
-)
-from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl, QBuffer
 
-import io
-from PIL import Image
-from constants import DEVICE
-from PIL.ImageQt import ImageQt
 from app_settings import AppSettings
-from urllib.parse import urlparse, unquote
+from constants import DEVICE
 from frontend.gui.image_generator_worker import ImageGeneratorWorker
 
 
@@ -142,6 +127,10 @@ class BaseWidget(QWidget):
             self.config.reshape_required,
             DEVICE,
         )
+        self.parent.context.save_images(
+            images,
+            self.config.settings,
+        )
         self.prepare_images(images)
         self.after_generation()
 
@@ -208,13 +197,3 @@ class BaseWidget(QWidget):
             self.config.settings.lcm_diffusion_setting.use_openvino
             or self.config.settings.lcm_diffusion_setting.use_lcm_lora
         )
-
-
-# Test the widget
-if __name__ == "__main__":
-    import sys
-
-    app = QApplication(sys.argv)
-    widget = BaseWidget(None)
-    widget.show()
-    app.exec()

@@ -4,6 +4,12 @@
   <a href="https://trendshift.io/repositories/3957" target="_blank"><img src="https://trendshift.io/api/badge/repositories/3957" alt="rupeshs%2Ffastsdcpu | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
 
+## 📰 News
+
+- **2024-11-03** - Added Intel Core Ultra Series 2 (Lunar Lake) NPU support
+- **2024-10-02** - Added GGUF diffusion model(Flux) support
+- **2024-09-03** – Added Intel AI PC GPU, NPU support 🚀  
+
 FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) and
 [Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/).
 
@@ -14,9 +20,9 @@ The following interfaces are available :
 - WebUI (Advanced features,Lora,controlnet etc)
 - CLI (CommandLine Interface)
 
-🚀 Using __OpenVINO(SDXS-512-0.9)__, it took __0.82 seconds__ (__820 milliseconds__) to create a single 512x512 image on a __Core i7-12700__.
+🚀 Using **OpenVINO(SDXS-512-0.9)**, it took **0.82 seconds** (**820 milliseconds**) to create a single 512x512 image on a **Core i7-12700**.
 
-## Table of Contents
+## Table of Contents 👇
 
 - [Supported&nbsp;Platforms](#Supported&nbsp;platforms)
 - [Dependencies](#dependencies)
@@ -25,8 +31,6 @@ The following interfaces are available :
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
-- [AI PC Support - OpenVINO](#ai-pc-support)
-- [GGUF support (Flux)](#gguf-support)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -35,6 +39,10 @@ The following interfaces are available :
 - [Raspberry Pi 4](#raspberry)
 - [Orange Pi 5](#orangepi)
 - [API&nbsp;Support](#apisupport)
+- [GGUF support (Flux)](#gguf-support)
+- [AI PC Support - OpenVINO](#ai-pc-support)
+- [MCP Server Support](#mcpsupport)
+- [Open WebUI Support](#openwebuisupport)
 - [License](#license)
 - [Contributors](#contributors)
 
@@ -48,7 +56,7 @@ FastSD CPU works on the following platforms:
 - Android + Termux
 - Raspberry PI 4
 
-## Dependencies
+## Dependencies 📦
 
 - Python 3.10 or Python 3.11 (Please ensure that you have a working Python 3.10 or Python 3.11 installation available on the system)
 
@@ -70,7 +78,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 
 :exclamation: Please note that guidance scale >1 increases RAM usage and slow inference speed.
 
-## Features
+## Features ✨
 
 - Desktop GUI, web UI and CLI
 - Supports 256,512,768,1024 image sizes
@@ -155,7 +163,7 @@ Works with LCM and LCM-OpenVINO mode.
 
 #### Inference Speed
 
-Tested on Core i7-12700 to generate __768x768__ image(1 step).
+Tested on Core i7-12700 to generate **768x768** image(1 step).
 
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
@@ -169,15 +177,15 @@ Tested on Core i7-12700 to generate __768x768__ image(1 step).
 
 #### Inference Speed
 
-Tested on Core i7-12700 to generate __512x512__ image(1 step).
+Tested on Core i7-12700 to generate **512x512** image(1 step).
 
-__SDXS-512-0.9__
+**SDXS-512-0.9**
 
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
 | Pytorch               | 4.8s          |
 | OpenVINO              | 3.8s          |
-| OpenVINO + TAESD      | __0.82s__     |
+| OpenVINO + TAESD      | **0.82s**     |
 
 ### 🚀 Fast 1 step inference (SD/SDXL Turbo - Adversarial Diffusion Distillation,ADD)
 
@@ -187,9 +195,9 @@ Added support for ultra fast 1 step inference using [sdxl-turbo](https://hugging
 
 #### Inference Speed
 
-Tested on Core i7-12700 to generate __512x512__ image(1 step).
+Tested on Core i7-12700 to generate **512x512** image(1 step).
 
-__SD Turbo__
+**SD Turbo**
 
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
@@ -197,7 +205,7 @@ __SD Turbo__
 | OpenVINO              | 5s            |
 | OpenVINO + TAESD      | 1.7s          |
 
-__SDXL Turbo__
+**SDXL Turbo**
 
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
@@ -209,7 +217,7 @@ __SDXL Turbo__
 
 SDXL-Lightning works with LCM and LCM-OpenVINO mode.You can select these models from app settings.
 
-Tested on Core i7-12700 to generate __768x768__ image(2 steps).
+Tested on Core i7-12700 to generate **768x768** image(2 steps).
 
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
@@ -236,9 +244,9 @@ FastSD CPU supports 2 to 3 steps fast inference using LCM-LoRA workflow. It work
 - As of now only text to image generation mode is supported
 - Use OpenVINO mode
 - Use int4 model - *rupeshs/FLUX.1-schnell-openvino-int4*
-- 512x512 image generation needs around __30GB__ system RAM
+- 512x512 image generation needs around **30GB** system RAM
 
-Tested on Intel Core i7-12700 to generate __512x512__ image(3 steps).
+Tested on Intel Core i7-12700 to generate **512x512** image(3 steps).
 
 | Diffusion Pipeline    | Latency       |
 | --------------------- | ------------- |
@@ -282,101 +290,13 @@ You can directly use these models in FastSD CPU.
 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
 
-<a id="ai-pc-support"></a>
-
-## Intel AI PC support - OpenVINO (CPU, GPU, NPU)
-
-Fast SD now supports AI PC with Intel® Core™ Ultra Processors. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
-
-### GPU
-
-For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as shown below.
-
-![FastSD AI PC Arc GPU benchmark](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/ARCGPU.png)
-
-### NPU
-
-FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
-
-FastSD tested with following Intel processor's NPUs:
-
-- Intel Core Ultra Series 1 (Meteor Lake)
-- Intel Core Ultra Series 2 (Lunar Lake)
-
-Currently FastSD support this model for NPU  [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
-
-Supports following modes on NPU :
-
-- Text to image
-- Image to image
-- Image variations
-
-To run model in NPU follow these steps (Please make sure that your AI PC's NPU driver is the latest):
-
-- Start webui
-- Select LCM-OpenVINO mode
-- Select the models settings tab and select OpenVINO model `rupeshs/sd15-lcm-square-openvino-int8`
-- Set device envionment variable `set DEVICE=NPU`
-- Now it will run on the NPU
-
-This is heterogeneous computing since text encoder and Unet will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
-
-Please note that tiny auto encoder will not work in NPU mode.
-
-*Thanks to Intel for providing AI PC dev kit and Tiber cloud access to test FastSD, special thanks to [Pooja Baraskar](https://github.com/Pooja-B),[Dmitriy Pastushenkov](https://github.com/DimaPastushenkov).*
-
-<a id="gguf-support"></a>
-
-## GGUF support - Flux
-
-[GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md) Flux model supported via [stablediffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) shared library. Currently Flux Schenell model supported.
-
-To use GGUF model use web UI and select GGUF mode.
-
-Tested on Windows and Linux.
-
-:exclamation: Main advantage here we reduced minimum system RAM required for Flux workflow to around __12 GB__.
-
-Supported mode - Text to image
-
-### How to run Flux GGUF model
-
-- Download stablediffusion.cpp prebuilt shared library and place it inside fastsdcpu folder
-  For Windows users, download [stable-diffusion.dll](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/stable-diffusion.dll)
-
-  For Linux users download [libstable-diffusion.so](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/libstable-diffusion.so)
-
-  You can also build the library manully by following the guide *"Build stablediffusion.cpp shared library for GGUF flux model support"*
-
-- Download __diffusion model__ from [flux1-schnell-q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/flux1-schnell-q4_0.gguf) and place it inside `models/gguf/diffusion` directory
-- Download __clip model__ from [clip_l_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/clip_l_q4_0.gguf) and place it inside `models/gguf/clip` directory
-- Download __T5-XXL model__ from [t5xxl_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/t5xxl_q4_0.gguf) and place it inside `models/gguf/t5xxl` directory
-- Download __VAE model__ from [ae.safetensors](https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/ae.safetensors) and place it inside `models/gguf/vae` directory
-- Start web UI and select GGUF mode
-- Select the models settings tab and select GGUF diffusion,clip_l,t5xxl and VAE models.
-- Enter your prompt and generate image
-
-### Build stablediffusion.cpp shared library for GGUF flux model support(Optional)
-
-To build the stablediffusion.cpp library follow these steps
-
-- `git clone https://github.com/leejet/stable-diffusion.cpp`
-- `cd stable-diffusion.cpp`
-- `git pull origin master`
-- `git submodule init`
-- `git submodule update`
-- `git checkout 14206fd48832ab600d9db75f15acb5062ae2c296`
-- `cmake . -DSD_BUILD_SHARED_LIBS=ON`
-- `cmake --build . --config Release`
-- Copy the stablediffusion dll/so file to fastsdcpu folder
-
 <a id="real-time-text-to-image"></a>
 
 ## Real-time text to image (EXPERIMENTAL)
 
 We can generate real-time text to images using FastSD CPU.
 
-__CPU (OpenVINO)__
+**CPU (OpenVINO)**
 
 Near real-time inference on CPU using OpenVINO, run the `start-realtime.bat` batch file and open the link in browser (Resolution : 512x512,Latency : 0.82s on Intel Core i7)
 
@@ -477,7 +397,7 @@ Use the medium size models (723 MB)(For example : <https://huggingface.co/comfya
 
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
-:exclamation:__You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )__
+:exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
 
 To install FastSD CPU on Windows run the following steps :
 
@@ -495,7 +415,7 @@ To install FastSD CPU on Windows run the following steps :
 
 ### FastSD CPU on Linux
 
-:exclamation:__Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.__
+:exclamation:**Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.**
 
 - Clone/download this repo or download [release](https://github.com/rupeshs/fastsdcpu/releases).
 - In the terminal, enter into fastsdcpu directory
@@ -517,7 +437,7 @@ To install FastSD CPU on Windows run the following steps :
 
 ![FastSD CPU running on Mac](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-mac-gui.jpg)
 
-:exclamation:__Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.__
+:exclamation:**Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.**
 
 Run the following commands to install FastSD CPU on Mac :
 
@@ -647,6 +567,162 @@ To generate an image a minimal request `POST /api/generate` with body :
     "use_openvino": true
 }
 ```
+
+<a id="gguf-support"></a>
+
+## GGUF support - Flux
+
+[GGUF](https://github.com/ggerganov/ggml/blob/master/docs/gguf.md) Flux model supported via [stablediffusion.cpp](https://github.com/leejet/stable-diffusion.cpp) shared library. Currently Flux Schenell model supported.
+
+To use GGUF model use web UI and select GGUF mode.
+
+Tested on Windows and Linux.
+
+:exclamation: Main advantage here we reduced minimum system RAM required for Flux workflow to around **12 GB**.
+
+Supported mode - Text to image
+
+### How to run Flux GGUF model
+
+- Download stablediffusion.cpp prebuilt shared library and place it inside fastsdcpu folder
+  For Windows users, download [stable-diffusion.dll](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/stable-diffusion.dll)
+
+  For Linux users download [libstable-diffusion.so](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/libstable-diffusion.so)
+
+  You can also build the library manully by following the guide *"Build stablediffusion.cpp shared library for GGUF flux model support"*
+
+- Download **diffusion model** from [flux1-schnell-q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/flux1-schnell-q4_0.gguf) and place it inside `models/gguf/diffusion` directory
+- Download **clip model** from [clip_l_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/clip_l_q4_0.gguf) and place it inside `models/gguf/clip` directory
+- Download **T5-XXL model** from [t5xxl_q4_0.gguf](https://huggingface.co/rupeshs/FastSD-Flux-GGUF/blob/main/t5xxl_q4_0.gguf) and place it inside `models/gguf/t5xxl` directory
+- Download **VAE model** from [ae.safetensors](https://huggingface.co/black-forest-labs/FLUX.1-schnell/blob/main/ae.safetensors) and place it inside `models/gguf/vae` directory
+- Start web UI and select GGUF mode
+- Select the models settings tab and select GGUF diffusion,clip_l,t5xxl and VAE models.
+- Enter your prompt and generate image
+
+### Build stablediffusion.cpp shared library for GGUF flux model support(Optional)
+
+To build the stablediffusion.cpp library follow these steps
+
+- `git clone https://github.com/leejet/stable-diffusion.cpp`
+- `cd stable-diffusion.cpp`
+- `git pull origin master`
+- `git submodule init`
+- `git submodule update`
+- `git checkout 14206fd48832ab600d9db75f15acb5062ae2c296`
+- `cmake . -DSD_BUILD_SHARED_LIBS=ON`
+- `cmake --build . --config Release`
+- Copy the stablediffusion dll/so file to fastsdcpu folder
+
+<a id="ai-pc-support"></a>
+
+## Intel AI PC support - OpenVINO (CPU, GPU, NPU)
+
+Fast SD now supports AI PC with Intel® Core™ Ultra Processors. [To learn more about AI PC and OpenVINO](https://nolowiz.com/ai-pc-and-openvino-quick-and-simple-guide/).
+
+### GPU
+
+For GPU mode `set device=GPU` and run webui. FastSD GPU benchmark on AI PC as shown below.
+
+![FastSD AI PC Arc GPU benchmark](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/ARCGPU.png)
+
+### NPU
+
+FastSD CPU now supports power efficient NPU (Neural Processing Unit) that comes with Intel Core Ultra processors.
+
+FastSD tested with following Intel processor's NPUs:
+
+- Intel Core Ultra Series 1 (Meteor Lake)
+- Intel Core Ultra Series 2 (Lunar Lake)
+
+Currently FastSD support this model for NPU  [rupeshs/sd15-lcm-square-openvino-int8](https://huggingface.co/rupeshs/sd15-lcm-square-openvino-int8).
+
+Supports following modes on NPU :
+
+- Text to image
+- Image to image
+- Image variations
+
+To run model in NPU follow these steps (Please make sure that your AI PC's NPU driver is the latest):
+
+- Start webui
+- Select LCM-OpenVINO mode
+- Select the models settings tab and select OpenVINO model `rupeshs/sd15-lcm-square-openvino-int8`
+- Set device envionment variable `set DEVICE=NPU`
+- Now it will run on the NPU
+
+This is heterogeneous computing since text encoder and Unet will use NPU and VAE will use GPU for processing. Thanks to OpenVINO.
+
+Please note that tiny auto encoder will not work in NPU mode.
+
+*Thanks to Intel for providing AI PC dev kit and Tiber cloud access to test FastSD, special thanks to [Pooja Baraskar](https://github.com/Pooja-B),[Dmitriy Pastushenkov](https://github.com/DimaPastushenkov).*
+
+<a id="mcpsupport"></a>
+
+## MCP Server Support
+
+FastSDCPU now supports [MCP(Model Context Protocol)](https://modelcontextprotocol.io/introduction) server.
+
+To start FastAPI in MCP server mode run:
+``python src/app.py --mcp``
+
+or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
+
+FastSDCPU MCP server will be running at <http://127.0.0.1:8000/mcp>
+
+It can be used with AI apps that support MCP protocol for example [Claude desktop](https://claude.ai/download)
+
+Note:  OpenWebUI not directly using MCP protocol it is based on OpenAPI protocol.
+
+### Claude desktop
+
+To connect with FastSD MCP server first configure Claude desktop :
+
+- First configure Claude desktop,open File - >Settings -> Developer - Edit config
+- Add below config(Also ensure that node.js installed on your machine)
+
+```json
+{
+  "mcpServers": {
+    "fastsdcpu": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://127.0.0.1:8000/mcp"
+      ]
+    }
+  }
+}
+```
+
+- Restart Claude desktop
+- Give a sample prompt to generate image "create image of a cat"
+
+Screenshot of Claude desktop accessing **Intel AI PC NPU** to generate an image using the FastSD MCP server
+
+![Claude desktop FastSD CPU AIPC NPU](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/fastsdcpu_claude.jpg)
+
+<a id="openwebuisupport"></a>
+
+## Open WebUI Support
+
+The FastSDCPU can be used with [OpenWebUI](https://github.com/open-webui/open-webui) for local image generation using LLM and tool calling.
+
+Follow the below steps to FastSD to use with Open WebUI.
+
+- First start FastAPI in MCP server:
+``python src/app.py --mcp``
+
+or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
+
+- Update server URL in the settings page as shown below
+
+![OpenWebUI Settings](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/openwebui-settings.png)
+
+- Change chat controls setting "Function Calling" to "Native"
+
+- Generate image using text prompt (Qwen 2.5 7B model used for the demo)
+
+![OpenWebUI FastSD MCP Server](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/openwebui-fastsd.jpg)
 
 ## Known issues
 

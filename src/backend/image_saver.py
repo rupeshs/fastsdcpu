@@ -31,8 +31,9 @@ class ImageSaver:
         format: str = "PNG",
         jpeg_quality: int = 90,
         lcm_diffusion_setting: LCMDiffusionSetting = None,
-    ) -> None:
+    ) -> list[str]:
         gen_id = uuid4()
+        image_ids = []
 
         if images:
             image_seeds = []
@@ -57,7 +58,9 @@ class ImageSaver:
                 if not path.exists(out_path):
                     mkdir(out_path)
                 image_extension = get_image_file_extension(format)
-                image.save(path.join(out_path, f"{gen_id}-{index+1}{image_extension}"), quality = jpeg_quality)
+                image_file_name = f"{gen_id}-{index+1}{image_extension}"
+                image_ids.append(image_file_name)
+                image.save(path.join(out_path, image_file_name), quality = jpeg_quality)
             if lcm_diffusion_setting:
                 data = lcm_diffusion_setting.model_dump(exclude=get_exclude_keys())
                 if image_seeds:
@@ -68,3 +71,5 @@ class ImageSaver:
                         json_file,
                         indent=4,
                     )
+        return image_ids
+            

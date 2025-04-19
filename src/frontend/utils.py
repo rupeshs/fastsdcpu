@@ -3,7 +3,6 @@ from os import path
 from typing import List
 
 from backend.device import is_openvino_device
-from constants import DEVICE
 from paths import get_file_name
 
 
