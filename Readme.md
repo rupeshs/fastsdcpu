@@ -6,6 +6,7 @@
 
 ## 📰 News
 
+- **2025-04-20** - Added MCP server support,faster uv based installation,Cluade desktop, Open WebUI support
 - **2024-11-03** - Added Intel Core Ultra Series 2 (Lunar Lake) NPU support
 - **2024-10-02** - Added GGUF diffusion model(Flux) support
 - **2024-09-03** – Added Intel AI PC GPU, NPU support 🚀  
@@ -57,7 +58,8 @@ FastSD CPU works on the following platforms:
 
 ## Dependencies 📦
 
-- Python 3.10 or Python 3.11 (Please ensure that you have a working Python 3.10 or Python 3.11 installation available on the system)
+- Python 3.10 or higher
+- [uv - fast Python package and project manager](https://docs.astral.sh/uv/)
 
 ## Memory requirements
 
@@ -396,7 +398,7 @@ Use the medium size models (723 MB)(For example : <https://huggingface.co/comfya
 
 ![FastSD CPU Desktop GUI Screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-gui.jpg)
 
-:exclamation:**You must have a working Python installation.(Recommended : Python 3.10 or 3.11 )**
+:exclamation:**You must have a working Python and uv installation.(Recommended : Python 3.10 or higher )**
 
 To install FastSD CPU on Windows run the following steps :
 
@@ -414,7 +416,7 @@ To install FastSD CPU on Windows run the following steps :
 
 ### FastSD CPU on Linux
 
-:exclamation:**Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.**
+:exclamation:**Ensure that you have Python 3.10 and uv installed.**
 
 - Clone/download this repo or download [release](https://github.com/rupeshs/fastsdcpu/releases).
 - In the terminal, enter into fastsdcpu directory
@@ -637,9 +639,7 @@ Please note that tiny auto encoder will not work in NPU mode.
 FastSDCPU now supports [MCP(Model Context Protocol)](https://modelcontextprotocol.io/introduction) server.
 
 To start FastAPI in MCP server mode run:
-``python src/app.py --mcp``
-
-or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
+``python src/app.py --mcp`` or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
 
 FastSDCPU MCP server will be running at <http://127.0.0.1:8000/mcp>
 
@@ -684,9 +684,7 @@ The FastSDCPU can be used with [OpenWebUI](https://github.com/open-webui/open-we
 Follow the below steps to FastSD to use with Open WebUI.
 
 - First start FastAPI in MCP server:
-``python src/app.py --mcp``
-
-or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
+``python src/app.py --mcp`` or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
 
 - Update server URL in the settings page as shown below
 

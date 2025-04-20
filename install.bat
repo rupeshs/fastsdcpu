@@ -19,7 +19,7 @@ call uv --version > nul 2>&1
 if %errorlevel% equ 0 (
     echo uv command check :OK
 ) else (
-    echo "Error: uv command not found,please install it using "pip install uv" command,for termux "pkg install uv" and try again."
+    echo "Error: uv command not found,please install https://docs.astral.sh/uv/getting-started/installation/#__tabbed_1_2 and try again."
     pause
     exit /b 1
     

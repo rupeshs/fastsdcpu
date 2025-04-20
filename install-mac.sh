@@ -20,7 +20,7 @@ python_version=$($PYTHON_COMMAND --version 2>&1 | awk '{print $2}')
 echo "Python version : $python_version"
 
 if ! command -v uv &>/dev/null; then
-    echo "Error: uv command not found,please install https://docs.astral.sh/uv/getting-started/installation/#__tabbed_1_1 ,for termux "pkg install uv" and try again."
+    echo "Error: uv command not found,please install https://docs.astral.sh/uv/getting-started/installation/#__tabbed_1_1 and try again."
     exit 1
 fi
 
