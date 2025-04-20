@@ -4,13 +4,6 @@
   <a href="https://trendshift.io/repositories/3957" target="_blank"><img src="https://trendshift.io/api/badge/repositories/3957" alt="rupeshs%2Ffastsdcpu | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div>
 
-## 📰 News
-
-- **2025-04-20** - Added MCP server support,faster uv based installation,Cluade desktop, Open WebUI support
-- **2024-11-03** - Added Intel Core Ultra Series 2 (Lunar Lake) NPU support
-- **2024-10-02** - Added GGUF diffusion model(Flux) support
-- **2024-09-03** – Added Intel AI PC GPU, NPU support 🚀  
-
 FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) and
 [Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/).
 
@@ -22,6 +15,13 @@ The following interfaces are available :
 - CLI (CommandLine Interface)
 
 🚀 Using **OpenVINO(SDXS-512-0.9)**, it took **0.82 seconds** (**820 milliseconds**) to create a single 512x512 image on a **Core i7-12700**.
+
+## 📰 News
+
+- **2025-04-20** - Added MCP server support,faster uv based installation,Cluade desktop, Open WebUI support
+- **2024-11-03** - Added Intel Core Ultra Series 2 (Lunar Lake) NPU support
+- **2024-10-02** - Added GGUF diffusion model(Flux) support
+- **2024-09-03** – Added Intel AI PC GPU, NPU support 🚀  
 
 ## Table of Contents 👇
 
@@ -36,7 +36,7 @@ The following interfaces are available :
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
 - [How to use controlnet](#usecontrolnet)
-- [Android](#android)
+- [Android + Termux](#android)
 - [Raspberry Pi 4](#raspberry)
 - [API&nbsp;Support](#apisupport)
 - [GGUF support (Flux)](#gguf-support)
@@ -638,8 +638,10 @@ Please note that tiny auto encoder will not work in NPU mode.
 
 FastSDCPU now supports [MCP(Model Context Protocol)](https://modelcontextprotocol.io/introduction) server.
 
-To start FastAPI in MCP server mode run:
-``python src/app.py --mcp`` or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
+- Start FastSDCPU MCP server:
+``python src/app.py --mcp``
+or
+Run  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
 
 FastSDCPU MCP server will be running at <http://127.0.0.1:8000/mcp>
 
@@ -683,8 +685,10 @@ The FastSDCPU can be used with [OpenWebUI](https://github.com/open-webui/open-we
 
 Follow the below steps to FastSD to use with Open WebUI.
 
-- First start FastAPI in MCP server:
-``python src/app.py --mcp`` or use  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
+- Start FastSDCPU MCP server:
+``python src/app.py --mcp``
+or
+Run  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
 
 - Update server URL in the settings page as shown below
 
