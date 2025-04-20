@@ -33,7 +33,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-print(app_settings.settings.lcm_diffusion_setting)
 
 context = Context(InterfaceType.API_SERVER)
 app.mount("/results", StaticFiles(directory="results"), name="results")
@@ -69,7 +68,6 @@ async def generate(
     """
     Returns URL of the generated image for text prompt
     """
-
     app_settings.settings.lcm_diffusion_setting.prompt = prompt
     images = context.generate_text_to_image(app_settings.settings)
     image_names = context.save_images(
@@ -82,6 +80,7 @@ async def generate(
 
 
 def start_mcp_server(port: int = 8000):
+    print(f"Starting MCP server on port {port}...")
     mcp = FastApiMCP(
         app,
         name="FastSDCPU MCP",
