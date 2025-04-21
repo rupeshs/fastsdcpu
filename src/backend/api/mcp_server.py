@@ -85,7 +85,6 @@ def start_mcp_server(port: int = 8000):
         app,
         name="FastSDCPU MCP",
         description="MCP server for FastSD CPU API",
-        base_url=f"http://localhost:{port}",
     )
 
     mcp.mount()
