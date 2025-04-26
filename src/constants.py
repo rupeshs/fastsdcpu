@@ -23,3 +23,4 @@ CONTROLNET_DIRECTORY = "controlnet_models"
 MODELS_DIRECTORY = "models"
 GGUF_THREADS = environ.get("GGUF_THREADS", cpus)
 TAEF1_MODEL_OPENVINO = "rupeshs/taef1-openvino"
+SAFETY_CHECKER_MODEL = "Falconsai/nsfw_image_detection"

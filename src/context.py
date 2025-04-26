@@ -1,11 +1,13 @@
-from typing import Any
-from app_settings import Settings
-from models.interface_types import InterfaceType
-from backend.models.lcmdiffusion_setting import DiffusionTask
-from backend.lcm_text_to_image import LCMTextToImage
-from time import perf_counter
-from backend.image_saver import ImageSaver
 from pprint import pprint
+from time import perf_counter
+from typing import Any
+
+from app_settings import Settings
+from backend.image_saver import ImageSaver
+from backend.lcm_text_to_image import LCMTextToImage
+from backend.models.lcmdiffusion_setting import DiffusionTask
+from backend.utils import get_blank_image
+from models.interface_types import InterfaceType
 
 
 class Context:
@@ -65,8 +67,21 @@ class Context:
         if settings.lcm_diffusion_setting.controlnet:
             if settings.lcm_diffusion_setting.controlnet.enabled:
                 images.append(settings.lcm_diffusion_setting.controlnet._control_image)
-        return images
 
+        if settings.lcm_diffusion_setting.use_safety_checker:
+            print("Safety Checker is enabled")
+            from state import get_safety_checker
+
+            safety_checker = get_safety_checker()
+            blank_image = get_blank_image(
+                settings.lcm_diffusion_setting.image_width,
+                settings.lcm_diffusion_setting.image_height,
+            )
+            for idx, image in enumerate(images):
+                if not safety_checker.is_safe(image):
+                    images[idx] = blank_image
+
+        return images
 
     def save_images(
         self,
