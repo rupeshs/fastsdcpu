@@ -449,14 +449,12 @@ class LCMTextToImage:
             # the last layer", so "CLIP Skip == 1" means "no skipping"
             pipeline_extra_args["clip_skip"] = lcm_diffusion_setting.clip_skip - 1
 
-        if not lcm_diffusion_setting.use_safety_checker:
-            self.pipeline.safety_checker = None
-            if (
-                lcm_diffusion_setting.diffusion_task
-                == DiffusionTask.image_to_image.value
-                and not is_openvino_pipe
-            ):
-                self.img_to_img_pipeline.safety_checker = None
+        self.pipeline.safety_checker = None
+        if (
+            lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value
+            and not is_openvino_pipe
+        ):
+            self.img_to_img_pipeline.safety_checker = None
 
         if (
             not lcm_diffusion_setting.use_lcm_lora
