@@ -240,7 +240,7 @@ class LCMTextToImage:
                             lcm_diffusion_setting.use_tiny_auto_encoder,
                         )
                     elif self._is_sana_model():
-                        print("Loading OpenVINO Sana pipeline")
+                        print("Loading OpenVINO SANA Sprint pipeline")
                         self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
 
                     elif self._is_hetero_pipeline():
@@ -387,6 +387,18 @@ class LCMTextToImage:
         time_steps_value = [int(time_steps)] if time_steps else None
         return time_steps_value
 
+    def _compile_ov_pipeline(
+        self,
+        lcm_diffusion_setting,
+    ):
+        self.pipeline.reshape(
+            batch_size=-1,
+            height=lcm_diffusion_setting.image_height,
+            width=lcm_diffusion_setting.image_width,
+            num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+        )
+        self.pipeline.compile()
+
     def generate(
         self,
         lcm_diffusion_setting: LCMDiffusionSetting,
@@ -434,15 +446,12 @@ class LCMTextToImage:
         is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
         if is_openvino_pipe and not self._is_hetero_pipeline():
             print("Using OpenVINO")
+            if self.is_openvino_init and self._is_sana_model():
+                self._compile_ov_pipeline(lcm_diffusion_setting)
+
             if reshape and not self.is_openvino_init:
                 print("Reshape and compile")
-                self.pipeline.reshape(
-                    batch_size=-1,
-                    height=lcm_diffusion_setting.image_height,
-                    width=lcm_diffusion_setting.image_width,
-                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-                )
-                self.pipeline.compile()
+                self._compile_ov_pipeline(lcm_diffusion_setting)
 
             if self.is_openvino_init:
                 self.is_openvino_init = False
