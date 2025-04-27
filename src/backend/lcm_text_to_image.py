@@ -19,6 +19,7 @@ from backend.openvino.pipelines import (
     get_ov_image_to_image_pipeline,
     get_ov_text_to_image_pipeline,
     ov_load_taesd,
+    get_ov_diffusion_pipeline,
 )
 from backend.pipelines.lcm import (
     get_image_to_image_pipeline,
@@ -164,6 +165,9 @@ class LCMTextToImage:
         if not self._is_valid_mode(modes):
             raise ValueError("Invalid mode,delete configs/settings.yaml and retry!")
 
+    def _is_sana_model(self) -> bool:
+        return "sana" in self.ov_model_id.lower()
+
     def init(
         self,
         device: str = "cpu",
@@ -235,6 +239,10 @@ class LCMTextToImage:
                             self.ov_model_id,
                             lcm_diffusion_setting.use_tiny_auto_encoder,
                         )
+                    elif self._is_sana_model():
+                        print("Loading OpenVINO Sana pipeline")
+                        self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
+
                     elif self._is_hetero_pipeline():
                         self._load_ov_hetero_pipeline()
                     else:
@@ -470,15 +478,25 @@ class LCMTextToImage:
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.text_to_image.value
             ):
-                result_images = self.pipeline(
-                    prompt=lcm_diffusion_setting.prompt,
-                    negative_prompt=lcm_diffusion_setting.negative_prompt,
-                    num_inference_steps=lcm_diffusion_setting.inference_steps,
-                    guidance_scale=guidance_scale,
-                    width=lcm_diffusion_setting.image_width,
-                    height=lcm_diffusion_setting.image_height,
-                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-                ).images
+                if self._is_sana_model():
+                    result_images = self.pipeline(
+                        prompt=lcm_diffusion_setting.prompt,
+                        num_inference_steps=lcm_diffusion_setting.inference_steps,
+                        guidance_scale=guidance_scale,
+                        width=lcm_diffusion_setting.image_width,
+                        height=lcm_diffusion_setting.image_height,
+                        num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    ).images
+                else:
+                    result_images = self.pipeline(
+                        prompt=lcm_diffusion_setting.prompt,
+                        negative_prompt=lcm_diffusion_setting.negative_prompt,
+                        num_inference_steps=lcm_diffusion_setting.inference_steps,
+                        guidance_scale=guidance_scale,
+                        width=lcm_diffusion_setting.image_width,
+                        height=lcm_diffusion_setting.image_height,
+                        num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    ).images
             elif (
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.image_to_image.value

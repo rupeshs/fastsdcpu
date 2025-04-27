@@ -1,19 +1,23 @@
-from constants import DEVICE, LCM_DEFAULT_MODEL_OPENVINO
-from backend.tiny_decoder import get_tiny_decoder_vae_model
 from typing import Any
+
+from optimum.intel.openvino import OVDiffusionPipeline
+
 from backend.device import is_openvino_device
+from backend.tiny_decoder import get_tiny_decoder_vae_model
+from constants import DEVICE, LCM_DEFAULT_MODEL_OPENVINO
 from paths import get_base_folder_name
+
 
 if is_openvino_device():
     from huggingface_hub import snapshot_download
-    from optimum.intel.openvino.modeling_diffusion import OVBaseModel
-
     from optimum.intel.openvino.modeling_diffusion import (
-        OVStableDiffusionPipeline,
+        OVBaseModel,
         OVStableDiffusionImg2ImgPipeline,
-        OVStableDiffusionXLPipeline,
+        OVStableDiffusionPipeline,
         OVStableDiffusionXLImg2ImgPipeline,
+        OVStableDiffusionXLPipeline,
     )
+
     from backend.openvino.custom_ov_model_vae_decoder import CustomOVModelVaeDecoder
 
 
@@ -72,4 +76,17 @@ def get_ov_image_to_image_pipeline(
             ov_config={"CACHE_DIR": ""},
             device=DEVICE.upper(),
         )
+    return pipeline
+
+
+def get_ov_diffusion_pipeline(
+    model_id: str,
+    use_local_model: bool = False,
+) -> Any:
+    pipeline = OVDiffusionPipeline.from_pretrained(
+        model_id,
+        local_files_only=use_local_model,
+        ov_config={"CACHE_DIR": ""},
+        device=DEVICE.upper(),
+    )
     return pipeline
