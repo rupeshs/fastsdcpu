@@ -6,3 +6,4 @@ stabilityai/sdxl-turbo
 SimianLuo/LCM_Dreamshaper_v7
 latent-consistency/lcm-sdxl
 latent-consistency/lcm-ssd-1b
+G:\om\2025\ovtinyautoencoders\realistic_vision_v5.1_lcm_ov

@@ -18,7 +18,7 @@ from backend.models.lcmdiffusion_setting import (
 from backend.openvino.pipelines import (
     get_ov_image_to_image_pipeline,
     get_ov_text_to_image_pipeline,
-    ov_load_taesd,
+    ov_load_tiny_autoencoder,
     get_ov_diffusion_pipeline,
 )
 from backend.pipelines.lcm import (
@@ -30,7 +30,6 @@ from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from constants import DEVICE, GGUF_THREADS
 from diffusers import LCMScheduler
 from image_ops import resize_pil_image
-from backend.openvino.flux_pipeline import get_flux_pipeline
 from backend.openvino.ov_hc_stablediffusion_pipeline import OvHcLatentConsistency
 from backend.gguf.gguf_diffusion import (
     GGUFDiffusion,
@@ -233,16 +232,12 @@ class LCMTextToImage:
                     print(
                         f"***** Init Text to image (OpenVINO) - {self.ov_model_id} *****"
                     )
-                    if "flux" in self.ov_model_id.lower():
-                        print("Loading OpenVINO Flux pipeline")
-                        self.pipeline = get_flux_pipeline(
-                            self.ov_model_id,
-                            lcm_diffusion_setting.use_tiny_auto_encoder,
-                        )
-                    elif self._is_sana_model():
-                        print("Loading OpenVINO SANA Sprint pipeline")
+                    if "flux" in self.ov_model_id.lower() or self._is_sana_model():
+                        if self._is_sana_model():
+                            print("Loading OpenVINO SANA Sprint pipeline")
+                        else:
+                            print("Loading OpenVINO Flux pipeline")
                         self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
-
                     elif self._is_hetero_pipeline():
                         self._load_ov_hetero_pipeline()
                     else:
@@ -308,9 +303,9 @@ class LCMTextToImage:
 
             if use_tiny_auto_encoder:
                 if self.use_openvino and is_openvino_device():
-                    if self.pipeline.__class__.__name__ != "OVFluxPipeline":
-                        print("Using Tiny Auto Encoder (OpenVINO)")
-                        ov_load_taesd(
+                    if not self._is_sana_model():
+                        print("Using Tiny AutoEncoder (OpenVINO)")
+                        ov_load_tiny_autoencoder(
                             self.pipeline,
                             use_local_model,
                         )

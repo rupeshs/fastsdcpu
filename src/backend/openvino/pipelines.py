@@ -1,12 +1,17 @@
+from pathlib import Path
 from typing import Any
 
 from optimum.intel.openvino import OVDiffusionPipeline
+from optimum.intel.openvino.modeling_diffusion import (
+    OVModelVae,
+    OVModelVaeDecoder,
+    OVModelVaeEncoder,
+)
 
 from backend.device import is_openvino_device
-from backend.tiny_decoder import get_tiny_decoder_vae_model
+from backend.tiny_autoencoder import get_tiny_autoencoder_repo_id
 from constants import DEVICE, LCM_DEFAULT_MODEL_OPENVINO
 from paths import get_base_folder_name
-
 
 if is_openvino_device():
     from huggingface_hub import snapshot_download
@@ -18,22 +23,30 @@ if is_openvino_device():
         OVStableDiffusionXLPipeline,
     )
 
-    from backend.openvino.custom_ov_model_vae_decoder import CustomOVModelVaeDecoder
 
-
-def ov_load_taesd(
+def ov_load_tiny_autoencoder(
     pipeline: Any,
     use_local_model: bool = False,
 ):
     taesd_dir = snapshot_download(
-        repo_id=get_tiny_decoder_vae_model(pipeline.__class__.__name__),
+        repo_id=get_tiny_autoencoder_repo_id(pipeline.__class__.__name__),
         local_files_only=use_local_model,
     )
-    pipeline.vae_decoder = CustomOVModelVaeDecoder(
+    vae_decoder = OVModelVaeDecoder(
         model=OVBaseModel.load_model(f"{taesd_dir}/vae_decoder/openvino_model.xml"),
-        parent_model=pipeline,
-        model_dir=taesd_dir,
+        parent_pipeline=pipeline,
+        model_name="vae_decoder",
     )
+    vae_encoder = OVModelVaeEncoder(
+        model=OVBaseModel.load_model(f"{taesd_dir}/vae_encoder/openvino_model.xml"),
+        parent_pipeline=pipeline,
+        model_name="vae_encoder",
+    )
+    pipeline.vae = OVModelVae(
+        decoder=vae_decoder,
+        encoder=vae_encoder,
+    )
+    pipeline.vae.config.scaling_factor = 1.0
 
 
 def get_ov_text_to_image_pipeline(
