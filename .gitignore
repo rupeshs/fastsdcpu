@@ -6,3 +6,8 @@ __pycache__
 results
 # excluding user settings for the GUI frontend
 configs/settings.yaml
+controlnet_models/*.safetensors
+lora_models/*.safetensors
+
+libstable-diffusion.so
+models/gguf/
