@@ -7,4 +7,5 @@ rupeshs/LCM-dreamshaper-v7-openvino
 Disty0/LCM_SoteMix
 rupeshs/FLUX.1-schnell-openvino-int4
 rupeshs/sd15-lcm-square-openvino-int8
+rupeshs/taesdxl-openvino
 
