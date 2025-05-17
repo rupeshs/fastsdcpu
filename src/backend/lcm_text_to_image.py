@@ -18,7 +18,8 @@ from backend.models.lcmdiffusion_setting import (
 from backend.openvino.pipelines import (
     get_ov_image_to_image_pipeline,
     get_ov_text_to_image_pipeline,
-    ov_load_taesd,
+    ov_load_tiny_autoencoder,
+    get_ov_diffusion_pipeline,
 )
 from backend.pipelines.lcm import (
     get_image_to_image_pipeline,
@@ -29,7 +30,6 @@ from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from constants import DEVICE, GGUF_THREADS
 from diffusers import LCMScheduler
 from image_ops import resize_pil_image
-from backend.openvino.flux_pipeline import get_flux_pipeline
 from backend.openvino.ov_hc_stablediffusion_pipeline import OvHcLatentConsistency
 from backend.gguf.gguf_diffusion import (
     GGUFDiffusion,
@@ -164,6 +164,9 @@ class LCMTextToImage:
         if not self._is_valid_mode(modes):
             raise ValueError("Invalid mode,delete configs/settings.yaml and retry!")
 
+    def _is_sana_model(self) -> bool:
+        return "sana" in self.ov_model_id.lower()
+
     def init(
         self,
         device: str = "cpu",
@@ -229,12 +232,12 @@ class LCMTextToImage:
                     print(
                         f"***** Init Text to image (OpenVINO) - {self.ov_model_id} *****"
                     )
-                    if "flux" in self.ov_model_id.lower():
-                        print("Loading OpenVINO Flux pipeline")
-                        self.pipeline = get_flux_pipeline(
-                            self.ov_model_id,
-                            lcm_diffusion_setting.use_tiny_auto_encoder,
-                        )
+                    if "flux" in self.ov_model_id.lower() or self._is_sana_model():
+                        if self._is_sana_model():
+                            print("Loading OpenVINO SANA Sprint pipeline")
+                        else:
+                            print("Loading OpenVINO Flux pipeline")
+                        self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
                     elif self._is_hetero_pipeline():
                         self._load_ov_hetero_pipeline()
                     else:
@@ -300,9 +303,9 @@ class LCMTextToImage:
 
             if use_tiny_auto_encoder:
                 if self.use_openvino and is_openvino_device():
-                    if self.pipeline.__class__.__name__ != "OVFluxPipeline":
-                        print("Using Tiny Auto Encoder (OpenVINO)")
-                        ov_load_taesd(
+                    if not self._is_sana_model():
+                        print("Using Tiny AutoEncoder (OpenVINO)")
+                        ov_load_tiny_autoencoder(
                             self.pipeline,
                             use_local_model,
                         )
@@ -379,6 +382,18 @@ class LCMTextToImage:
         time_steps_value = [int(time_steps)] if time_steps else None
         return time_steps_value
 
+    def _compile_ov_pipeline(
+        self,
+        lcm_diffusion_setting,
+    ):
+        self.pipeline.reshape(
+            batch_size=-1,
+            height=lcm_diffusion_setting.image_height,
+            width=lcm_diffusion_setting.image_width,
+            num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+        )
+        self.pipeline.compile()
+
     def generate(
         self,
         lcm_diffusion_setting: LCMDiffusionSetting,
@@ -426,15 +441,12 @@ class LCMTextToImage:
         is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
         if is_openvino_pipe and not self._is_hetero_pipeline():
             print("Using OpenVINO")
+            if self.is_openvino_init and self._is_sana_model():
+                self._compile_ov_pipeline(lcm_diffusion_setting)
+
             if reshape and not self.is_openvino_init:
                 print("Reshape and compile")
-                self.pipeline.reshape(
-                    batch_size=-1,
-                    height=lcm_diffusion_setting.image_height,
-                    width=lcm_diffusion_setting.image_width,
-                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-                )
-                self.pipeline.compile()
+                self._compile_ov_pipeline(lcm_diffusion_setting)
 
             if self.is_openvino_init:
                 self.is_openvino_init = False
@@ -470,15 +482,25 @@ class LCMTextToImage:
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.text_to_image.value
             ):
-                result_images = self.pipeline(
-                    prompt=lcm_diffusion_setting.prompt,
-                    negative_prompt=lcm_diffusion_setting.negative_prompt,
-                    num_inference_steps=lcm_diffusion_setting.inference_steps,
-                    guidance_scale=guidance_scale,
-                    width=lcm_diffusion_setting.image_width,
-                    height=lcm_diffusion_setting.image_height,
-                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-                ).images
+                if self._is_sana_model():
+                    result_images = self.pipeline(
+                        prompt=lcm_diffusion_setting.prompt,
+                        num_inference_steps=lcm_diffusion_setting.inference_steps,
+                        guidance_scale=guidance_scale,
+                        width=lcm_diffusion_setting.image_width,
+                        height=lcm_diffusion_setting.image_height,
+                        num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    ).images
+                else:
+                    result_images = self.pipeline(
+                        prompt=lcm_diffusion_setting.prompt,
+                        negative_prompt=lcm_diffusion_setting.negative_prompt,
+                        num_inference_steps=lcm_diffusion_setting.inference_steps,
+                        guidance_scale=guidance_scale,
+                        width=lcm_diffusion_setting.image_width,
+                        height=lcm_diffusion_setting.image_height,
+                        num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    ).images
             elif (
                 lcm_diffusion_setting.diffusion_task
                 == DiffusionTask.image_to_image.value

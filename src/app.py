@@ -185,7 +185,7 @@ parser.add_argument(
     "-t",
     "--use_tiny_auto_encoder",
     action="store_true",
-    help="Use tiny auto encoder for SD (TAESD)",
+    help="Use Tiny AutoEncoder for TAESD/TAESDXL/TAEF1",
 )
 parser.add_argument(
     "-f",

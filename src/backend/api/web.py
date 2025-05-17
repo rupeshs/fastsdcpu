@@ -97,10 +97,14 @@ async def generate(diffusion_config: LCMDiffusionSetting) -> StableDiffusionResp
 
     images = context.generate_text_to_image(app_settings.settings)
 
-    images_base64 = [pil_image_to_base64_str(img) for img in images]
+    if images:
+        images_base64 = [pil_image_to_base64_str(img) for img in images]
+    else:
+        images_base64 = []
     return StableDiffusionResponse(
         latency=round(context.latency, 2),
         images=images_base64,
+        error=context.error,
     )
 
 

@@ -128,7 +128,6 @@ def get_generation_settings_ui() -> None:
                     interactive=True,
                 )
 
-
                 seed = gr.Slider(
                     value=app_settings.settings.lcm_diffusion_setting.seed,
                     minimum=0,
@@ -149,7 +148,7 @@ def get_generation_settings_ui() -> None:
                     interactive=True,
                 )
                 tiny_auto_encoder_checkbox = gr.Checkbox(
-                    label="Use tiny auto encoder for SD",
+                    label="Use Tiny AutoEncoder (Fast, moderate quality)",
                     value=app_settings.settings.lcm_diffusion_setting.use_tiny_auto_encoder,
                     interactive=True,
                 )

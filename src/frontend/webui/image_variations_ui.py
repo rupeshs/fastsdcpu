@@ -6,6 +6,7 @@ from frontend.utils import is_reshape_required
 from constants import DEVICE
 from state import get_settings, get_context
 from concurrent.futures import ThreadPoolExecutor
+from frontend.webui.errors import show_error
 
 app_settings = get_settings()
 
@@ -61,7 +62,13 @@ def generate_image_variations(
             DEVICE,
         )
         images = future.result()
-        context.save_images(images, app_settings.settings)
+        if images:
+            context.save_images(
+                images,
+                app_settings.settings,
+            )
+        else:
+            show_error(context.error)
 
     previous_width = image_width
     previous_height = image_height
