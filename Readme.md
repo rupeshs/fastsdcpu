@@ -43,6 +43,7 @@ The following interfaces are available :
 - [AI PC Support - OpenVINO](#ai-pc-support)
 - [MCP Server Support](#mcpsupport)
 - [Open WebUI Support](#openwebuisupport)
+- [ComfyUI support](#comfyuisupport)
 - [License](#license)
 - [Contributors](#contributors)
 
@@ -699,6 +700,12 @@ Run  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
 - Generate image using text prompt (Qwen 2.5 7B model used for the demo)
 
 ![OpenWebUI FastSD MCP Server](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-mcp-server-support/docs/images/openwebui-fastsd.jpg)
+
+<a id="comfyuisupport"></a>
+
+## ComfyUI support
+
+FastSD can be used with ComfyUI with [ComfyUI-FastSDCPU node](https://github.com/BetaDoggo/ComfyUI-FastSDCPU). To use it follow this step by step [guide](https://nolowiz.com/how-to-use-comfyui-with-fastsdcpu-and-openvino/)
 
 ## Known issues
 
