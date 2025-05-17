@@ -707,9 +707,7 @@ Run  `start-mcpserver.sh` for Linux and  `start-mcpserver.bat` for Windows.
 
 FastSD can be used with ComfyUI with [ComfyUI-FastSDCPU node](https://github.com/BetaDoggo/ComfyUI-FastSDCPU). To use it follow this step by step [guide](https://nolowiz.com/how-to-use-comfyui-with-fastsdcpu-and-openvino/)
 
-## Known issues
-
-- TAESD will not work with OpenVINO image to image workflow
+![Comfyui OpenVINO text to image workflow](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/add-sana-sprint-support/docs/images/comfyui-workflow.png)
 
 ## License
 
