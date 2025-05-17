@@ -280,9 +280,7 @@ class MainWindow(QMainWindow):
         self.use_local_model_folder.stateChanged.connect(self.use_offline_model_changed)
         self.use_openvino_check.stateChanged.connect(self.use_openvino_changed)
 
-        self.use_tae_sd = QCheckBox(
-            "Use Tiny Auto Encoder - TAESD (Fast, moderate quality)"
-        )
+        self.use_tae_sd = QCheckBox("Use Tiny AutoEncoder (Fast, moderate quality)")
         self.use_tae_sd.setChecked(False)
         self.use_tae_sd.stateChanged.connect(self.use_tae_sd_changed)
 
