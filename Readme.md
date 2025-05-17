@@ -18,7 +18,7 @@ The following interfaces are available :
 
 ## 📰 News
 
-- **2025-05-17** - Added SANA Sprint(OpenVINO) support,Auto TinyEncoder 1.3 support
+- **2025-05-17** - Added SANA Sprint(OpenVINO) support,Tiny AutoEncoder 1.3(Mocha Croissant) support
 - **2025-04-20** - Added MCP server support,faster uv based installation,Cluade desktop, Open WebUI support
 - **2024-11-03** - Added Intel Core Ultra Series 2 (Lunar Lake) NPU support
 - **2024-10-02** - Added GGUF diffusion model(Flux) support
