@@ -243,7 +243,7 @@ parser.add_argument(
 parser.add_argument(
     "--lora",
     type=str,
-    help="LoRA model full path e.g D:\lora_models\CuteCartoon15V-LiberteRedmodModel-Cartoon-CuteCartoonAF.safetensors",
+    help="LoRA model full path e.g D:\\lora_models\\CuteCartoon15V-LiberteRedmodModel-Cartoon-CuteCartoonAF.safetensors",
     default=None,
 )
 parser.add_argument(
