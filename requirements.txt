@@ -18,4 +18,5 @@ omegaconf==2.3.0
 controlnet-aux==0.0.7
 mediapipe>=0.10.9
 tomesd==0.1.3
+mcp==1.6.0
 fastapi-mcp==0.3.0

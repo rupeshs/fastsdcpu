@@ -12,6 +12,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from models.interface_types import InterfaceType
 from fastapi.staticfiles import StaticFiles
 
+SERVER_PORT = 8000
+
 app_settings = get_settings()
 app = FastAPI(
     title="FastSD CPU",
@@ -74,12 +76,15 @@ async def generate(
         images,
         app_settings.settings,
     )
-    url = request.url_for("results", path=image_names[0])
+    # url = request.url_for("results", path=image_names[0]) - Claude Desktop returns api_server
+    url = f"http://localhost:{SERVER_PORT}/results/{image_names[0]}"
     image_url = f"The generated image available at the URL {url}"
     return image_url
 
 
 def start_mcp_server(port: int = 8000):
+    global SERVER_PORT
+    SERVER_PORT = port
     print(f"Starting MCP server on port {port}...")
     mcp = FastApiMCP(
         app,
