@@ -5,6 +5,7 @@ from diffusers import (
     UNet2DConditionModel,
     LCMScheduler,
     StableDiffusionPipeline,
+    StableDiffusionXLPipeline
 )
 import torch
 from backend.tiny_autoencoder import get_tiny_autoencoder_repo_id
@@ -87,6 +88,12 @@ def get_lcm_model_pipeline(
             local_files_only=use_local_model,
             use_safetensors=True,
         )
+        if 'xl' in model_id.lower():
+            dummy_pipeline = StableDiffusionXLPipeline.from_single_file(
+                model_id,
+                local_files_only=use_local_model,
+                use_safetensors=True,
+            )
         if "lcm" in model_id.lower():
             dummy_pipeline.scheduler = LCMScheduler.from_config(
                 dummy_pipeline.scheduler.config
