@@ -31,9 +31,11 @@ from PyQt5.QtCore import QSize, QThreadPool, Qt, QUrl, QBuffer
 import io
 from PIL import Image
 from constants import DEVICE
+from state import get_context
 from PIL.ImageQt import ImageQt
 from app_settings import AppSettings
 from urllib.parse import urlparse, unquote
+from models.interface_types import InterfaceType
 from frontend.gui.image_generator_worker import ImageGeneratorWorker
 
 
@@ -137,7 +139,7 @@ class BaseWidget(QWidget):
         self.config.settings.lcm_diffusion_setting.negative_prompt = (
             self.neg_prompt.toPlainText()
         )
-        images = self.parent.context.generate_text_to_image(
+        images = get_context(InterfaceType.GUI).generate_text_to_image(
             self.config.settings,
             self.config.reshape_required,
             DEVICE,
