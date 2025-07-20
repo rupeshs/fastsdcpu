@@ -23,6 +23,7 @@ from backend.lora import (
 )
 from app_settings import AppSettings
 from paths import FastStableDiffusionPaths
+
 if __name__ != "__main__":
     from state import get_settings, get_context
     from models.interface_types import InterfaceType
@@ -39,7 +40,7 @@ class _LabeledSlider(QWidget):
     def __init__(self):
         super().__init__()
         self._label = QLabel("0.00")
-        self._slider = QSlider(orientation = Qt.Orientation.Horizontal)
+        self._slider = QSlider(orientation=Qt.Orientation.Horizontal)
         self._slider.setMaximum(20)
         self._slider.setMinimum(0)
         self._slider.setValue(0)
@@ -52,7 +53,7 @@ class _LabeledSlider(QWidget):
         self.setLayout(hlayout)
 
     def onSliderChanged(self, value):
-        self._label.setText("%.2f" %(value / 20.0))
+        self._label.setText("%.2f" % (value / 20.0))
 
     def setValue(self, value: int):
         self._slider.setValue(int(value * 20))
@@ -86,10 +87,14 @@ class LoraModelsWidget(QWidget):
         self.parent = parent
         lora_models_map = {}
         if config != None:
-            lora_models_map = get_lora_models(config.settings.lcm_diffusion_setting.lora.models_dir)
+            lora_models_map = get_lora_models(
+                config.settings.lcm_diffusion_setting.lora.models_dir
+            )
         self.models_combobox = QComboBox()
         self.models_combobox.addItems(lora_models_map.keys())
-        self.models_combobox.setToolTip("<p style='white-space:pre'>Place LoRA models in the <b>lora_models</b> folder</p>")
+        self.models_combobox.setToolTip(
+            "<p style='white-space:pre'>Place LoRA models in the <b>lora_models</b> folder</p>"
+        )
         self.weight_slider = _LabeledSlider()
         self.load_button = QPushButton("Load selected LoRA")
         self.load_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
@@ -103,7 +108,13 @@ class LoraModelsWidget(QWidget):
         glayout = QGridLayout()
         glayout.setVerticalSpacing(0)
         glayout.addWidget(QLabel("LoRA model:"), 0, 0)
-        glayout.addWidget(QLabel("Initial LoRA weight:", ), 0, 1)
+        glayout.addWidget(
+            QLabel(
+                "Initial LoRA weight:",
+            ),
+            0,
+            1,
+        )
         glayout.addWidget(self.models_combobox, 1, 0)
         glayout.addWidget(self.weight_slider, 1, 1)
         glayout.addWidget(self.load_button, 0, 2, 2, 1)
@@ -123,13 +134,17 @@ class LoraModelsWidget(QWidget):
             self.layout().insertWidget(3, _LoraWidget())
             return
         # End of code for testing the GUI
-        
+
         global _current_lora_count
         global _active_lora_widgets
         if app_settings == None or _current_lora_count >= _MAX_LORA_WEIGHTS:
             return
         if app_settings.settings.lcm_diffusion_setting.use_openvino:
-            QMessageBox().information(self.parent, "Error", "LoRA suppport is currently not implemented for OpenVINO.")
+            QMessageBox().information(
+                self.parent,
+                "Error",
+                "LoRA suppport is currently not implemented for OpenVINO.",
+            )
             return
         lora_models_map = get_lora_models(
             app_settings.settings.lcm_diffusion_setting.lora.models_dir
@@ -150,7 +165,11 @@ class LoraModelsWidget(QWidget):
             return
         pipeline = get_context(InterfaceType.GUI).lcm_text_to_image.pipeline
         if not pipeline:
-            QMessageBox.information(self.parent, "Error", "Pipeline not initialized. Please generate an image first.")
+            QMessageBox.information(
+                self.parent,
+                "Error",
+                "Pipeline not initialized. Please generate an image first.",
+            )
             return
         settings.lora.enabled = True
         load_lora_weight(
@@ -194,5 +213,3 @@ if __name__ == "__main__":
     widget = LoraModelsWidget(None, None)
     widget.show()
     app.exec()
-
-
