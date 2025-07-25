@@ -26,15 +26,12 @@ from PyQt5.QtGui import QPixmap, QDesktopServices, QDragEnterEvent, QDropEvent
 from paths import FastStableDiffusionPaths
 from backend.models.lcmdiffusion_setting import ControlNetSetting
 from backend.annotators.image_control_factory import ImageControlFactory
+from frontend.gui.common_widgets import LabeledSlider, ImageLabel
 
 if __name__ != "__main__":
     from state import get_settings, get_context
     from models.interface_types import InterfaceType
     from backend.lora import get_lora_models
-
-    # from frontend.gui.lora_widget import (
-    #    _LabeledSlider,
-    # )
 
     app_settings = get_settings()
 
@@ -44,53 +41,6 @@ _current_controlnet_image = None
 _current_controlnet_weight = 0.0
 _current_controlnet_adapter = ""
 _current_controlnet_enabled = False
-
-
-# This class can be merged with BaseWidget.ImageLabel
-class ImageLabelDrop(QLabel):
-    changed = QtCore.pyqtSignal()
-
-    def __init__(self, text: str):
-        super().__init__(text)
-        self.setAlignment(Qt.AlignCenter)
-        self.resize(512, 512)
-        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-        self.sizeHint = QSize(512, 512)
-        self.setAcceptDrops(True)
-
-    def show_image(self, pixmap: QPixmap = None):
-        """Updates the widget pixamp"""
-        if pixmap == None or pixmap.isNull():
-            return
-        self.current_pixmap = pixmap
-        self.changed.emit()
-
-        # Resize the pixmap to the widget dimensions
-        image_width = self.current_pixmap.width()
-        image_height = self.current_pixmap.height()
-        if image_width > 256 or image_height > 256:
-            new_width = 256 if image_width > 256 else image_width
-            new_height = 256 if image_height > 256 else image_height
-            self.setPixmap(
-                self.current_pixmap.scaled(
-                    new_width,
-                    new_height,
-                    Qt.KeepAspectRatio,
-                )
-            )
-        else:
-            self.setPixmap(self.current_pixmap)
-
-    def dragEnterEvent(self, event: QDragEnterEvent):
-        if event.mimeData().hasFormat("text/plain"):
-            event.acceptProposedAction()
-
-    def dropEvent(self, event: QDropEvent):
-        event.acceptProposedAction()
-        self.path = unquote(urlparse(event.mimeData().text()).path)
-        pixmap = QPixmap(self.path)
-        self.show_image(pixmap)
-        self.update()
 
 
 class ControlNetWidget(QWidget):
@@ -104,7 +54,8 @@ class ControlNetWidget(QWidget):
             _controlnet_models_map = get_lora_models(
                 config.settings.lcm_diffusion_setting.dirs["controlnet"]
             )
-        _current_controlnet_adapter = list(_controlnet_models_map.keys())[0]
+        if len(_controlnet_models_map) > 0:
+            _current_controlnet_adapter = list(_controlnet_models_map.keys())[0]
         self.enabled_checkbox = QCheckBox("Enable ControlNet")
         self.enabled_checkbox.stateChanged.connect(self.on_enable_changed)
         self.models_combobox = QComboBox()
@@ -114,13 +65,10 @@ class ControlNetWidget(QWidget):
         )
         self.models_combobox.setEnabled(False)
         self.models_combobox.currentTextChanged.connect(self.on_combo_changed)
-        self.weight_slider = QSlider(orientation=Qt.Orientation.Horizontal)
-        self.weight_slider.setMaximum(20)
+        self.weight_slider = LabeledSlider(True)
         self.weight_slider.setEnabled(False)
         self.weight_slider.valueChanged.connect(self.on_weight_changed)
-        self.image_label = ImageLabelDrop("Drag and drop control image here")
-        self.image_label.resize(256, 256)
-        self.image_label.sizeHint = QSize(256, 256)
+        self.image_label = ImageLabel("Drag and drop control image here", 256, 256)
         self.image_label.setMinimumSize(QSize(256, 256))
         self.image_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.image_label.setFrameShape(QFrame.Box)
@@ -185,9 +133,9 @@ class ControlNetWidget(QWidget):
         _current_controlnet_adapter = text
         self.update_controlnet_settings()
 
-    def on_weight_changed(self, value: int):
+    def on_weight_changed(self, value: int, valuef: float):
         global _current_controlnet_weight
-        _current_controlnet_weight = float(value / 20.0)
+        _current_controlnet_weight = valuef
         self.update_controlnet_settings()
 
     def update_controlnet_settings(self):

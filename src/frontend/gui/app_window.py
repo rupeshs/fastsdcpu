@@ -183,7 +183,7 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.upscaler_tab, "Upscaler")
         self.tab_widget.addTab(self.tab_settings, "Settings")
         self.tab_widget.addTab(self.loras_tab, "LoRA Models")
-        self.tab_widget.addTab(self.controlnet_tab, "ControNet")
+        self.tab_widget.addTab(self.controlnet_tab, "ControlNet")
         self.tab_widget.addTab(self.tab_about, "About")
 
         self.setCentralWidget(self.tab_widget)

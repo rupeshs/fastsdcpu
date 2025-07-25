@@ -37,43 +37,7 @@ from app_settings import AppSettings
 from urllib.parse import urlparse, unquote
 from models.interface_types import InterfaceType
 from frontend.gui.image_generator_worker import ImageGeneratorWorker
-
-
-class ImageLabel(QLabel):
-    """Defines a simple QLabel widget"""
-
-    changed = QtCore.pyqtSignal()
-
-    def __init__(self, text: str):
-        super().__init__(text)
-        self.setAlignment(Qt.AlignCenter)
-        self.resize(512, 512)
-        self.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.MinimumExpanding)
-        self.sizeHint = QSize(512, 512)
-        self.setAcceptDrops(False)
-
-    def show_image(self, pixmap: QPixmap = None):
-        """Updates the widget pixamp"""
-        if pixmap == None or pixmap.isNull():
-            return
-        self.current_pixmap = pixmap
-        self.changed.emit()
-
-        # Resize the pixmap to the widget dimensions
-        image_width = self.current_pixmap.width()
-        image_height = self.current_pixmap.height()
-        if image_width > 512 or image_height > 512:
-            new_width = 512 if image_width > 512 else image_width
-            new_height = 512 if image_height > 512 else image_height
-            self.setPixmap(
-                self.current_pixmap.scaled(
-                    new_width,
-                    new_height,
-                    Qt.KeepAspectRatio,
-                )
-            )
-        else:
-            self.setPixmap(self.current_pixmap)
+from frontend.gui.common_widgets import ImageLabel
 
 
 class BaseWidget(QWidget):

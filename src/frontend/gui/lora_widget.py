@@ -21,6 +21,7 @@ from backend.lora import (
     update_lora_weights,
     load_lora_weight,
 )
+from frontend.gui.common_widgets import LabeledSlider
 from app_settings import AppSettings
 from paths import FastStableDiffusionPaths
 
@@ -36,38 +37,12 @@ _current_lora_count = 0
 _active_lora_widgets = []
 
 
-class _LabeledSlider(QWidget):
-    def __init__(self):
-        super().__init__()
-        self._label = QLabel("0.00")
-        self._slider = QSlider(orientation=Qt.Orientation.Horizontal)
-        self._slider.setMaximum(20)
-        self._slider.setMinimum(0)
-        self._slider.setValue(0)
-        self._slider.setTickInterval(1)
-        self._slider.setSingleStep(1)
-        self._slider.valueChanged.connect(self.onSliderChanged)
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(self._slider)
-        hlayout.addWidget(self._label)
-        self.setLayout(hlayout)
-
-    def onSliderChanged(self, value):
-        self._label.setText("%.2f" % (value / 20.0))
-
-    def setValue(self, value: int):
-        self._slider.setValue(int(value * 20))
-
-    def getValue(self):
-        return self._slider.value() / 20.0
-
-
 # This is a simple widget for displaying the loaded LoRAs name and weight
 class _LoraWidget(QWidget):
     def __init__(self):
         super().__init__()
         self.name_label = QLabel()
-        self.strength_slider = _LabeledSlider()
+        self.strength_slider = LabeledSlider(True)
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.name_label)
         hlayout.addWidget(self.strength_slider)
@@ -95,7 +70,7 @@ class LoraModelsWidget(QWidget):
         self.models_combobox.setToolTip(
             "<p style='white-space:pre'>Place LoRA models in the <b>lora_models</b> folder</p>"
         )
-        self.weight_slider = _LabeledSlider()
+        self.weight_slider = LabeledSlider(True)
         self.load_button = QPushButton("Load selected LoRA")
         self.load_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.load_button.clicked.connect(self.on_load_lora)
