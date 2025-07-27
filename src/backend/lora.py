@@ -48,10 +48,7 @@ def load_lora_weight(
     global _loaded_loras
     global _current_pipeline
     if pipeline != _current_pipeline:
-        for lora in _loaded_loras:
-            del lora
-        del _loaded_loras
-        _loaded_loras = []
+        reset_active_lora_weights()
         _current_pipeline = pipeline
 
     current_lora = _lora_info(
@@ -99,6 +96,17 @@ def get_active_lora_weights():
             )
         )
     return active_loras
+
+
+# Clears the global list of active LoRA weights; this method doesn't
+# actually remove the active LoRA weights from the current generation
+# pipeline and it's only meant to be called when rebuilding the pipeline
+def reset_active_lora_weights():
+    global _loaded_loras
+    for lora in _loaded_loras:
+        del lora
+    del _loaded_loras
+    _loaded_loras = []
 
 
 # This function receives a pipeline, an lcm_diffusion_setting object and

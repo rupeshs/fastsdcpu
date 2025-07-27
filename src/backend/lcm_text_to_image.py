@@ -7,7 +7,7 @@ import numpy as np
 import torch
 import logging
 from backend.device import is_openvino_device
-from backend.lora import load_lora_weight
+from backend.lora import reset_active_lora_weights
 from backend.controlnet import (
     load_controlnet_adapters,
     update_controlnet_arguments,
@@ -121,9 +121,9 @@ class LCMTextToImage:
 
     def _load_ov_hetero_pipeline(self):
         print("Loading Heterogeneous Compute pipeline")
-        if DEVICE.upper()=="NPU":
+        if DEVICE.upper() == "NPU":
             device = ["NPU", "NPU", "NPU"]
-            self.pipeline = OvHcLatentConsistency(self.ov_model_id,device)
+            self.pipeline = OvHcLatentConsistency(self.ov_model_id, device)
         else:
             self.pipeline = OvHcLatentConsistency(self.ov_model_id)
 
@@ -273,6 +273,7 @@ class LCMTextToImage:
                     gc.collect()
 
                 controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
+                reset_active_lora_weights()
                 if use_lora:
                     print(
                         f"***** Init LCM-LoRA pipeline - {lcm_lora.base_model_id} *****"
@@ -405,19 +406,25 @@ class LCMTextToImage:
         if lcm_diffusion_setting.use_seed:
             cur_seed = lcm_diffusion_setting.seed
             # for multiple images with a fixed seed, use sequential seeds
-            seeds = [(cur_seed + i) for i in range(lcm_diffusion_setting.number_of_images)]
+            seeds = [
+                (cur_seed + i) for i in range(lcm_diffusion_setting.number_of_images)
+            ]
         else:
-            seeds = [random.randint(0,999999999) for i in range(lcm_diffusion_setting.number_of_images)]
+            seeds = [
+                random.randint(0, 999999999)
+                for i in range(lcm_diffusion_setting.number_of_images)
+            ]
 
         if self.use_openvino:
             # no support for generators; try at least to ensure reproducible results for single images
             np.random.seed(seeds[0])
             if self._is_hetero_pipeline():
                 torch.manual_seed(seeds[0])
-                lcm_diffusion_setting.seed=seeds[0]
+                lcm_diffusion_setting.seed = seeds[0]
         else:
-            pipeline_extra_args['generator'] = [
-                    torch.Generator(device=self.device).manual_seed(s) for s in seeds]
+            pipeline_extra_args["generator"] = [
+                torch.Generator(device=self.device).manual_seed(s) for s in seeds
+            ]
 
         is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
         if is_openvino_pipe and not self._is_hetero_pipeline():
@@ -527,8 +534,8 @@ class LCMTextToImage:
                     **controlnet_args,
                 ).images
 
-        for (i, seed) in enumerate(seeds):
-            result_images[i].info['image_seed'] = seed
+        for i, seed in enumerate(seeds):
+            result_images[i].info["image_seed"] = seed
 
         return result_images
 

@@ -167,6 +167,7 @@ class MainWindow(QMainWindow):
 
     def create_main_tab(self):
         self.tab_widget = QTabWidget(self)
+        self.tab_widget.currentChanged.connect(self.on_current_tab_changed)
         self.tab_main = BaseWidget(self.config, self)
         self.tab_settings = QWidget()
         self.tab_about = QWidget()
@@ -257,7 +258,9 @@ class MainWindow(QMainWindow):
         self.height_value = QLabel("Height :")
         self.height = QComboBox(self)
         self.height.addItem("256")
+        self.height.addItem("384")
         self.height.addItem("512")
+        self.height.addItem("640")
         self.height.addItem("768")
         self.height.addItem("1024")
         self.height.setCurrentText("512")
@@ -603,3 +606,7 @@ class MainWindow(QMainWindow):
         self.previous_num_of_images = (
             self.config.settings.lcm_diffusion_setting.number_of_images
         )
+
+    def on_current_tab_changed(self, index):
+        if index == 5:  # LoRA models tab
+            self.loras_tab.reset_active_lora_widgets()

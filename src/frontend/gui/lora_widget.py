@@ -179,6 +179,19 @@ class LoraModelsWidget(QWidget):
             )
             print(_active_lora_widgets)
 
+    def reset_active_lora_widgets(self):
+        # This code assumes that the only time when the active LoRA weights count
+        # is different from the current LoRA GUI widgets count is after a pipeline
+        # rebuild, when the active LoRA widgets count will be zero, so all LoRA GUI
+        # widgets are simply removed with no further action
+        global _current_lora_count
+        global _active_lora_widgets
+        if len(get_active_lora_weights()) != _current_lora_count:
+            for lora_widget in _active_lora_widgets:
+                self.layout().removeWidget(lora_widget)
+            _current_lora_count = 0
+            _active_lora_widgets = []
+
 
 # Test the widget
 if __name__ == "__main__":
