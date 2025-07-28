@@ -148,7 +148,6 @@ class ControlNetWidget(QWidget):
         global _current_controlnet_weight
         global _current_controlnet_image
         global _controlnet_models_map
-        _current_controlnet_enabled = True
         settings = app_settings.settings.lcm_diffusion_setting
         if not _current_controlnet_enabled:
             settings.controlnet.enabled = False
