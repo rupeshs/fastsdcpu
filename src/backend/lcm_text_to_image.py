@@ -6,6 +6,7 @@ import random
 import numpy as np
 import torch
 from backend.device import is_openvino_device
+from backend.lora import reset_active_lora_weights
 from backend.controlnet import (
     load_controlnet_adapters,
     update_controlnet_arguments,
@@ -274,6 +275,7 @@ class LCMTextToImage:
                     gc.collect()
 
                 controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
+                reset_active_lora_weights()
                 if use_lora:
                     print(
                         f"***** Init LCM-LoRA pipeline - {lcm_lora.base_model_id} *****"
