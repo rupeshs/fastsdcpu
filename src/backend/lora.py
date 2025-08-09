@@ -4,12 +4,15 @@ from paths import get_file_name, FastStableDiffusionPaths
 from pathlib import Path
 
 
-# A basic class to keep track of the currently loaded LoRAs and
-# their weights; the diffusers function \c get_active_adapters()
-# returns a list of adapter names but not their weights so we need
-# a way to keep track of the current LoRA weights to set whenever
-# a new LoRA is loaded
 class _lora_info:
+    """
+    A basic class to keep track of the currently loaded LoRAs and their weights.
+
+    The diffusers function _get_active_adapters()_ returns a list of adapter
+    names but not their weights so we need a way to keep track of the current
+    LoRA weights to set whenever a new LoRA is loaded.
+    """
+
     def __init__(
         self,
         path: str,
@@ -28,15 +31,19 @@ _loaded_loras = []
 _current_pipeline = None
 
 
-# This function loads a LoRA from the LoRA path setting, so it's
-# possible to load multiple LoRAs by calling this function more than
-# once with a different LoRA path setting; note that if you plan to
-# load multiple LoRAs and dynamically change their weights, you
-# might want to set the LoRA fuse option to False
 def load_lora_weight(
     pipeline,
     lcm_diffusion_setting,
 ):
+    """
+    Loads a LoRA from the LoRA path setting.
+
+    This function loads a LoRA from the LoRA path stored in the settings so
+    it's possible to load multiple LoRAs by calling this function more than
+    once with a different LoRA path setting; note that if you plan to load
+    multiple LoRAs and dynamically change their weights, you might want to
+    set the LoRA fuse option to _False_.
+    """
     if not lcm_diffusion_setting.lora.path:
         raise Exception("Empty lora model path")
 
@@ -84,9 +91,10 @@ def get_lora_models(root_dir: str):
     return lora_models_map
 
 
-# This function returns a list of (adapter_name, weight) tuples for the
-# currently loaded LoRAs
 def get_active_lora_weights():
+    """
+    Returns a list of _(adapter_name, weight)_ tuples for the currently loaded LoRAs.
+    """
     active_loras = []
     for lora_info in _loaded_loras:
         active_loras.append(
@@ -98,10 +106,14 @@ def get_active_lora_weights():
     return active_loras
 
 
-# Clears the global list of active LoRA weights; this method doesn't
-# actually remove the active LoRA weights from the current generation
-# pipeline and it's only meant to be called when rebuilding the pipeline
 def reset_active_lora_weights():
+    """
+    Clears the global list of active LoRA weights.
+
+    This method clears the list of active LoRA weights but it doesn't actually
+    remove the active LoRA weights from the current generation pipeline.
+    This method is only meant to be called when rebuilding the generation pipeline.
+    """
     global _loaded_loras
     for lora in _loaded_loras:
         del lora
@@ -109,13 +121,20 @@ def reset_active_lora_weights():
     _loaded_loras = []
 
 
-# This function receives a pipeline, an lcm_diffusion_setting object and
-# an optional list of updated (adapter_name, weight) tuples
 def update_lora_weights(
     pipeline,
     lcm_diffusion_setting,
     lora_weights=None,
 ):
+    """
+    Updates the LoRA weights for the currently active LoRAs.
+
+    Args:
+        pipeline: The currently active pipeline.
+        lcm_diffusion_setting: The global settings, needed to verify if the
+            pipeline is running in LCM-LoRA mode.
+        lora_weights: An optional list of updated _(adapter_name, weight)_ tuples.
+    """
     global _loaded_loras
     global _current_pipeline
     if pipeline != _current_pipeline:
