@@ -57,7 +57,10 @@ class ControlNetWidget(QWidget):
         if len(_controlnet_models_map) > 0:
             _current_controlnet_adapter = list(_controlnet_models_map.keys())[0]
         self.enabled_checkbox = QCheckBox("Enable ControlNet")
+        self.enabled_checkbox.setEnabled(False)
         self.enabled_checkbox.stateChanged.connect(self.on_enable_changed)
+        if len(_controlnet_models_map) > 0:
+            self.enabled_checkbox.setEnabled(True)
         self.models_combobox = QComboBox()
         self.models_combobox.addItems(_controlnet_models_map.keys())
         self.models_combobox.setToolTip(

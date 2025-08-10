@@ -72,10 +72,15 @@ class LoraModelsWidget(QWidget):
         )
         self.weight_slider = LabeledSlider(True)
         self.load_button = QPushButton("Load selected LoRA")
+        self.load_button.setEnabled(False)
         self.load_button.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.load_button.setStyleSheet("padding: 10px")
         self.load_button.clicked.connect(self.on_load_lora)
+        if len(lora_models_map) > 0:
+            self.load_button.setEnabled(True)
         self.loaded_label = QLabel("Loaded LoRA models:")
         self.update_button = QPushButton("Update LoRA weights")
+        self.update_button.setEnabled(False)
         self.update_button.clicked.connect(self.on_update_weights)
         self.separator = QLabel()
         self.separator.setFrameShape(QFrame.HLine)
@@ -154,6 +159,7 @@ class LoraModelsWidget(QWidget):
         lora_widget = _LoraWidget()
         lora_widget.setValues(current_lora, current_weight)
         self.layout().insertWidget(3, lora_widget)
+        self.update_button.setEnabled(True)
         _active_lora_widgets.append(lora_widget)
         _current_lora_count += 1
 
