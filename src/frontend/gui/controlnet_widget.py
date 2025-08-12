@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QGridLayout,
     QPushButton,
+    QToolButton,
     QRadioButton,
     QButtonGroup,
     QSlider,
@@ -69,6 +70,7 @@ class ControlNetWidget(QWidget):
         if len(_controlnet_models_map) > 0:
             self.enabled_checkbox.setEnabled(True)
         self.models_combobox = QComboBox()
+        self.models_combobox.setMaximumWidth(160)
         self.models_combobox.addItems(_controlnet_models_map.keys())
         self.models_combobox.setToolTip(
             "<p style='white-space:pre'>Place ControNet models in the <b>controlnet_models</b> folder</p>"
@@ -78,14 +80,18 @@ class ControlNetWidget(QWidget):
         self.weight_slider = LabeledSlider(True)
         self.weight_slider.setEnabled(False)
         self.weight_slider.valueChanged.connect(self.on_weight_changed)
-        self.image_label = ImageLabel("Drag and drop control image<br>or <a href='#;'>click here to select a control image</a>", 256, 256)
+        self.image_button = QToolButton()
+        self.image_button.setText("...")
+        self.image_button.setToolTip("Click to select control image.")
+        self.image_button.clicked.connect(self.controlnet_file_dialog)
+        self.image_button.setEnabled(False)
+        self.image_label = ImageLabel("Drag and drop control image.", 256, 256)
         self.image_label.setMinimumSize(QSize(256, 256))
         self.image_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.image_label.setFrameShape(QFrame.Box)
         self.image_label.setAcceptDrops(True)
         self.image_label.setEnabled(False)
         self.image_label.changed.connect(self.on_image_changed)
-        self.image_label.linkActivated.connect(self.controlnet_file_dialog)
 
         radio_buttons_layout = QHBoxLayout()
         self.radio_buttons_group = QButtonGroup()
@@ -110,6 +116,7 @@ class ControlNetWidget(QWidget):
         hlayout.addWidget(self.models_combobox)
         hlayout.addWidget(self.weight_slider)
         hlayout.addWidget(self.image_label)
+        hlayout.addWidget(self.image_button)
         vlayout = QVBoxLayout()
         vlayout.addWidget(self.message_label, 3)
         vlayout.addWidget(self.enabled_checkbox, 3)
@@ -138,6 +145,7 @@ class ControlNetWidget(QWidget):
         self.models_combobox.setEnabled(_current_controlnet_enabled)
         self.weight_slider.setEnabled(_current_controlnet_enabled)
         self.image_label.setEnabled(_current_controlnet_enabled)
+        self.image_button.setEnabled(_current_controlnet_enabled)
         self.update_controlnet_settings()
 
     def on_combo_changed(self, text: str):
@@ -185,7 +193,6 @@ class ControlNetWidget(QWidget):
             pixmap = QPixmap(fileName[0])
             self.image_label.show_image(pixmap)
             self.image_label.update()
-            self.on_image_changed()
 
 
 # Test the widget
