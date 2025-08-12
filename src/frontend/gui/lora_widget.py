@@ -167,7 +167,6 @@ class LoraModelsWidget(QWidget):
         update_weights = []
         active_weights = get_active_lora_weights()
         if not len(active_weights):
-            # QMessageBox.information(self.parent, "Error", "No active LoRAs, first you need to load LoRA model")
             return
         global _active_lora_widgets
         for idx, lora in enumerate(active_weights):
@@ -183,7 +182,6 @@ class LoraModelsWidget(QWidget):
                 app_settings.settings.lcm_diffusion_setting,
                 update_weights,
             )
-            print(_active_lora_widgets)
 
     def reset_active_lora_widgets(self):
         # This code assumes that the only time when the active LoRA weights count

@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
     QWidget,
     QSizePolicy,
     QMessageBox,
+    QFileDialog,
 )
 from PyQt5.QtCore import QSize
 from app_settings import AppSettings
@@ -56,6 +57,12 @@ class ControlNetWidget(QWidget):
             )
         if len(_controlnet_models_map) > 0:
             _current_controlnet_adapter = list(_controlnet_models_map.keys())[0]
+        self.message_label = QLabel(
+            "<p style='white-space:pre'>Download ControlNet v1.1 models (723 MB files) from "
+            "<a href='https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/tree/main'>"
+            "ControlNet v1.1</a>.<br>Place the models in the <b>controlnet_models</b> folder."
+            "<br>Restart the application to detect newly installed models.</p>"
+        )
         self.enabled_checkbox = QCheckBox("Enable ControlNet")
         self.enabled_checkbox.setEnabled(False)
         self.enabled_checkbox.stateChanged.connect(self.on_enable_changed)
@@ -64,20 +71,21 @@ class ControlNetWidget(QWidget):
         self.models_combobox = QComboBox()
         self.models_combobox.addItems(_controlnet_models_map.keys())
         self.models_combobox.setToolTip(
-            "<p style='white-space:pre'>Place LoRA models in the <b>controlnet_models</b> folder</p>"
+            "<p style='white-space:pre'>Place ControNet models in the <b>controlnet_models</b> folder</p>"
         )
         self.models_combobox.setEnabled(False)
         self.models_combobox.currentTextChanged.connect(self.on_combo_changed)
         self.weight_slider = LabeledSlider(True)
         self.weight_slider.setEnabled(False)
         self.weight_slider.valueChanged.connect(self.on_weight_changed)
-        self.image_label = ImageLabel("Drag and drop control image here", 256, 256)
+        self.image_label = ImageLabel("Drag and drop control image<br>or <a href='#;'>click here to select a control image</a>", 256, 256)
         self.image_label.setMinimumSize(QSize(256, 256))
         self.image_label.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.image_label.setFrameShape(QFrame.Box)
         self.image_label.setAcceptDrops(True)
         self.image_label.setEnabled(False)
         self.image_label.changed.connect(self.on_image_changed)
+        self.image_label.linkActivated.connect(self.controlnet_file_dialog)
 
         radio_buttons_layout = QHBoxLayout()
         self.radio_buttons_group = QButtonGroup()
@@ -103,7 +111,8 @@ class ControlNetWidget(QWidget):
         hlayout.addWidget(self.weight_slider)
         hlayout.addWidget(self.image_label)
         vlayout = QVBoxLayout()
-        vlayout.addWidget(self.enabled_checkbox, 5)
+        vlayout.addWidget(self.message_label, 3)
+        vlayout.addWidget(self.enabled_checkbox, 3)
         vlayout.addLayout(hlayout)
         vlayout.addLayout(radio_buttons_layout)
         vlayout.addStretch(80)
@@ -166,6 +175,17 @@ class ControlNetWidget(QWidget):
         # Currently, every change made to the ControlNet settings will
         # trigger a pipeline rebuild, this can probably be improved
         settings.rebuild_pipeline = True
+
+    def controlnet_file_dialog(self):
+        fileName = QFileDialog.getOpenFileName(
+            self, "Open Image", "results", "Image Files (*.png *.jpg *.bmp *.webp)"
+        )
+        if fileName[0] != "":
+            self.image_label.path = fileName[0]
+            pixmap = QPixmap(fileName[0])
+            self.image_label.show_image(pixmap)
+            self.image_label.update()
+            self.on_image_changed()
 
 
 # Test the widget
