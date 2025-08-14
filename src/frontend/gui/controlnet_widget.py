@@ -73,7 +73,7 @@ class ControlNetWidget(QWidget):
         self.models_combobox.setMaximumWidth(160)
         self.models_combobox.addItems(_controlnet_models_map.keys())
         self.models_combobox.setToolTip(
-            "<p style='white-space:pre'>Place ControNet models in the <b>controlnet_models</b> folder</p>"
+            "<p style='white-space:pre'>Place ControlNet models in the <b>controlnet_models</b> folder</p>"
         )
         self.models_combobox.setEnabled(False)
         self.models_combobox.currentTextChanged.connect(self.on_combo_changed)
