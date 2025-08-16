@@ -40,7 +40,7 @@ if __name__ != "__main__":
 
 _controlnet_models_map = {}
 _current_controlnet_image = None
-_current_controlnet_weight = 0.0
+_current_controlnet_weight = 0.5
 _current_controlnet_adapter = ""
 _current_controlnet_enabled = False
 
@@ -78,7 +78,7 @@ class ControlNetWidget(QWidget):
         )
         self.models_combobox.currentTextChanged.connect(self.on_combo_changed)
         self.weight_slider = LabeledSlider(True)
-        self.weight_slider.setValue(0.5)
+        self.weight_slider.setValue(_current_controlnet_weight)
         self.weight_slider.valueChanged.connect(self.on_weight_changed)
         self.image_button = QToolButton()
         self.image_button.setText("...")
