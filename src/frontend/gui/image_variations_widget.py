@@ -1,4 +1,5 @@
 from PIL import Image
+from constants import DEVICE
 from PyQt5.QtWidgets import QApplication
 
 from app_settings import AppSettings
@@ -27,9 +28,10 @@ class ImageVariationsWidget(Img2ImgWidget):
         )
         self.config.settings.lcm_diffusion_setting.strength = self.strength.value() / 10
 
-        images = generate_image_variations(
-            self.config.settings.lcm_diffusion_setting.init_image,
-            self.config.settings.lcm_diffusion_setting.strength,
+        images = self.parent.context.generate_text_to_image(
+            self.config.settings,
+            self.config.reshape_required,
+            DEVICE,
         )
         self.prepare_images(images)
         self.after_generation()
