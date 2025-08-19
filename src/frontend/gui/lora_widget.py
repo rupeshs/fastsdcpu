@@ -143,7 +143,7 @@ class LoraModelsWidget(QWidget):
         if not path.exists(settings.lora.path):
             QMessageBox.information(self.parent, "Error", "Invalid LoRA model path!")
             return
-        pipeline = get_context(InterfaceType.GUI).lcm_text_to_image.pipeline
+        pipeline = self.parent.context.lcm_text_to_image.pipeline
         if not pipeline:
             QMessageBox.information(
                 self.parent,
@@ -153,7 +153,7 @@ class LoraModelsWidget(QWidget):
             return
         settings.lora.enabled = True
         load_lora_weight(
-            get_context(InterfaceType.GUI).lcm_text_to_image.pipeline,
+            self.parent.context.lcm_text_to_image.pipeline,
             settings,
         )
         lora_widget = _LoraWidget()
@@ -178,7 +178,7 @@ class LoraModelsWidget(QWidget):
             )
         if len(update_weights) > 0:
             update_lora_weights(
-                get_context(InterfaceType.GUI).lcm_text_to_image.pipeline,
+                self.parent.context.lcm_text_to_image.pipeline,
                 app_settings.settings.lcm_diffusion_setting,
                 update_weights,
             )

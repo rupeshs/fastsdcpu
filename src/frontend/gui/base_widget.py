@@ -92,7 +92,7 @@ class BaseWidget(QWidget):
         self.config.settings.lcm_diffusion_setting.negative_prompt = (
             self.neg_prompt.toPlainText()
         )
-        images = get_context(InterfaceType.GUI).generate_text_to_image(
+        images = self.parent.context.generate_text_to_image(
             self.config.settings,
             self.config.reshape_required,
             DEVICE,
@@ -151,6 +151,7 @@ class BaseWidget(QWidget):
 
     def before_generation(self):
         """Call this function before running a generation task"""
+        self.config = self.parent.config
         self.img.setEnabled(False)
         self.generate.setEnabled(False)
         self.browse_results.setEnabled(False)
