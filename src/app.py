@@ -357,7 +357,7 @@ else:
     config.lcm_diffusion_setting.lora.enabled = False
     config.lcm_diffusion_setting.lora.path = args.lora
     config.lcm_diffusion_setting.lora.weight = args.lora_weight
-    config.lcm_diffusion_setting.lora.fuse = True
+    config.lcm_diffusion_setting.lora.fuse = False
     if config.lcm_diffusion_setting.lora.path:
         config.lcm_diffusion_setting.lora.enabled = True
     if args.usejpeg:

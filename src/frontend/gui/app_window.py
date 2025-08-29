@@ -40,7 +40,9 @@ from PyQt5.QtWidgets import (
 )
 
 from models.interface_types import InterfaceType
-from frontend.gui.base_widget import BaseWidget
+from frontend.gui.base_widget import BaseWidget, ImageLabel
+from frontend.gui.lora_widget import LoraModelsWidget
+from frontend.gui.controlnet_widget import ControlNetWidget
 
 # DPI scale fix
 QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling, True)
@@ -161,12 +163,15 @@ class MainWindow(QMainWindow):
 
     def create_main_tab(self):
         self.tab_widget = QTabWidget(self)
+        self.tab_widget.currentChanged.connect(self.on_current_tab_changed)
         self.tab_main = BaseWidget(self.config, self)
         self.tab_settings = QWidget()
         self.tab_about = QWidget()
         self.img2img_tab = Img2ImgWidget(self.config, self)
         self.variations_tab = ImageVariationsWidget(self.config, self)
         self.upscaler_tab = UpscalerWidget(self.config, self)
+        self.loras_tab = LoraModelsWidget(self.config, self)
+        self.controlnet_tab = ControlNetWidget(self.config, self)
 
         # Add main window tabs here
         self.tab_widget.addTab(self.tab_main, "Text to Image")
@@ -174,6 +179,8 @@ class MainWindow(QMainWindow):
         self.tab_widget.addTab(self.variations_tab, "Image Variations")
         self.tab_widget.addTab(self.upscaler_tab, "Upscaler")
         self.tab_widget.addTab(self.tab_settings, "Settings")
+        self.tab_widget.addTab(self.loras_tab, "LoRA Models")
+        self.tab_widget.addTab(self.controlnet_tab, "ControlNet")
         self.tab_widget.addTab(self.tab_about, "About")
 
         self.setCentralWidget(self.tab_widget)
@@ -238,7 +245,9 @@ class MainWindow(QMainWindow):
         self.width_value = QLabel("Width :")
         self.width = QComboBox(self)
         self.width.addItem("256")
+        self.width.addItem("384")
         self.width.addItem("512")
+        self.width.addItem("640")
         self.width.addItem("768")
         self.width.addItem("1024")
         self.width.setCurrentText("512")
@@ -247,7 +256,9 @@ class MainWindow(QMainWindow):
         self.height_value = QLabel("Height :")
         self.height = QComboBox(self)
         self.height.addItem("256")
+        self.height.addItem("384")
         self.height.addItem("512")
+        self.height.addItem("640")
         self.height.addItem("768")
         self.height.addItem("1024")
         self.height.setCurrentText("512")
@@ -591,3 +602,7 @@ class MainWindow(QMainWindow):
         self.previous_num_of_images = (
             self.config.settings.lcm_diffusion_setting.number_of_images
         )
+
+    def on_current_tab_changed(self, index):
+        if index == 5:  # LoRA models tab
+            self.loras_tab.reset_active_lora_widgets()
