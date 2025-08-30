@@ -153,7 +153,7 @@ class LoraModelsWidget(QWidget):
             return
         settings.lora.enabled = True
         load_lora_weight(
-            self.parent.context.lcm_text_to_image.pipeline,
+            self.parent.context.lcm_text_to_image.txt2img_pipeline,
             settings,
         )
         lora_widget = _LoraWidget()
@@ -178,7 +178,7 @@ class LoraModelsWidget(QWidget):
             )
         if len(update_weights) > 0:
             update_lora_weights(
-                self.parent.context.lcm_text_to_image.pipeline,
+                self.parent.context.lcm_text_to_image.txt2img_pipeline,
                 app_settings.settings.lcm_diffusion_setting,
                 update_weights,
             )

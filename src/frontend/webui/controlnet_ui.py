@@ -1,7 +1,7 @@
 import gradio as gr
 from PIL import Image
 from backend.lora import get_lora_models
-from state import get_settings
+from state import get_settings, get_context
 from backend.models.lcmdiffusion_setting import ControlNetSetting
 from backend.annotators.image_control_factory import ImageControlFactory
 
@@ -54,15 +54,33 @@ def on_user_input(
 
     # This code can be improved; currently, if the user clicks the
     # "Enable ControlNet" checkbox or changes the currently selected
-    # ControlNet model, it will trigger a pipeline rebuild even if, in
-    # the end, the user leaves the same ControlNet settings
+    # ControlNet model, it will trigger a ControlNet pipeline rebuild
+    # even if, in the end, the user leaves the same ControlNet settings
     global _controlnet_enabled
     global _adapter_path
     if settings.controlnet.enabled != _controlnet_enabled or (
         settings.controlnet.enabled
         and settings.controlnet.adapter_path != _adapter_path
     ):
-        settings.rebuild_pipeline = True
+        # settings.rebuild_pipeline = True
+        context = get_context(InterfaceType.WEBUI)
+        if context.lcm_text_to_image.controlnet_pipeline:
+            del context.lcm_text_to_image.controlnet_pipeline
+            context.lcm_text_to_image.controlnet_pipeline = None
+        if context.lcm_text_to_image.controlnet_img2img_pipeline:
+            del context.lcm_text_to_image.controlnet_img2img_pipeline
+            context.lcm_text_to_image.controlnet_img2img_pipeline = None
+        context.lcm_text_to_image.controlnet_pipeline = get_controlnet_pipeline(
+            context.lcm_text_to_image.txt2img_pipeline,
+            settings,
+            DiffusionTask.text_to_image,
+        )
+        context.lcm_text_to_image.controlnet_img2img_pipeline = get_controlnet_pipeline(
+            context.lcm_text_to_image.txt2img_pipeline,
+            settings,
+            DiffusionTask.image_to_image,
+        )
+
         _controlnet_enabled = settings.controlnet.enabled
         _adapter_path = settings.controlnet.adapter_path
     return gr.Checkbox(value=enable)

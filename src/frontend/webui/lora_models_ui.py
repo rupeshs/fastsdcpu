@@ -35,7 +35,7 @@ def on_click_update_weight(*lora_weights):
         )
     if len(update_weights) > 0:
         update_lora_weights(
-            get_context(InterfaceType.WEBUI).lcm_text_to_image.pipeline,
+            get_context(InterfaceType.WEBUI).lcm_text_to_image.txt2img_pipeline,
             app_settings.settings.lcm_diffusion_setting,
             update_weights,
         )
@@ -66,7 +66,7 @@ def on_click_load_lora(lora_name, lora_weight):
         return
     settings.lora.enabled = True
     load_lora_weight(
-        get_context(InterfaceType.WEBUI).lcm_text_to_image.pipeline,
+        get_context(InterfaceType.WEBUI).lcm_text_to_image.txt2img_pipeline,
         settings,
     )
 

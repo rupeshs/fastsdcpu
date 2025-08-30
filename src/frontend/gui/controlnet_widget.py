@@ -34,6 +34,7 @@ if __name__ != "__main__":
     from state import get_settings, get_context
     from models.interface_types import InterfaceType
     from backend.lora import get_lora_models
+    from backend.controlnet import get_controlnet_pipeline
 
     app_settings = get_settings()
 
@@ -184,9 +185,28 @@ class ControlNetWidget(QWidget):
             ]
             settings.controlnet.conditioning_scale = _current_controlnet_weight
             settings.controlnet._control_image = _current_controlnet_image
-        # Currently, every change made to the ControlNet settings will
-        # trigger a pipeline rebuild, this can probably be improved
-        settings.rebuild_pipeline = True
+        # Rebuild ControlNet pipelines from the base pipeline
+        # settings.rebuild_pipeline = True
+        if self.parent.context.lcm_text_to_image.controlnet_pipeline:
+            del self.parent.context.lcm_text_to_image.controlnet_pipeline
+            self.parent.context.lcm_text_to_image.controlnet_pipeline = None
+        if self.parent.context.lcm_text_to_image.controlnet_img2img_pipeline:
+            del self.parent.context.lcm_text_to_image.controlnet_img2img_pipeline
+            self.parent.context.lcm_text_to_image.controlnet_img2img_pipeline = None
+        self.parent.context.lcm_text_to_image.controlnet_pipeline = (
+            get_controlnet_pipeline(
+                self.parent.context.lcm_text_to_image.txt2img_pipeline,
+                settings,
+                DiffusionTask.text_to_image,
+            )
+        )
+        self.parent.context.lcm_text_to_image.controlnet_img2img_pipeline = (
+            get_controlnet_pipeline(
+                self.parent.context.lcm_text_to_image.txt2img_pipeline,
+                settings,
+                DiffusionTask.image_to_image,
+            )
+        )
 
     def controlnet_file_dialog(self):
         fileName = QFileDialog.getOpenFileName(
