@@ -1,6 +1,18 @@
 import logging
 from PIL import Image
-from diffusers import ControlNetModel
+from typing import Any
+from diffusers import (
+    ControlNetModel,
+    AutoPipelineForText2Image,
+    LCMScheduler,
+    AutoencoderKL,
+    StableDiffusionPipeline,
+    StableDiffusionXLPipeline,
+    StableDiffusionControlNetPipeline,
+    StableDiffusionXLControlNetPipeline,
+    StableDiffusionControlNetImg2ImgPipeline,
+    StableDiffusionXLControlNetImg2ImgPipeline,
+)
 from backend.models.lcmdiffusion_setting import (
     DiffusionTask,
     ControlNetSetting,
@@ -88,3 +100,57 @@ def controlnet_settings_from_dict(
             logging.error("Wrong ControlNet control image! Disabling ControlNet")
             controlnet.enabled = False
     lcm_diffusion_setting.controlnet = controlnet
+
+
+def get_controlnet_pipeline(
+    pipeline: Any, lcm_diffusion_setting, diffusion_task: DiffusionTask
+) -> Any:
+    """Creates a ControlNet pipeline from the base txt2img _pipeline_"""
+    if (
+        lcm_diffusion_setting.controlnet is None
+        or not lcm_diffusion_setting.controlnet.enabled
+    ):
+        return None
+    components = pipeline.components
+    pipeline_class = pipeline.__class__.__name__
+    controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
+    if diffusion_task == DiffusionTask.text_to_image.value:
+        if (
+            pipeline_class == "LatentConsistencyModelPipeline"
+            or pipeline_class == "StableDiffusionPipeline"
+        ):
+            p = StableDiffusionControlNetPipeline.from_pipe(
+                pipeline,
+                vae=None,
+                **controlnet_args,
+            )
+            p.vae = pipeline.vae
+            return p
+        elif pipeline_class == "StableDiffusionXLPipeline":
+            p = StableDiffusionXLControlNetPipeline.from_pipe(
+                pipeline,
+                vae=None,
+                **controlnet_args,
+            )
+            p.vae = pipeline.vae
+            return p
+    elif diffusion_task == DiffusionTask.image_to_image.value:
+        if (
+            pipeline_class == "LatentConsistencyModelPipeline"
+            or pipeline_class == "StableDiffusionPipeline"
+        ):
+            p = StableDiffusionControlNetImg2ImgPipeline.from_pipe(
+                pipeline,
+                vae=None,
+                **controlnet_args,
+            )
+            p.vae = pipeline.vae
+            return p
+        elif pipeline_class == "StableDiffusionXLPipeline":
+            p = StableDiffusionXLControlNetImg2ImgPipeline.from_pipe(
+                pipeline,
+                vae=None,
+                **controlnet_args,
+            )
+            p.vae = pipeline.vae
+            return p

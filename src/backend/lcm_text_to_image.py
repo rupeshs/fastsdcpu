@@ -10,6 +10,7 @@ from backend.lora import reset_active_lora_weights
 from backend.controlnet import (
     load_controlnet_adapters,
     update_controlnet_arguments,
+    get_controlnet_pipeline,
 )
 from backend.models.lcmdiffusion_setting import (
     DiffusionTask,
@@ -269,13 +270,18 @@ class LCMTextToImage:
                 #     self.pipeline = None
                 self._init_gguf_diffusion(lcm_diffusion_setting)
             else:
+                reset_active_lora_weights()
                 if self.pipeline or self.img_to_img_pipeline:
-                    self.pipeline = None
+                    self.pipeline = self.txt2img_pipeline
+                    self.txt2img_pipeline = None
+                    self.img2img_pipeline = None
                     self.img_to_img_pipeline = None
+                    self.controlnet_pipeline = None
+                    self.controlnet_img2img_pipeline = None
+                    del self.pipeline
+                    self.pipeline = None
                     gc.collect()
 
-                controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
-                reset_active_lora_weights()
                 if use_lora:
                     print(
                         f"***** Init LCM-LoRA pipeline - {lcm_lora.base_model_id} *****"
@@ -285,7 +291,6 @@ class LCMTextToImage:
                         lcm_lora.lcm_lora_id,
                         use_local_model,
                         torch_data_type=self.torch_data_type,
-                        pipeline_args=controlnet_args,
                     )
 
                 else:
@@ -293,10 +298,19 @@ class LCMTextToImage:
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
-                        controlnet_args,
+                        None,  # controlnet_args,
                     )
 
-                self.img_to_img_pipeline = get_image_to_image_pipeline(self.pipeline)
+                # Prepare alternative generation pipelines using the txt2img pipeline from which all extra pipelines are derived
+                self.txt2img_pipeline = self.pipeline
+                self.img2img_pipeline = get_image_to_image_pipeline(self.pipeline)
+                self.controlnet_pipeline = get_controlnet_pipeline(
+                    self.pipeline, lcm_diffusion_setting, DiffusionTask.text_to_image
+                )
+                self.controlnet_img2img_pipeline = get_controlnet_pipeline(
+                    self.pipeline, lcm_diffusion_setting, DiffusionTask.image_to_image
+                )
+                self.img_to_img_pipeline = self.img2img_pipeline
 
                 if tomesd and token_merging > 0.001:
                     print(f"***** Token Merging: {token_merging} *****")
@@ -415,6 +429,16 @@ class LCMTextToImage:
                 f"Strength: {lcm_diffusion_setting.strength},{img_to_img_inference_steps}"
             )
 
+        self.pipeline = self.txt2img_pipeline
+        self.img_to_img_pipeline = self.img2img_pipeline
+        if (
+            lcm_diffusion_setting.controlnet
+            and lcm_diffusion_setting.controlnet.enabled
+        ):
+            if self.controlnet_pipeline != None:
+                self.pipeline = self.controlnet_pipeline
+            if self.controlnet_img2img_pipeline != None:
+                self.img_to_img_pipeline = self.controlnet_img2img_pipeline
         pipeline_extra_args = {}
 
         if lcm_diffusion_setting.use_seed:
