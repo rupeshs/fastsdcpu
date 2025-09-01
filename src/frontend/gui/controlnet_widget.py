@@ -26,7 +26,7 @@ from PyQt5.QtCore import QSize
 from app_settings import AppSettings
 from PyQt5.QtGui import QPixmap, QDesktopServices, QDragEnterEvent, QDropEvent
 from paths import FastStableDiffusionPaths
-from backend.models.lcmdiffusion_setting import ControlNetSetting
+from backend.models.lcmdiffusion_setting import DiffusionTask, ControlNetSetting
 from backend.annotators.image_control_factory import ImageControlFactory
 from frontend.gui.common_widgets import LabeledSlider, ImageLabel
 
@@ -186,27 +186,7 @@ class ControlNetWidget(QWidget):
             settings.controlnet.conditioning_scale = _current_controlnet_weight
             settings.controlnet._control_image = _current_controlnet_image
         # Rebuild ControlNet pipelines from the base pipeline
-        # settings.rebuild_pipeline = True
-        if self.parent.context.lcm_text_to_image.controlnet_pipeline:
-            del self.parent.context.lcm_text_to_image.controlnet_pipeline
-            self.parent.context.lcm_text_to_image.controlnet_pipeline = None
-        if self.parent.context.lcm_text_to_image.controlnet_img2img_pipeline:
-            del self.parent.context.lcm_text_to_image.controlnet_img2img_pipeline
-            self.parent.context.lcm_text_to_image.controlnet_img2img_pipeline = None
-        self.parent.context.lcm_text_to_image.controlnet_pipeline = (
-            get_controlnet_pipeline(
-                self.parent.context.lcm_text_to_image.txt2img_pipeline,
-                settings,
-                DiffusionTask.text_to_image,
-            )
-        )
-        self.parent.context.lcm_text_to_image.controlnet_img2img_pipeline = (
-            get_controlnet_pipeline(
-                self.parent.context.lcm_text_to_image.txt2img_pipeline,
-                settings,
-                DiffusionTask.image_to_image,
-            )
-        )
+        settings.rebuild_controlnet_pipeline = True
 
     def controlnet_file_dialog(self):
         fileName = QFileDialog.getOpenFileName(

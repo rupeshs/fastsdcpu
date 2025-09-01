@@ -187,12 +187,12 @@ def interactive_controlnet(
             del context.lcm_text_to_image.controlnet_img2img_pipeline
             context.lcm_text_to_image.controlnet_img2img_pipeline = None
         context.lcm_text_to_image.controlnet_pipeline = get_controlnet_pipeline(
-            context.lcm_text_to_image.txt2img_pipeline,
+            context.lcm_text_to_image.pipeline,
             settings,
             DiffusionTask.text_to_image,
         )
         context.lcm_text_to_image.controlnet_img2img_pipeline = get_controlnet_pipeline(
-            context.lcm_text_to_image.txt2img_pipeline,
+            context.lcm_text_to_image.pipeline,
             settings,
             DiffusionTask.image_to_image,
         )
@@ -239,7 +239,7 @@ def interactive_lora(
             )
         if len(update_weights) > 0:
             update_lora_weights(
-                context.lcm_text_to_image.txt2img_pipeline,
+                context.lcm_text_to_image.pipeline,
                 config.lcm_diffusion_setting,
                 update_weights,
             )
@@ -258,7 +258,7 @@ def interactive_lora(
             print("Invalid LoRA model path!")
             return
         settings.lora.enabled = True
-        load_lora_weight(context.lcm_text_to_image.txt2img_pipeline, settings)
+        load_lora_weight(context.lcm_text_to_image.pipeline, settings)
 
     if menu_flag:
         global _edit_lora_settings

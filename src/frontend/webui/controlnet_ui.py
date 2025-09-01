@@ -62,25 +62,7 @@ def on_user_input(
         settings.controlnet.enabled
         and settings.controlnet.adapter_path != _adapter_path
     ):
-        # settings.rebuild_pipeline = True
-        context = get_context(InterfaceType.WEBUI)
-        if context.lcm_text_to_image.controlnet_pipeline:
-            del context.lcm_text_to_image.controlnet_pipeline
-            context.lcm_text_to_image.controlnet_pipeline = None
-        if context.lcm_text_to_image.controlnet_img2img_pipeline:
-            del context.lcm_text_to_image.controlnet_img2img_pipeline
-            context.lcm_text_to_image.controlnet_img2img_pipeline = None
-        context.lcm_text_to_image.controlnet_pipeline = get_controlnet_pipeline(
-            context.lcm_text_to_image.txt2img_pipeline,
-            settings,
-            DiffusionTask.text_to_image,
-        )
-        context.lcm_text_to_image.controlnet_img2img_pipeline = get_controlnet_pipeline(
-            context.lcm_text_to_image.txt2img_pipeline,
-            settings,
-            DiffusionTask.image_to_image,
-        )
-
+        settings.rebuild_controlnet_pipeline = True
         _controlnet_enabled = settings.controlnet.enabled
         _adapter_path = settings.controlnet.adapter_path
     return gr.Checkbox(value=enable)
