@@ -307,11 +307,21 @@ class LCMTextToImage:
                 if use_lora:
                     if self.txt2img_pipeline or self.img2img_pipeline:
                         self.pipeline = self.txt2img_pipeline
-                        self.txt2img_pipeline = None
-                        self.img2img_pipeline = None
-                        self.img_to_img_pipeline = None
-                        self.controlnet_pipeline = None
-                        self.controlnet_img2img_pipeline = None
+                        if self.txt2img_pipeline:
+                            del self.txt2img_pipeline
+                            self.txt2img_pipeline = None
+                        if self.img2img_pipeline:
+                            del self.img2img_pipeline
+                            self.img2img_pipeline = None
+                        if self.img_to_img_pipeline:
+                            del self.img_to_img_pipeline
+                            self.img_to_img_pipeline = None
+                        if self.controlnet_pipeline:
+                            del self.controlnet_pipeline
+                            self.controlnet_pipeline = None
+                        if self.controlnet_img2img_pipeline:
+                            del self.controlnet_img2img_pipeline
+                            self.controlnet_img2img_pipeline = None
                         del self.pipeline
                         self.pipeline = None
                         gc.collect()
