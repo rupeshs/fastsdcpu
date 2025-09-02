@@ -307,6 +307,7 @@ class LCMTextToImage:
                 if use_lora:
                     if self.txt2img_pipeline or self.img2img_pipeline:
                         self.pipeline = self.txt2img_pipeline
+                        self.pipeline.unload_lora_weights()
                         if self.txt2img_pipeline:
                             del self.txt2img_pipeline
                             self.txt2img_pipeline = None
