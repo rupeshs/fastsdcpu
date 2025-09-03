@@ -345,10 +345,11 @@ class LCMTextToImage:
 
                 else:
                     print(f"***** Init LCM Model pipeline - {model_id} *****")
+                    controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
-                        None,  # controlnet_args,
+                        controlnet_args,
                     )
 
                 if use_lora:
