@@ -133,7 +133,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Update realtime UI
 - Add hypersd support
 - 1 step fast inference support for SDXL and SD1.5
-- Experimental support for single file Safetensors SD 1.5 models(Civitai models), simply add local model path to configs/stable-diffusion-models.txt file.
+- Experimental support for single file Safetensors SD 1.5/SDXL models(Civitai models), simply add local model path to configs/stable-diffusion-models.txt file.
 - Add REST API support
 - Add Aura SR (4x)/GigaGAN based upscaler support
 - Add Aura SR v2 upscaler support
@@ -144,6 +144,8 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - AI PC NPU(Power efficient inference using OpenVINO) supports, text to image ,image to image and image variations support
 - Add [TAEF1 (Tiny autoencoder for FLUX.1) openvino](https://huggingface.co/rupeshs/taef1-openvino) support
 - Add Image to Image and Image Variations Qt GUI support,thanks [monstruosoft](https://github.com/monstruosoft)
+- Add single file SDXL safetensor file support,thanks [monstruosoft](https://github.com/monstruosoft)
+
 
 <a id="fast-inference-benchmarks"></a>
 
@@ -309,7 +311,7 @@ Watch YouTube video :
 
 ## Models
 
-To use single file [Safetensors](https://huggingface.co/docs/safetensors/en/index) SD 1.5 models(Civit AI) follow this [YouTube tutorial](https://www.youtube.com/watch?v=zZTfUZnXJVk). Use LCM-LoRA Mode for single file safetensors.
+To use single file [Safetensors](https://huggingface.co/docs/safetensors/en/index) SD 1.5/SDXL models(Civit AI) follow this [YouTube tutorial](https://www.youtube.com/watch?v=zZTfUZnXJVk). Use LCM-LoRA Mode for single file safetensors.
 
 Fast SD supports LCM models and LCM-LoRA models.
 
