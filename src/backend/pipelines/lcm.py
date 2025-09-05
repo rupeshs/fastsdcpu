@@ -117,12 +117,7 @@ def get_image_to_image_pipeline(pipeline: Any) -> Any:
         or pipeline_class == "StableDiffusionPipeline"
     ):
         return StableDiffusionImg2ImgPipeline(**components)
-    elif pipeline_class == "StableDiffusionControlNetPipeline":
-        return AutoPipelineForImage2Image.from_pipe(pipeline)
     elif pipeline_class == "StableDiffusionXLPipeline":
-        return StableDiffusionXLImg2ImgPipeline(**components)
-    elif pipeline_class == "StableDiffusionXLControlNetPipeline":
-        del components["controlnet"]
         return StableDiffusionXLImg2ImgPipeline(**components)
     else:
         raise Exception(f"Unknown pipeline {pipeline_class}")

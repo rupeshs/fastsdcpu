@@ -26,7 +26,7 @@ from PyQt5.QtCore import QSize
 from app_settings import AppSettings
 from PyQt5.QtGui import QPixmap, QDesktopServices, QDragEnterEvent, QDropEvent
 from paths import FastStableDiffusionPaths
-from backend.models.lcmdiffusion_setting import ControlNetSetting
+from backend.models.lcmdiffusion_setting import DiffusionTask, ControlNetSetting
 from backend.annotators.image_control_factory import ImageControlFactory
 from frontend.gui.common_widgets import LabeledSlider, ImageLabel
 
@@ -34,6 +34,7 @@ if __name__ != "__main__":
     from state import get_settings, get_context
     from models.interface_types import InterfaceType
     from backend.lora import get_lora_models
+    from backend.controlnet import get_controlnet_pipeline
 
     app_settings = get_settings()
 
@@ -184,9 +185,8 @@ class ControlNetWidget(QWidget):
             ]
             settings.controlnet.conditioning_scale = _current_controlnet_weight
             settings.controlnet._control_image = _current_controlnet_image
-        # Currently, every change made to the ControlNet settings will
-        # trigger a pipeline rebuild, this can probably be improved
-        settings.rebuild_pipeline = True
+        # Rebuild ControlNet pipelines from the base pipeline
+        settings.rebuild_controlnet_pipeline = True
 
     def controlnet_file_dialog(self):
         fileName = QFileDialog.getOpenFileName(

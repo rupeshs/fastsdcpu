@@ -12,6 +12,7 @@ from backend.lora import (
     update_lora_weights,
     load_lora_weight,
 )
+from backend.controlnet import get_controlnet_pipeline
 from backend.models.lcmdiffusion_setting import (
     DiffusionTask,
     ControlNetSetting,
@@ -177,7 +178,24 @@ def interactive_controlnet(
         settings.controlnet.enabled != current_enabled
         or settings.controlnet.adapter_path != current_adapter_path
     ):
-        settings.rebuild_pipeline = True
+        # Rebuild ControlNet pipelines from the base pipeline
+        # settings.rebuild_pipeline = True
+        if context.lcm_text_to_image.controlnet_pipeline:
+            del context.lcm_text_to_image.controlnet_pipeline
+            context.lcm_text_to_image.controlnet_pipeline = None
+        if context.lcm_text_to_image.controlnet_img2img_pipeline:
+            del context.lcm_text_to_image.controlnet_img2img_pipeline
+            context.lcm_text_to_image.controlnet_img2img_pipeline = None
+        context.lcm_text_to_image.controlnet_pipeline = get_controlnet_pipeline(
+            context.lcm_text_to_image.pipeline,
+            settings,
+            DiffusionTask.text_to_image,
+        )
+        context.lcm_text_to_image.controlnet_img2img_pipeline = get_controlnet_pipeline(
+            context.lcm_text_to_image.pipeline,
+            settings,
+            DiffusionTask.image_to_image,
+        )
 
 
 def interactive_lora(
