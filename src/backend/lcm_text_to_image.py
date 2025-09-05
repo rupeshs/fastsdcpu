@@ -205,7 +205,7 @@ class LCMTextToImage:
 
         # Reset current pipeline references to allow the garbage
         # collector to correctly free the pipeline when necessary
-        if use_lora:
+        if self.txt2img_pipeline:  # In LCM or LCM-LoRA modes
             self.pipeline = self.txt2img_pipeline
             self.img_to_img_pipeline = self.img2img_pipeline
             # Regenerate the ControlNet pipelines if the variable
@@ -303,34 +303,28 @@ class LCMTextToImage:
                 #     self.pipeline = None
                 self._init_gguf_diffusion(lcm_diffusion_setting)
             else:
+                # Code for pipeline rebuild in LCM or LCM-LoRA modes
                 reset_active_lora_weights()
-                if use_lora:
-                    if self.txt2img_pipeline or self.img2img_pipeline:
-                        self.pipeline = self.txt2img_pipeline
-                        self.pipeline.unload_lora_weights()
-                        if self.txt2img_pipeline:
-                            del self.txt2img_pipeline
-                            self.txt2img_pipeline = None
-                        if self.img2img_pipeline:
-                            del self.img2img_pipeline
-                            self.img2img_pipeline = None
-                        if self.img_to_img_pipeline:
-                            del self.img_to_img_pipeline
-                            self.img_to_img_pipeline = None
-                        if self.controlnet_pipeline:
-                            del self.controlnet_pipeline
-                            self.controlnet_pipeline = None
-                        if self.controlnet_img2img_pipeline:
-                            del self.controlnet_img2img_pipeline
-                            self.controlnet_img2img_pipeline = None
-                        del self.pipeline
-                        self.pipeline = None
-                        gc.collect()
-                else:
-                    if self.pipeline or self.img_to_img_pipeline:
-                        self.pipeline = None
+                if self.txt2img_pipeline:  # In LCM or LCM-LoRA modes
+                    self.pipeline = self.txt2img_pipeline
+                    if self.txt2img_pipeline:
+                        del self.txt2img_pipeline
+                        self.txt2img_pipeline = None
+                    if self.img2img_pipeline:
+                        del self.img2img_pipeline
+                        self.img2img_pipeline = None
+                    if self.img_to_img_pipeline:
+                        del self.img_to_img_pipeline
                         self.img_to_img_pipeline = None
-                        gc.collect()
+                    if self.controlnet_pipeline:
+                        del self.controlnet_pipeline
+                        self.controlnet_pipeline = None
+                    if self.controlnet_img2img_pipeline:
+                        del self.controlnet_img2img_pipeline
+                        self.controlnet_img2img_pipeline = None
+                    del self.pipeline
+                    self.pipeline = None
+                    gc.collect()
 
                 if use_lora:
                     print(
@@ -345,33 +339,27 @@ class LCMTextToImage:
 
                 else:
                     print(f"***** Init LCM Model pipeline - {model_id} *****")
-                    controlnet_args = load_controlnet_adapters(lcm_diffusion_setting)
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
-                        controlnet_args,
+                        None,  # controlnet_args,
                     )
 
-                if use_lora:
-                    # Prepare alternative generation pipelines using the txt2img
-                    # pipeline from which all extra pipelines are derived
-                    self.txt2img_pipeline = self.pipeline
-                    self.img2img_pipeline = get_image_to_image_pipeline(self.pipeline)
-                    self.controlnet_pipeline = get_controlnet_pipeline(
-                        self.pipeline,
-                        lcm_diffusion_setting,
-                        DiffusionTask.text_to_image,
-                    )
-                    self.controlnet_img2img_pipeline = get_controlnet_pipeline(
-                        self.pipeline,
-                        lcm_diffusion_setting,
-                        DiffusionTask.image_to_image,
-                    )
-                    self.img_to_img_pipeline = self.img2img_pipeline
-                else:
-                    self.img_to_img_pipeline = get_image_to_image_pipeline(
-                        self.pipeline
-                    )
+                # Prepare alternative generation pipelines using the newly
+                # created pipeline from which all extra pipelines are derived
+                self.txt2img_pipeline = self.pipeline
+                self.img2img_pipeline = get_image_to_image_pipeline(self.pipeline)
+                self.controlnet_pipeline = get_controlnet_pipeline(
+                    self.pipeline,
+                    lcm_diffusion_setting,
+                    DiffusionTask.text_to_image,
+                )
+                self.controlnet_img2img_pipeline = get_controlnet_pipeline(
+                    self.pipeline,
+                    lcm_diffusion_setting,
+                    DiffusionTask.image_to_image,
+                )
+                self.img_to_img_pipeline = self.img2img_pipeline
 
                 if tomesd and token_merging > 0.001:
                     print(f"***** Token Merging: {token_merging} *****")
@@ -490,7 +478,13 @@ class LCMTextToImage:
                 f"Strength: {lcm_diffusion_setting.strength},{img_to_img_inference_steps}"
             )
 
-        if lcm_diffusion_setting.use_lcm_lora:
+        # In LCM and LCM-LoRA modes, set the pipeline for the current
+        # generation by setting self.pipeline and self.img_to_img_pipeline
+        # to either the normal generation pipelines or the ControlNet
+        # generation pipelines, depending on the user settings. Note that,
+        # after generation, the pipelines are reset for compatibility with
+        # other generation modes.
+        if self.txt2img_pipeline:  # In LCM or LCM-LoRA modes
             self.pipeline = self.txt2img_pipeline
             self.img_to_img_pipeline = self.img2img_pipeline
             if (
@@ -641,7 +635,7 @@ class LCMTextToImage:
                     **controlnet_args,
                 ).images
 
-        if lcm_diffusion_setting.use_lcm_lora:
+        if self.txt2img_pipeline:  # In LCM or LCM-LoRA modes
             self.pipeline = self.txt2img_pipeline
             self.img_to_img_pipeline = self.img2img_pipeline
 
