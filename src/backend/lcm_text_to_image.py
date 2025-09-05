@@ -339,10 +339,11 @@ class LCMTextToImage:
 
                 else:
                     print(f"***** Init LCM Model pipeline - {model_id} *****")
+                    extra_args = {}
                     self.pipeline = get_lcm_model_pipeline(
                         model_id,
                         use_local_model,
-                        None,  # controlnet_args,
+                        extra_args,
                     )
 
                 # Prepare alternative generation pipelines using the newly
