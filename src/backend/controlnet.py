@@ -119,38 +119,38 @@ def get_controlnet_pipeline(
             pipeline_class == "LatentConsistencyModelPipeline"
             or pipeline_class == "StableDiffusionPipeline"
         ):
-            p = StableDiffusionControlNetPipeline.from_pipe(
+            controlnet_pipeline = StableDiffusionControlNetPipeline.from_pipe(
                 pipeline,
                 vae=None,
                 **controlnet_args,
             )
-            p.vae = pipeline.vae
-            return p
+            controlnet_pipeline.vae = pipeline.vae
+            return controlnet_pipeline
         elif pipeline_class == "StableDiffusionXLPipeline":
-            p = StableDiffusionXLControlNetPipeline.from_pipe(
+            controlnet_pipeline = StableDiffusionXLControlNetPipeline.from_pipe(
                 pipeline,
                 vae=None,
                 **controlnet_args,
             )
-            p.vae = pipeline.vae
-            return p
+            controlnet_pipeline.vae = pipeline.vae
+            return controlnet_pipeline
     elif diffusion_task == DiffusionTask.image_to_image.value:
         if (
             pipeline_class == "LatentConsistencyModelPipeline"
             or pipeline_class == "StableDiffusionPipeline"
         ):
-            p = StableDiffusionControlNetImg2ImgPipeline.from_pipe(
+            controlnet_pipeline = StableDiffusionControlNetImg2ImgPipeline.from_pipe(
                 pipeline,
                 vae=None,
                 **controlnet_args,
             )
-            p.vae = pipeline.vae
-            return p
+            controlnet_pipeline.vae = pipeline.vae
+            return controlnet_pipeline
         elif pipeline_class == "StableDiffusionXLPipeline":
-            p = StableDiffusionXLControlNetImg2ImgPipeline.from_pipe(
+            controlnet_pipeline = StableDiffusionXLControlNetImg2ImgPipeline.from_pipe(
                 pipeline,
                 vae=None,
                 **controlnet_args,
             )
-            p.vae = pipeline.vae
-            return p
+            controlnet_pipeline.vae = pipeline.vae
+            return controlnet_pipeline

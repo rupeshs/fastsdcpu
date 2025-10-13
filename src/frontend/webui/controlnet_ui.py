@@ -69,9 +69,8 @@ def on_user_input(
 
 
 def on_change_conditioning_scale(cond_scale):
-    print(cond_scale)
     app_settings.settings.lcm_diffusion_setting.controlnet.conditioning_scale = (
-        cond_scale
+        float(cond_scale)
     )
 
 
