@@ -2,14 +2,14 @@ accelerate==1.6.0
 diffusers==0.33.0
 transformers==4.48.0
 PyQt5
-Pillow==9.4.0
+Pillow==11.3.0
 openvino==2025.1.0
 optimum-intel==1.23.0
 onnx==1.16.0
 numpy==1.26.4
 onnxruntime==1.17.3
 pydantic
-typing-extensions==4.10.0
+typing-extensions==4.12.2
 pyyaml==6.0.1
 gradio==5.6.0
 peft==0.6.1

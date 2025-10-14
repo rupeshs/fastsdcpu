@@ -442,7 +442,7 @@ To install FastSD CPU on Windows run the following steps :
 
 ![FastSD CPU running on Mac](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-mac-gui.jpg)
 
-:exclamation:**Ensure that you have Python 3.9 or 3.10 or 3.11 version installed.**
+:exclamation:**Ensure that you have Python 3.9 or 3.10 or 3.11 or 3.12 version installed.**
 
 Run the following commands to install FastSD CPU on Mac :
 
