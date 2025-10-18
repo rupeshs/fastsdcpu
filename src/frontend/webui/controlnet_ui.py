@@ -1,7 +1,7 @@
 import gradio as gr
 from PIL import Image
 from backend.lora import get_lora_models
-from state import get_settings
+from state import get_settings, get_context
 from backend.models.lcmdiffusion_setting import ControlNetSetting
 from backend.annotators.image_control_factory import ImageControlFactory
 
@@ -54,24 +54,23 @@ def on_user_input(
 
     # This code can be improved; currently, if the user clicks the
     # "Enable ControlNet" checkbox or changes the currently selected
-    # ControlNet model, it will trigger a pipeline rebuild even if, in
-    # the end, the user leaves the same ControlNet settings
+    # ControlNet model, it will trigger a ControlNet pipeline rebuild
+    # even if, in the end, the user leaves the same ControlNet settings
     global _controlnet_enabled
     global _adapter_path
     if settings.controlnet.enabled != _controlnet_enabled or (
         settings.controlnet.enabled
         and settings.controlnet.adapter_path != _adapter_path
     ):
-        settings.rebuild_pipeline = True
+        settings.rebuild_controlnet_pipeline = True
         _controlnet_enabled = settings.controlnet.enabled
         _adapter_path = settings.controlnet.adapter_path
     return gr.Checkbox(value=enable)
 
 
 def on_change_conditioning_scale(cond_scale):
-    print(cond_scale)
     app_settings.settings.lcm_diffusion_setting.controlnet.conditioning_scale = (
-        cond_scale
+        float(cond_scale)
     )
 
 
