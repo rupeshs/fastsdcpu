@@ -31,7 +31,7 @@ for /f "tokens=2" %%I in ('%PYTHON_COMMAND% --version 2^>^&1') do (
 echo Python version: %python_version%
 
 uv venv --python 3.12.3 "%~dp0env" 
-call "%~dp0env\Scripts\activate.bat" && uv pip install torch --index-url https://download.pytorch.org/whl/cpu 
+call "%~dp0env\Scripts\activate.bat" && uv pip install torch==2.8.0 --index-url https://download.pytorch.org/whl/cpu 
 call "%~dp0env\Scripts\activate.bat" && uv pip install -r "%~dp0requirements.txt"
 echo FastSD CPU env installation completed.
 pause

@@ -29,7 +29,7 @@ if __name__ != "__main__":
     from state import get_settings, get_context
     from models.interface_types import InterfaceType
 
-    app_settings = get_settings()
+    # app_settings = get_settings()
 
 
 _MAX_LORA_WEIGHTS = 5
@@ -60,6 +60,7 @@ class LoraModelsWidget(QWidget):
     def __init__(self, config: AppSettings, parent):
         super().__init__()
         self.parent = parent
+        self.config = config
         lora_models_map = {}
         if config != None:
             lora_models_map = get_lora_models(
@@ -117,9 +118,13 @@ class LoraModelsWidget(QWidget):
 
         global _current_lora_count
         global _active_lora_widgets
-        if app_settings == None or _current_lora_count >= _MAX_LORA_WEIGHTS:
+        if (
+            self.config == None
+            or self.config.settings == None
+            or _current_lora_count >= _MAX_LORA_WEIGHTS
+        ):
             return
-        if app_settings.settings.lcm_diffusion_setting.use_openvino:
+        if self.config.settings.lcm_diffusion_setting.use_openvino:
             QMessageBox().information(
                 self.parent,
                 "Error",
@@ -127,11 +132,11 @@ class LoraModelsWidget(QWidget):
             )
             return
         lora_models_map = get_lora_models(
-            app_settings.settings.lcm_diffusion_setting.lora.models_dir
+            self.config.settings.lcm_diffusion_setting.lora.models_dir
         )
 
         # Load a new LoRA
-        settings = app_settings.settings.lcm_diffusion_setting
+        settings = self.config.settings.lcm_diffusion_setting
         settings.lora.fuse = False
         settings.lora.enabled = False
         current_lora = self.models_combobox.currentText()
@@ -143,8 +148,7 @@ class LoraModelsWidget(QWidget):
         if not path.exists(settings.lora.path):
             QMessageBox.information(self.parent, "Error", "Invalid LoRA model path!")
             return
-        pipeline = self.parent.context.lcm_text_to_image.pipeline
-        if not pipeline:
+        if not self.parent.context.lcm_text_to_image.pipeline:
             QMessageBox.information(
                 self.parent,
                 "Error",
@@ -179,7 +183,7 @@ class LoraModelsWidget(QWidget):
         if len(update_weights) > 0:
             update_lora_weights(
                 self.parent.context.lcm_text_to_image.pipeline,
-                app_settings.settings.lcm_diffusion_setting,
+                self.config.settings.lcm_diffusion_setting,
                 update_weights,
             )
 

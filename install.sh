@@ -29,7 +29,7 @@ BASEDIR=$(pwd)
 uv venv --python 3.12.3 "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
-uv pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+uv pip install torch==2.8.0 torchvision --index-url https://download.pytorch.org/whl/cpu
 if [[ "$1" == "--disable-gui" ]]; then
     #! For termux , we don't need Qt based GUI
     packages="$(grep -v "^ *#\|^PyQt5" requirements.txt | grep .)" 

@@ -29,7 +29,7 @@ BASEDIR=$(pwd)
 uv venv --python 3.12.3 "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
-uv pip install torch
+uv pip install torch==2.8.0
 uv pip install -r "$BASEDIR/requirements.txt"
 chmod +x "start.sh"
 chmod +x "start-webui.sh"

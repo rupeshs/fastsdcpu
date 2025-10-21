@@ -112,13 +112,20 @@ def reset_active_lora_weights():
 
     This method clears the list of active LoRA weights but it doesn't actually
     remove the active LoRA weights from the current generation pipeline.
-    This method is only meant to be called when rebuilding the generation pipeline.
+    This method is only meant to be called when rebuilding the generation pipeline
+    as it will also clear the _current_pipeline_ variable; setting the
+    _current_pipeline_ variable to _None_ is safe here since the active LoRA weights
+    list is being reset, but it also helps to remove the pipeline reference that
+    might prevent the garbage collector from releasing the current pipeline memory.
     """
     global _loaded_loras
     for lora in _loaded_loras:
         del lora
     del _loaded_loras
     _loaded_loras = []
+
+    global _current_pipeline
+    _current_pipeline = None
 
 
 def update_lora_weights(
