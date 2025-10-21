@@ -5,7 +5,7 @@ PYTHON_COMMAND="python3"
 
 if ! command -v python3 &>/dev/null; then
     if ! command -v python &>/dev/null; then
-        echo "Error: Python not found, please install python 3.8 or higher and try again"
+        echo "Error: Python not found, please install Python (Recommended: Python 3.10..3.12) and try again."
         exit 1
     fi
 fi
@@ -26,7 +26,7 @@ fi
 
 BASEDIR=$(pwd)
 
-uv venv --python 3.11.6 "$BASEDIR/env"
+uv venv --python 3.12.3 "$BASEDIR/env"
 # shellcheck disable=SC1091
 source "$BASEDIR/env/bin/activate"
 uv pip install torch==2.8.0

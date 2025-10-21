@@ -10,7 +10,7 @@ PYTHON_COMMAND="python3"
 if command -v $PYTHON_COMMAND >/dev/null 2>&1; then
     echo "Python command check: OK"
 else
-    echo "Error: Python command not found, please install Python (Recommended: Python 3.10 or Python 3.11) and try again"
+    echo "Error: Python not found, please install Python (Recommended: Python 3.10..3.12) and try again."
     exit 1
 fi
 
