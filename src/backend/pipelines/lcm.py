@@ -81,6 +81,12 @@ def get_lcm_model_pipeline(
             "segmind/SSD-1B",
             use_local_model,
         )
+    elif "Z-Image" in model_id:
+        pipeline = ZImagePipeline.from_pretrained(
+            model_id,
+            local_files_only=use_local_model,
+            **pipeline_args,
+        )
     elif pathlib.Path(model_id).suffix == ".safetensors":
         # When loading a .safetensors model, the pipeline has to be created
         # with StableDiffusionPipeline() since it's the only class that
@@ -124,5 +130,7 @@ def get_image_to_image_pipeline(pipeline: Any) -> Any:
         return StableDiffusionImg2ImgPipeline(**components)
     elif pipeline_class == "StableDiffusionXLPipeline":
         return StableDiffusionXLImg2ImgPipeline(**components)
+    elif pipeline_class == "ZImagePipeline":
+        return pipeline
     else:
         raise Exception(f"Unknown pipeline {pipeline_class}")
