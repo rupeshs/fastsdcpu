@@ -17,8 +17,10 @@ from diffusers import (
     AutoPipelineForImage2Image,
     StableDiffusionControlNetPipeline,
     StableDiffusionXLControlNetPipeline,
+    ZImagePipeline,
 )
 import pathlib
+from sdnq import SDNQConfig
 
 
 def _get_lcm_pipeline_from_base_model(
@@ -49,6 +51,9 @@ def load_taesd(
     use_local_model: bool = False,
     torch_data_type: torch.dtype = torch.float32,
 ):
+    pipeline_class = pipeline.__class__.__name__
+    if pipeline_class == "ZImagePipeline":
+        return
     tiny_vae = get_tiny_autoencoder_repo_id(pipeline.__class__.__name__)
     pipeline.vae = AutoencoderTiny.from_pretrained(
         tiny_vae,
