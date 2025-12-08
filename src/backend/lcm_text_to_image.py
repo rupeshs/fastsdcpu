@@ -608,7 +608,7 @@ class LCMTextToImage:
             ):
                 print(f"Using {self.pipeline.__class__.__name__}")
                 if self.pipeline.__class__.__name__ != "ZImagePipeline":
-                    pipeline_extra_args["timesteps"] = _get_timesteps()
+                    pipeline_extra_args["timesteps"] = self._get_timesteps()
                 result_images = self.pipeline(
                     prompt=lcm_diffusion_setting.prompt,
                     negative_prompt=lcm_diffusion_setting.negative_prompt,
