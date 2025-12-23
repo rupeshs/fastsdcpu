@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/rupeshs-fastsdcpu-badge.png)](https://mseep.ai/app/rupeshs-fastsdcpu)
+
 # FastSD CPU :sparkles:[![Mentioned in Awesome OpenVINO](https://awesome.re/mentioned-badge-flat.svg)](https://github.com/openvinotoolkit/awesome-openvino)
 
 <div align="center">
