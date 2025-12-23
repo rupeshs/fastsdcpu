@@ -30,7 +30,7 @@ from backend.pipelines.lcm import (
 )
 from backend.pipelines.lcm_lora import get_lcm_lora_pipeline
 from constants import DEVICE, GGUF_THREADS
-from diffusers import LCMScheduler
+from diffusers import LCMScheduler, ZImagePipeline
 from image_ops import resize_pil_image
 from backend.openvino.ov_hc_stablediffusion_pipeline import OvHcLatentConsistency
 from backend.gguf.gguf_diffusion import (
@@ -440,8 +440,11 @@ class LCMTextToImage:
                 if lcm_diffusion_setting.lora.enabled:
                     print("Warning: Lora models not supported on OpenVINO mode")
             elif not lcm_diffusion_setting.use_gguf_model:
-                adapters = self.pipeline.get_active_adapters()
-                print(f"Active adapters : {adapters}")
+                try:
+                    adapters = self.pipeline.get_active_adapters()
+                    print(f"Active adapters : {adapters}")
+                except:
+                    print(f"No active adapters on selected pipeline")
 
     def _get_timesteps(self):
         time_steps = self.pipeline.scheduler.config.get("timesteps")
@@ -604,6 +607,8 @@ class LCMTextToImage:
                 == DiffusionTask.text_to_image.value
             ):
                 print(f"Using {self.pipeline.__class__.__name__}")
+                if self.pipeline.__class__.__name__ != "ZImagePipeline":
+                    pipeline_extra_args["timesteps"] = self._get_timesteps()
                 result_images = self.pipeline(
                     prompt=lcm_diffusion_setting.prompt,
                     negative_prompt=lcm_diffusion_setting.negative_prompt,
@@ -612,7 +617,7 @@ class LCMTextToImage:
                     width=lcm_diffusion_setting.image_width,
                     height=lcm_diffusion_setting.image_height,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
-                    timesteps=self._get_timesteps(),
+                    # timesteps=self._get_timesteps(),
                     **pipeline_extra_args,
                     **controlnet_args,
                 ).images
