@@ -717,7 +717,7 @@ FastSD can be used with ComfyUI with [ComfyUI-FastSDCPU node](https://github.com
 
 The fastsdcpu project is available as open source under the terms of the [MIT license](https://github.com/rupeshs/fastsdcpu/blob/main/LICENSE)
 
-<a id="comfyuisupport"></a>
+<a id="gimpplugin"></a>
 
 ## GIMP Plugin
 FastSD engine integrated into [Intel's OpenVINO™ AI Plugins for GIMP](https://github.com/intel/openvino-ai-plugins-gimp). It supports CPU/GPU and NPU and AI PC. Thanks to Intel for providing access to [Intel® Tiber™ AI Cloud](https://developer.habana.ai/intel-ai-cloud/) to develop and test with latest AI PC( Intel Core Ultra Series 2).
