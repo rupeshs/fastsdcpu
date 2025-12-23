@@ -17,7 +17,7 @@ The following interfaces are available :
 🚀 Using **OpenVINO(SDXS-512-0.9)**, it took **0.82 seconds** (**820 milliseconds**) to create a single 512x512 image on a **Core i7-12700**.
 
 ## 📰 News
-
+- **2025-12-22** - FastSD engine integrated into [Intel's OpenVINO™ AI Plugins for GIMP](https://github.com/intel/openvino-ai-plugins-gimp)
 - **2025-05-17** - Added SANA Sprint(OpenVINO) support,Tiny AutoEncoder 1.3(Mocha Croissant) support
 - **2025-04-20** - Added MCP server support,faster uv based installation,Claude desktop, Open WebUI support
 - **2024-11-03** - Added Intel Core Ultra Series 2 (Lunar Lake) NPU support
@@ -45,6 +45,7 @@ The following interfaces are available :
 - [MCP Server Support](#mcpsupport)
 - [Open WebUI Support](#openwebuisupport)
 - [ComfyUI support](#comfyuisupport)
+- [GIMP Plugin](#gimpplugin)
 - [License](#license)
 - [Contributors](#contributors)
 
@@ -715,6 +716,14 @@ FastSD can be used with ComfyUI with [ComfyUI-FastSDCPU node](https://github.com
 ## License
 
 The fastsdcpu project is available as open source under the terms of the [MIT license](https://github.com/rupeshs/fastsdcpu/blob/main/LICENSE)
+
+<a id="comfyuisupport"></a>
+
+## GIMP Plugin
+FastSD engine integrated into [Intel's OpenVINO™ AI Plugins for GIMP](https://github.com/intel/openvino-ai-plugins-gimp). It supports CPU/GPU and NPU and AI PC. Thanks to Intel for providing access to [Intel® Tiber™ AI Cloud](https://developer.habana.ai/intel-ai-cloud/) to develop and test with latest AI PC( Intel Core Ultra Series 2).
+
+For more details check this [readme](https://github.com/intel/openvino-ai-plugins-gimp?tab=readme-ov-file#fastsd-plugin).
+
 
 ## Disclaimer
 
