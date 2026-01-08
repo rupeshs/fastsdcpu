@@ -362,6 +362,8 @@ else:
         config.lcm_diffusion_setting.lora.enabled = True
     if args.usejpeg:
         config.generated_images.format = ImageFormat.JPEG.value.upper()
+    else:
+        config.generated_images.format = ImageFormat.PNG.value.upper()
     if args.seed > -1:
         config.lcm_diffusion_setting.use_seed = True
     else:
@@ -548,7 +550,8 @@ else:
 
         else:
             for i in range(0, args.batch_count):
-                context.generate_text_to_image(
+                images = context.generate_text_to_image(
                     settings=config,
                     device=DEVICE,
                 )
+                context.save_images(images, config)
