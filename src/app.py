@@ -38,6 +38,12 @@ group.add_argument(
     help="Start Web UI",
 )
 group.add_argument(
+    "-d",
+    "--hfdemo",
+    action="store_true",
+    help="Start HF demo",
+)
+group.add_argument(
     "-a",
     "--api",
     action="store_true",
@@ -330,6 +336,10 @@ elif args.mcp:
     from backend.api.mcp_server import start_mcp_server
 
     start_mcp_server(args.port)
+elif args.hfdemo:
+    from frontend.webui.hf_demo import start_demo
+
+    start_demo()
 else:
     context = get_context(InterfaceType.CLI)
     config = app_settings.settings
