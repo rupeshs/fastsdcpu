@@ -1,0 +1,15 @@
+.git/
+.gitignore
+.github/
+*.bat
+docs/
+env/
+start-mcpserver.bat
+start-webserver.bat
+start-realtime.bat
+start-webui.bat
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+configs/settings.yaml
