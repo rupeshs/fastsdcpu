@@ -1,0 +1,19 @@
+services:
+  fastsdcpu:
+    build: .
+    container_name: fastsdcpu
+
+    ports:
+      - "7860:7860"
+
+    environment:
+      - HF_HOME=/data/huggingface
+      - TRANSFORMERS_CACHE=/data/huggingface/transformers
+      - HF_DATASETS_CACHE=/data/huggingface/datasets
+      - PYTHONUNBUFFERED=1
+
+    volumes:
+      - hf_cache:/data/huggingface
+
+volumes:
+  hf_cache:
