@@ -1,19 +1,23 @@
-import gradio as gr
-from backend.lcm_text_to_image import LCMTextToImage
-from backend.models.lcmdiffusion_setting import LCMLora, LCMDiffusionSetting
-from constants import DEVICE, LCM_DEFAULT_MODEL_OPENVINO
+import base64
+from datetime import datetime
+from pprint import pprint
 from time import perf_counter
+
+import gradio as gr
 import numpy as np
 from cv2 import imencode
-import base64
-from backend.device import get_device_name
-from constants import APP_VERSION
-from backend.device import is_openvino_device
 from PIL import Image
-from backend.models.lcmdiffusion_setting import DiffusionTask
-from backend.safety_checker import SafetyChecker
-from pprint import pprint
 from transformers import pipeline
+
+from backend.device import get_device_name, is_openvino_device
+from backend.lcm_text_to_image import LCMTextToImage
+from backend.models.lcmdiffusion_setting import (
+    DiffusionTask,
+    LCMDiffusionSetting,
+    LCMLora,
+)
+from backend.safety_checker import SafetyChecker
+from constants import APP_VERSION, DEVICE, LCM_DEFAULT_MODEL_OPENVINO
 
 lcm_text_to_image = LCMTextToImage()
 lcm_lora = LCMLora(
@@ -106,8 +110,9 @@ footer {
 
 def _get_footer_message() -> str:
     version = f"<center><p> {APP_VERSION} "
+    current_year = datetime.now().year
     footer_msg = version + (
-        '  © 2025 <a href="https://github.com/rupeshs">'
+        f'  © {current_year} <a href="https://github.com/rupeshs">'
         " Rupesh Sreeraman</a></p></center>"
     )
     warning_msg = "<p><b> Please note that this is a minimal demo app.</b> </p><br>"
