@@ -17,6 +17,7 @@ The following interfaces are available :
 🚀 Using **OpenVINO(SDXS-512-0.9)**, it took **0.82 seconds** (**820 milliseconds**) to create a single 512x512 image on a **Core i7-12700**.
 
 ## 📰 News
+- **2026-05-01** - Docker support, HF demo 
 - **2025-12-22** - FastSD engine integrated into [Intel's OpenVINO™ AI Plugins for GIMP](https://github.com/intel/openvino-ai-plugins-gimp)
 - **2025-05-17** - Added SANA Sprint(OpenVINO) support,Tiny AutoEncoder 1.3(Mocha Croissant) support
 - **2025-04-20** - Added MCP server support,faster uv based installation,Claude desktop, Open WebUI support
@@ -37,6 +38,7 @@ The following interfaces are available :
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
 - [How to use controlnet](#usecontrolnet)
+- [Docker support](#dockersupport)
 - [Android + Termux](#android)
 - [Raspberry Pi 4](#raspberry)
 - [API&nbsp;Support](#apisupport)
@@ -497,6 +499,12 @@ Due to the limitation of using CPU/OpenVINO inside colab, we are using GPU with 
   `source env/bin/activate`
 
 Start CLI  `src/app.py -h`
+<a id="dockersupport"></a>
+## Docker support
+
+To run FastSDCPU using docker run the following command:
+
+`docker compose up`
 
 <a id="android"></a>
 
