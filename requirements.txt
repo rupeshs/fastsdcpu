@@ -1,4 +1,7 @@
 accelerate==1.6.0
+torch==2.4.1
+torchvision==0.19.1
+torchaudio==2.4.1
 diffusers==0.33.0
 transformers==4.48.0
 PyQt5
