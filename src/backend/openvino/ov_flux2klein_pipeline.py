@@ -96,8 +96,16 @@ class OVFlux2KleinPipeline(OVDiffusionPipeline, Flux2KleinPipeline):
         else:
             batch_size *= num_images_per_prompt
 
-        height = height // self.vae_scale_factor if height > 0 else height
-        width = width // self.vae_scale_factor if width > 0 else width
+        # Flux2 packs each 2x2 block of latents into a single transformer token
+        # (this is done in the pipeline's _pack_latents, which is also why
+        # in_channels == 32 latent channels * 4 == 128). The packed sequence
+        # length is therefore (H / vae_scale_factor / 2) * (W / vae_scale_factor / 2),
+        # NOT (H / vae_scale_factor) * (W / vae_scale_factor). Forgetting the
+        # /2 patch factor bakes a sequence length 4x too large and makes OV
+        # reject the real input tensor at inference time.
+        patch_size = 2
+        height = height // (self.vae_scale_factor * patch_size) if height > 0 else height
+        width = width // (self.vae_scale_factor * patch_size) if width > 0 else width
         packed_height_width = width * height if height > 0 and width > 0 else -1
 
         shapes = {}
