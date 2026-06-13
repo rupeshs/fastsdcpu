@@ -22,6 +22,7 @@ from backend.openvino.pipelines import (
     get_ov_text_to_image_pipeline,
     ov_load_tiny_autoencoder,
     get_ov_diffusion_pipeline,
+    get_flux_klein_pipeline,
 )
 from backend.pipelines.lcm import (
     get_image_to_image_pipeline,
@@ -173,6 +174,9 @@ class LCMTextToImage:
     def _is_sana_model(self) -> bool:
         return "sana" in self.ov_model_id.lower()
 
+    def _is_flux_klein_model(self) -> bool:
+        return "flux2-klein" in self.ov_model_id.lower()
+
     def init(
         self,
         device: str = "cpu",
@@ -268,11 +272,18 @@ class LCMTextToImage:
                         f"***** Init Text to image (OpenVINO) - {self.ov_model_id} *****"
                     )
                     if "flux" in self.ov_model_id.lower() or self._is_sana_model():
-                        if self._is_sana_model():
-                            print("Loading OpenVINO SANA Sprint pipeline")
+                        if self._is_flux_klein_model():
+                            print("Loading OpenVINO Flux Klein pipeline")
+                            self.pipeline = get_flux_klein_pipeline(
+                                self.ov_model_id,
+                                use_local_model,
+                            )
                         else:
-                            print("Loading OpenVINO Flux pipeline")
-                        self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
+                            if self._is_sana_model():
+                                print("Loading OpenVINO SANA Sprint pipeline")
+                            else:
+                                print("Loading OpenVINO Flux pipeline")
+                            self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
                     elif self._is_hetero_pipeline():
                         self._load_ov_hetero_pipeline()
                     else:
@@ -573,6 +584,14 @@ class LCMTextToImage:
                         width=lcm_diffusion_setting.image_width,
                         height=lcm_diffusion_setting.image_height,
                         num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    ).images
+                elif self._is_flux_klein_model():
+                    result_images = self.pipeline(
+                        prompt=lcm_diffusion_setting.prompt,
+                        num_inference_steps=lcm_diffusion_setting.inference_steps,
+                        guidance_scale=guidance_scale,
+                        width=lcm_diffusion_setting.image_width,
+                        height=lcm_diffusion_setting.image_height,
                     ).images
                 else:
                     result_images = self.pipeline(
