@@ -112,6 +112,8 @@ def get_flux_klein_pipeline(
 ) -> OVFlux2KleinPipeline:
     pipeline = OVFlux2KleinPipeline.from_pretrained(
         model_id,
+        local_files_only=use_local_model,
+        ov_config={"CACHE_DIR": ""},
         device=DEVICE.upper(),
     )
     return pipeline

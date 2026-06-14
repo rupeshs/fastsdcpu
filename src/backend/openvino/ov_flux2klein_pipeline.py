@@ -131,6 +131,25 @@ class OVFlux2KleinPipeline(OVDiffusionPipeline, Flux2KleinPipeline):
         return model
 
     @classmethod
+    def from_pretrained(cls, model_id, **kwargs):
+        # optimum's from_pretrained does not forward local_files_only to
+        # TasksManager.get_model_files, so it always hits hf_api.list_repo_files.
+        # For offline/local mode only: resolve the repo ID to its snapshot dir so
+        # optimum sees a real directory and uses os.walk instead of the network.
+        # For online downloads (local_files_only=False) we let super() handle
+        # everything — it downloads each component via its own mechanism.
+        if kwargs.get("local_files_only") and not os.path.isdir(str(model_id)):
+            from huggingface_hub import snapshot_download
+            model_id = snapshot_download(
+                repo_id=str(model_id),
+                local_files_only=True,
+                cache_dir=kwargs.get("cache_dir"),
+                revision=kwargs.get("revision"),
+                token=kwargs.get("token") or kwargs.get("use_auth_token"),
+            )
+        return super().from_pretrained(model_id, **kwargs)
+
+    @classmethod
     def _from_pretrained(cls, model_id, config, **kwargs):
         pipeline = super()._from_pretrained(model_id, config, **kwargs)
 
@@ -152,6 +171,7 @@ class OVFlux2KleinPipeline(OVDiffusionPipeline, Flux2KleinPipeline):
                 cache_dir=kwargs.get("cache_dir"),
                 token=kwargs.get("token") or kwargs.get("use_auth_token"),
                 subfolder=kwargs.get("subfolder"),
+                local_files_only=kwargs.get("local_files_only", False),
             )
 
         bn_stats_path = Path(bn_stats_path)

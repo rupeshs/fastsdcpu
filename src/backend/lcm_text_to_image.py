@@ -267,6 +267,8 @@ class LCMTextToImage:
                 if (
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.text_to_image.value
+                    or lcm_diffusion_setting.diffusion_task
+                    == DiffusionTask.edit_image.value
                 ):
                     print(
                         f"***** Init Text to image (OpenVINO) - {self.ov_model_id} *****"
@@ -412,7 +414,11 @@ class LCMTextToImage:
                         self.pipeline.scheduler.config,
                     )
                 else:
-                    if not lcm_diffusion_setting.use_gguf_model:
+                    if (
+                        not lcm_diffusion_setting.use_gguf_model
+                        and lcm_diffusion_setting.diffusion_task
+                        != DiffusionTask.edit_image.value
+                    ):
                         self._update_lcm_scheduler_params()
 
             if use_lora:
@@ -555,7 +561,8 @@ class LCMTextToImage:
             # the last layer", so "CLIP Skip == 1" means "no skipping"
             pipeline_extra_args["clip_skip"] = lcm_diffusion_setting.clip_skip - 1
 
-        self.pipeline.safety_checker = None
+        if hasattr(self, "pipeline") and self.pipeline is not None:
+            self.pipeline.safety_checker = None
         if (
             lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value
             and not is_openvino_pipe
@@ -613,6 +620,14 @@ class LCMTextToImage:
                     prompt=lcm_diffusion_setting.prompt,
                     negative_prompt=lcm_diffusion_setting.negative_prompt,
                     num_inference_steps=img_to_img_inference_steps * 3,
+                    guidance_scale=guidance_scale,
+                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                ).images
+            if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
+                result_images = self.pipeline(
+                    image=[lcm_diffusion_setting.init_image],
+                    prompt=lcm_diffusion_setting.prompt,
+                    num_inference_steps=lcm_diffusion_setting.inference_steps,
                     guidance_scale=guidance_scale,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                 ).images

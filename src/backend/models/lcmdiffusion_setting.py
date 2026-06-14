@@ -17,6 +17,7 @@ class DiffusionTask(str, Enum):
 
     text_to_image = "text_to_image"
     image_to_image = "image_to_image"
+    edit_image = "edit_image"
 
 
 class Lora(BaseModel):

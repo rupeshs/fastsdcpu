@@ -1,9 +1,11 @@
 from datetime import datetime
 
 import gradio as gr
+
 from backend.device import get_device_name
 from constants import APP_VERSION
 from frontend.webui.controlnet_ui import get_controlnet_ui
+from frontend.webui.edit_image_ui import get_edit_image_ui
 from frontend.webui.generation_settings_ui import get_generation_settings_ui
 from frontend.webui.image_to_image_ui import get_image_to_image_ui
 from frontend.webui.image_variations_ui import get_image_variations_ui
@@ -81,6 +83,8 @@ def get_web_ui() -> gr.Blocks:
                 get_image_to_image_ui()
             with gr.TabItem("Image Variations"):
                 get_image_variations_ui()
+            with gr.TabItem("Edit Image"):
+                get_edit_image_ui()
             with gr.TabItem("Upscaler"):
                 get_upscaler_ui()
             with gr.TabItem("Generation Settings"):
@@ -102,4 +106,4 @@ def start_webui(
 ):
     webui = get_web_ui()
     webui.queue()
-    webui.launch(share=share)
+    webui.launch(share=share, theme=gr.themes.Default(primary_hue="blue"))
