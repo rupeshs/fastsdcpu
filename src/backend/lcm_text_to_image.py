@@ -8,7 +8,6 @@ import torch
 from backend.device import is_openvino_device
 from backend.lora import reset_active_lora_weights
 from backend.controlnet import (
-    load_controlnet_adapters,
     update_controlnet_arguments,
     get_controlnet_pipeline,
 )
@@ -40,6 +39,7 @@ from backend.gguf.gguf_diffusion import (
     Txt2ImgConfig,
     SampleMethod,
 )
+from backend.utils import get_image_edit_dimensions
 from paths import get_app_path
 from pprint import pprint
 
@@ -205,6 +205,19 @@ class LCMTextToImage:
                 lcm_diffusion_setting.init_image,
                 lcm_diffusion_setting.image_width,
                 lcm_diffusion_setting.image_height,
+            )
+        if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
+            max_size = max(
+                lcm_diffusion_setting.image_width, lcm_diffusion_setting.image_height
+            )
+            new_width, new_height = get_image_edit_dimensions(
+                lcm_diffusion_setting.init_image,
+                max_size,
+            )
+            lcm_diffusion_setting.init_image = resize_pil_image(
+                lcm_diffusion_setting.init_image,
+                new_width,
+                new_height,
             )
 
         # Reset current pipeline references to allow the garbage

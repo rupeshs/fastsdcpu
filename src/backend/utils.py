@@ -16,3 +16,28 @@ def get_blank_image(
         Image.Image: A blank image with the specified dimensions.
     """
     return Image.new("RGB", (width, height), (0, 0, 0))
+
+
+def get_image_edit_dimensions(img, max_size=1024) -> tuple[int, int]:
+    """Update width/height sliders based on uploaded image aspect ratio"""
+
+    img_width, img_height = img.size
+
+    aspect_ratio = img_width / img_height
+
+    if aspect_ratio >= 1:  # Landscape or square
+        new_width = max_size
+        new_height = int(max_size / aspect_ratio)
+    else:  # Portrait
+        new_height = max_size
+        new_width = int(max_size * aspect_ratio)
+
+    # Round to nearest multiple of 8
+    new_width = round(new_width / 8) * 8
+    new_height = round(new_height / 8) * 8
+
+    # Ensure within valid range (minimum 256, maximum 1024)
+    new_width = max(256, min(max_size, new_width))
+    new_height = max(256, min(max_size, new_height))
+
+    return new_width, new_height
