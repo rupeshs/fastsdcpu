@@ -37,19 +37,9 @@ class Context:
         device: str = "cpu",
         save_config=True,
     ) -> Any:
-        lcm_diffusion_setting = settings.lcm_diffusion_setting
-        if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
-            if (
-                not lcm_diffusion_setting.use_openvino
-                or "flux2-klein"
-                not in lcm_diffusion_setting.openvino_lcm_model_id.lower()
-            ):
-                raise ValueError(
-                    "Image editing only supported with Flux2 Klein model in OpenVINO mode"
-                )
-
         try:
             self._error = ""
+
             tick = perf_counter()
             from state import get_settings
 
@@ -59,9 +49,6 @@ class Context:
             ):
                 settings.lcm_diffusion_setting.init_image = None
 
-            if save_config:
-                get_settings().save()
-
             pprint(settings.lcm_diffusion_setting.model_dump())
             if not settings.lcm_diffusion_setting.lcm_lora:
                 return None
@@ -69,6 +56,9 @@ class Context:
                 device,
                 settings.lcm_diffusion_setting,
             )
+
+            if save_config:
+                get_settings().save()
 
             images = self.lcm_text_to_image.generate(
                 settings.lcm_diffusion_setting,

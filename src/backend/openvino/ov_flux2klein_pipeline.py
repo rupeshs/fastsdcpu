@@ -1,11 +1,31 @@
 import os
 import types
 from pathlib import Path
+from typing import Optional
 
 import torch
 from diffusers import Flux2KleinPipeline
 from huggingface_hub import hf_hub_download
 from optimum.intel.openvino.modeling_diffusion import OVDiffusionPipeline
+
+
+def _reshape_ov_part(part, input_shapes: dict) -> None:
+    """Reshape an OVPipelinePart model to new input shapes and invalidate its compiled request.
+
+    Args:
+        part: An OVPipelinePart instance (e.g. OVModelVaeEncoder / OVModelVaeDecoder).
+        input_shapes: Mapping from input tensor name to the desired shape tuple.
+    """
+    shapes = {}
+    for inp in part.model.inputs:
+        ps = inp.get_partial_shape()
+        name = inp.get_any_name()
+        if name in input_shapes:
+            for dim_idx, dim_val in enumerate(input_shapes[name]):
+                ps[dim_idx] = dim_val
+        shapes[inp] = ps
+    part.model.reshape(shapes)
+    part.request = None  # force recompile on next forward call
 
 
 class OVFlux2KleinPipeline(OVDiffusionPipeline, Flux2KleinPipeline):
@@ -80,6 +100,49 @@ class OVFlux2KleinPipeline(OVDiffusionPipeline, Flux2KleinPipeline):
         prompt_embeds = prompt_embeds.to(dtype=dtype, device=device)
         return prompt_embeds
 
+    def _enc_reshape_to_image(self, image: torch.Tensor) -> None:
+        """Reshape and recompile the OV VAE encoder if the image tensor shape changed.
+
+        Named to avoid collision with OVDiffusionPipeline._reshape_vae_encoder, which
+        takes a completely different signature (model, batch_size, height, width, ...).
+        """
+        enc = self.vae.encoder
+        shape = tuple(image.shape)
+        if getattr(enc, "_compiled_shape", None) == shape:
+            return
+        print(f"Reshape and compile VAE encoder: {getattr(enc, '_compiled_shape', None)} -> {shape}")
+        _reshape_ov_part(enc, {"sample": shape})
+        enc._compiled_shape = shape
+
+    def _dec_reshape_to_latents(self, latent_sample: torch.Tensor) -> None:
+        """Reshape and recompile the OV VAE decoder if the latent tensor shape changed.
+
+        Named to avoid collision with OVDiffusionPipeline._reshape_vae_decoder, which
+        takes a completely different signature (model, height, width, ...).
+        """
+        dec = self.vae.decoder
+        shape = tuple(latent_sample.shape)
+        if getattr(dec, "_compiled_shape", None) == shape:
+            return
+        print(f"Reshape and compile VAE decoder: {getattr(dec, '_compiled_shape', None)} -> {shape}")
+        _reshape_ov_part(dec, {"latent_sample": shape})
+        dec._compiled_shape = shape
+
+    def _encode_vae_image(self, image: torch.Tensor, generator: Optional[torch.Generator] = None):
+        enc = self.vae.encoder
+        for inp in enc.model.inputs:
+            if inp.get_any_name() == "sample":
+                ps = inp.get_partial_shape()
+                if ps[2].is_static and ps[3].is_static:
+                    th, tw = ps[2].get_length(), ps[3].get_length()
+                    if image.shape[2] != th or image.shape[3] != tw:
+                        image = torch.nn.functional.interpolate(
+                            image.float(), size=(th, tw), mode="bilinear", align_corners=False
+                        ).to(image.dtype)
+                break
+        self._enc_reshape_to_image(image)
+        return super()._encode_vae_image(image=image, generator=generator)
+
     def _reshape_transformer(
         self,
         model,
@@ -115,10 +178,15 @@ class OVFlux2KleinPipeline(OVDiffusionPipeline, Flux2KleinPipeline):
                 shapes[inputs][0] = batch_size
             elif inputs.get_any_name() == "hidden_states":
                 in_channels = self.transformer.config.get("in_channels", 128)
-                shapes[inputs] = [batch_size, packed_height_width, in_channels]
+                # Use -1 (dynamic) for the sequence dim: image editing concatenates
+                # noise latents + reference image latents whose combined length is
+                # not known at reshape time (depends on the reference image size).
+                shapes[inputs] = [batch_size, -1, in_channels]
             elif inputs.get_any_name() == "img_ids":
-                # Model was exported without the batch dim: shape is [seq, 4]
-                shapes[inputs] = [packed_height_width, 4]
+                # Model was exported without the batch dim: shape is [seq, 4].
+                # Use -1 so that both noise-only (text-to-image) and
+                # noise+reference (image editing) token counts are accepted.
+                shapes[inputs] = [-1, 4]
             elif inputs.get_any_name() == "txt_ids":
                 # Model was exported without the batch dim: shape is [seq, 4]
                 shapes[inputs] = [-1, 4]
@@ -219,5 +287,16 @@ class OVFlux2KleinPipeline(OVDiffusionPipeline, Flux2KleinPipeline):
             return _orig_forward(*args, **kwargs)
 
         pipeline.transformer.forward = _squeeze_ids_forward
+
+        # Patch VAE decoder forward to reshape for dynamic latent dimensions.
+        # There is no _decode_vae_latents hook to override, so we patch here.
+        _vae_dec = pipeline.vae.decoder
+        _orig_dec_fwd = _vae_dec.forward
+
+        def _dynamic_dec_fwd(latent_sample, **kwargs):
+            pipeline._dec_reshape_to_latents(latent_sample)
+            return _orig_dec_fwd(latent_sample, **kwargs)
+
+        _vae_dec.forward = _dynamic_dec_fwd
 
         return pipeline

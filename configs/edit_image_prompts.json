@@ -1,0 +1,22 @@
+{
+    "restore_old_photo": {
+        "display_name": "Restore old photo",
+        "prompt": "Full professional restoration of this vintage photograph. Remove all damage including tears, fading, scratches, and discoloration,keep same color tone as original photo"
+    },
+    "restore_old_photo_colorize": {
+        "display_name": "Restore old photo and colorize",
+        "prompt": "Full professional restoration of this vintage photograph. Remove all damage including tears, fading, scratches, and discoloration and colorize the photo.Use natural skin tones and historically accurate colors. Avoid artificial saturation."
+    },
+    "colorize_photo": {
+        "display_name": "Colorize photo",
+        "prompt": "Colorize this black and white image realistically.Use natural skin tones and historically accurate colors. Avoid artificial saturation."
+    },
+    "enhance_photo": {
+        "display_name": "Enhance photo",
+        "prompt": "Enhance image quality while preserving details."
+    },
+    "none": {
+        "display_name": "None",
+        "prompt": ""
+    }
+}

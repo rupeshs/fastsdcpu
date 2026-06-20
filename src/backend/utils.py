@@ -25,6 +25,10 @@ def get_image_edit_dimensions(img, max_size=1024) -> tuple[int, int]:
 
     aspect_ratio = img_width / img_height
 
+    print(
+        f"Original image size: {img_width}x{img_height}, aspect ratio: {aspect_ratio:.2f}"
+    )
+
     if aspect_ratio >= 1:  # Landscape or square
         new_width = max_size
         new_height = int(max_size / aspect_ratio)
@@ -39,5 +43,9 @@ def get_image_edit_dimensions(img, max_size=1024) -> tuple[int, int]:
     # Ensure within valid range (minimum 256, maximum 1024)
     new_width = max(256, min(max_size, new_width))
     new_height = max(256, min(max_size, new_height))
+
+    print(
+        f"Adjusted aspect ratio: {new_width}/{new_height} = {new_width / new_height:.2f}"
+    )
 
     return new_width, new_height

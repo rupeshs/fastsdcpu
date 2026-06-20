@@ -11,6 +11,7 @@ class _AppState:
     settings: Optional[AppSettings] = None
     context: Optional[Context] = None
     safety_checker: Optional[SafetyChecker] = None
+    edit_image_prompts: Optional[dict] = None
 
 
 def get_state() -> _AppState:
@@ -40,3 +41,12 @@ def get_safety_checker() -> SafetyChecker:
         print("Initializing safety checker")
         state.safety_checker = SafetyChecker()
     return state.safety_checker
+
+
+def get_edit_image_prompts() -> dict:
+    state = get_state()
+    if state.edit_image_prompts is None:
+        from edit_prompts import get_edit_prompts
+
+        state.edit_image_prompts = get_edit_prompts()
+    return state.edit_image_prompts

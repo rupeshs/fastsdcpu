@@ -177,19 +177,44 @@ class LCMTextToImage:
     def _is_flux_klein_model(self) -> bool:
         return "flux2-klein" in self.ov_model_id.lower()
 
-    def init(
-        self,
-        device: str = "cpu",
-        lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting(),
-    ) -> None:
-        # Mode validation either LCM LoRA or OpenVINO or GGUF
-
+    def _do_validations(self, lcm_diffusion_setting: LCMDiffusionSetting) -> None:
         modes = [
             lcm_diffusion_setting.use_gguf_model,
             lcm_diffusion_setting.use_openvino,
             lcm_diffusion_setting.use_lcm_lora,
         ]
         self._validate_mode(modes)
+        if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
+            if (
+                not lcm_diffusion_setting.use_openvino
+                or not self._is_flux_klein_model()
+            ):
+                raise ValueError(
+                    "Image editing only supported with Flux2 Klein model in OpenVINO mode"
+                )
+            if lcm_diffusion_setting.negative_prompt:
+                raise ValueError(
+                    "Negative prompt is not supported for Flux2 Klein model in OpenVINO mode."
+                )
+
+        if (
+            lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value
+            and lcm_diffusion_setting.use_openvino
+            and self._is_flux_klein_model()
+        ):
+            raise ValueError(
+                "Image to image generation is not supported with Flux2 Klein model in OpenVINO mode."
+            )
+
+    def init(
+        self,
+        device: str = "cpu",
+        lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting(),
+    ) -> None:
+        # Mode validation either LCM LoRA or OpenVINO or GGUF
+        self.ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
+        self._do_validations(lcm_diffusion_setting)
+
         self.device = device
         self.use_openvino = lcm_diffusion_setting.use_openvino
         model_id = lcm_diffusion_setting.lcm_model_id
@@ -198,7 +223,6 @@ class LCMTextToImage:
         use_lora = lcm_diffusion_setting.use_lcm_lora
         lcm_lora: LCMLora = lcm_diffusion_setting.lcm_lora
         token_merging = lcm_diffusion_setting.token_merging
-        self.ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
 
         if lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value:
             lcm_diffusion_setting.init_image = resize_pil_image(
