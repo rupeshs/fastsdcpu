@@ -36,7 +36,7 @@ The following interfaces are available :
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
-- [Image Edting support](#image-edit)
+- [Image Editing support](#image-edit)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -319,6 +319,11 @@ FastSD comes with following image editing prompt presets:
 - Colorize photo
 - Enhance photo
 
+![Restore old photo](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/main/docs/images/fastsd-image-restoration.png)
+*Restore an old photo using FastSDCPU image edit prompt preset*
+
+![Restore old photo and colorize](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/main/docs/images/fastsd-restore-and-colorize.png)
+*Restore an old photo and colorize using FastSDCPU image edit prompt preset*
 
 <a id="real-time-text-to-image"></a>
 
