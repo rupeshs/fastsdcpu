@@ -17,6 +17,8 @@ The following interfaces are available :
 🚀 Using **OpenVINO(SDXS-512-0.9)**, it took **0.82 seconds** (**820 milliseconds**) to create a single 512x512 image on a **Core i7-12700**.
 
 ## 📰 News
+
+- **2026-06-21** - Added FLUX.2-klein-4B support(OpenVINO), image editing support, photo restoration, colorization (2 to 4 steps)
 - **2026-05-01** - Docker support, HF demo 
 - **2025-12-22** - FastSD engine integrated into [Intel's OpenVINO™ AI Plugins for GIMP](https://github.com/intel/openvino-ai-plugins-gimp)
 - **2025-05-17** - Added SANA Sprint(OpenVINO) support,Tiny AutoEncoder 1.3(Mocha Croissant) support
@@ -34,6 +36,7 @@ The following interfaces are available :
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
+- [Image Edting support](#image-edit)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -78,6 +81,7 @@ Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
 | --------------------- | ------------- |
 | LCM                   | 2 GB          |
 | LCM-LoRA              | 4 GB          |
+| OpenVINO(Flux2)       | 8 GB          |
 | OpenVINO              | 11 GB         |
 
 If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example in OpenVINO mode memory usage will become 9GB.
@@ -148,6 +152,8 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add [TAEF1 (Tiny autoencoder for FLUX.1) openvino](https://huggingface.co/rupeshs/taef1-openvino) support
 - Add Image to Image and Image Variations Qt GUI support,thanks [monstruosoft](https://github.com/monstruosoft)
 - Add single file SDXL safetensor file support,thanks [monstruosoft](https://github.com/monstruosoft)
+- Add FLUX.2-klein-4B OpenVINO support
+- Add image editing support
 
 
 <a id="fast-inference-benchmarks"></a>
@@ -297,6 +303,22 @@ You can directly use these models in FastSD CPU.
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
+
+<a id="image-edit"></a>
+
+## Image Editing Support
+
+FastSDCPU now supports image editing via FLUX.2-klein-4B OpenVINO model
+
+To use image editing use OpenVINO mode and use [rupeshs/flux2-klein-4b-int4-ov](https://huggingface.co/rupeshs/flux2-klein-4b-int4-ov)
+
+FastSD comes with following image editing prompt presets:
+
+- Restore old photo
+- Restore old photo and colorize
+- Colorize photo
+- Enhance photo
+
 
 <a id="real-time-text-to-image"></a>
 

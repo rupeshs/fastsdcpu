@@ -70,6 +70,7 @@ def get_generation_settings_ui() -> None:
     with gr.Blocks():
         with gr.Row():
             with gr.Column():
+                print("Generation Settings UI Loaded")
                 num_inference_steps = gr.Slider(
                     1,
                     25,

@@ -8,3 +8,4 @@ Disty0/LCM_SoteMix
 rupeshs/sd15-lcm-square-openvino-int8
 OpenVINO/FLUX.1-schnell-int4-ov
 rupeshs/sana-sprint-0.6b-openvino-int4
+rupeshs/flux2-klein-4b-int4-ov

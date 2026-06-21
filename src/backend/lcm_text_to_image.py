@@ -8,7 +8,6 @@ import torch
 from backend.device import is_openvino_device
 from backend.lora import reset_active_lora_weights
 from backend.controlnet import (
-    load_controlnet_adapters,
     update_controlnet_arguments,
     get_controlnet_pipeline,
 )
@@ -22,6 +21,7 @@ from backend.openvino.pipelines import (
     get_ov_text_to_image_pipeline,
     ov_load_tiny_autoencoder,
     get_ov_diffusion_pipeline,
+    get_flux_klein_pipeline,
 )
 from backend.pipelines.lcm import (
     get_image_to_image_pipeline,
@@ -39,6 +39,7 @@ from backend.gguf.gguf_diffusion import (
     Txt2ImgConfig,
     SampleMethod,
 )
+from backend.utils import get_image_edit_dimensions
 from paths import get_app_path
 from pprint import pprint
 
@@ -173,19 +174,58 @@ class LCMTextToImage:
     def _is_sana_model(self) -> bool:
         return "sana" in self.ov_model_id.lower()
 
-    def init(
-        self,
-        device: str = "cpu",
-        lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting(),
-    ) -> None:
-        # Mode validation either LCM LoRA or OpenVINO or GGUF
+    def _is_flux_klein_model(self) -> bool:
+        return "flux2-klein" in self.ov_model_id.lower()
 
+    def _do_validations(self, lcm_diffusion_setting: LCMDiffusionSetting) -> None:
         modes = [
             lcm_diffusion_setting.use_gguf_model,
             lcm_diffusion_setting.use_openvino,
             lcm_diffusion_setting.use_lcm_lora,
         ]
         self._validate_mode(modes)
+
+        if self._is_flux_klein_model() and lcm_diffusion_setting.use_openvino:
+            if lcm_diffusion_setting.negative_prompt:
+                raise ValueError(
+                    "Negative prompt is not supported for Flux2 Klein model in OpenVINO mode."
+                )
+            if lcm_diffusion_setting.use_tiny_auto_encoder:
+                raise ValueError(
+                    "Tiny AutoEncoder is not supported for Flux2 Klein model in OpenVINO mode."
+                )
+
+        if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
+            if (
+                not lcm_diffusion_setting.use_openvino
+                or not self._is_flux_klein_model()
+            ):
+                raise ValueError(
+                    "Image editing only supported with Flux2 Klein model in OpenVINO mode"
+                )
+            if lcm_diffusion_setting.negative_prompt:
+                raise ValueError(
+                    "Negative prompt is not supported for Flux2 Klein model in OpenVINO mode."
+                )
+
+        if (
+            lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value
+            and lcm_diffusion_setting.use_openvino
+            and self._is_flux_klein_model()
+        ):
+            raise ValueError(
+                "Image to image generation is not supported with Flux2 Klein model in OpenVINO mode."
+            )
+
+    def init(
+        self,
+        device: str = "cpu",
+        lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting(),
+    ) -> None:
+        # Mode validation either LCM LoRA or OpenVINO or GGUF
+        self.ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
+        self._do_validations(lcm_diffusion_setting)
+
         self.device = device
         self.use_openvino = lcm_diffusion_setting.use_openvino
         model_id = lcm_diffusion_setting.lcm_model_id
@@ -194,13 +234,25 @@ class LCMTextToImage:
         use_lora = lcm_diffusion_setting.use_lcm_lora
         lcm_lora: LCMLora = lcm_diffusion_setting.lcm_lora
         token_merging = lcm_diffusion_setting.token_merging
-        self.ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
 
         if lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value:
             lcm_diffusion_setting.init_image = resize_pil_image(
                 lcm_diffusion_setting.init_image,
                 lcm_diffusion_setting.image_width,
                 lcm_diffusion_setting.image_height,
+            )
+        if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
+            max_size = max(
+                lcm_diffusion_setting.image_width, lcm_diffusion_setting.image_height
+            )
+            new_width, new_height = get_image_edit_dimensions(
+                lcm_diffusion_setting.init_image,
+                max_size,
+            )
+            lcm_diffusion_setting.init_image = resize_pil_image(
+                lcm_diffusion_setting.init_image,
+                new_width,
+                new_height,
             )
 
         # Reset current pipeline references to allow the garbage
@@ -263,16 +315,25 @@ class LCMTextToImage:
                 if (
                     lcm_diffusion_setting.diffusion_task
                     == DiffusionTask.text_to_image.value
+                    or lcm_diffusion_setting.diffusion_task
+                    == DiffusionTask.edit_image.value
                 ):
                     print(
                         f"***** Init Text to image (OpenVINO) - {self.ov_model_id} *****"
                     )
                     if "flux" in self.ov_model_id.lower() or self._is_sana_model():
-                        if self._is_sana_model():
-                            print("Loading OpenVINO SANA Sprint pipeline")
+                        if self._is_flux_klein_model():
+                            print("Loading OpenVINO Flux Klein pipeline")
+                            self.pipeline = get_flux_klein_pipeline(
+                                self.ov_model_id,
+                                use_local_model,
+                            )
                         else:
-                            print("Loading OpenVINO Flux pipeline")
-                        self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
+                            if self._is_sana_model():
+                                print("Loading OpenVINO SANA Sprint pipeline")
+                            else:
+                                print("Loading OpenVINO Flux pipeline")
+                            self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
                     elif self._is_hetero_pipeline():
                         self._load_ov_hetero_pipeline()
                     else:
@@ -401,7 +462,11 @@ class LCMTextToImage:
                         self.pipeline.scheduler.config,
                     )
                 else:
-                    if not lcm_diffusion_setting.use_gguf_model:
+                    if (
+                        not lcm_diffusion_setting.use_gguf_model
+                        and lcm_diffusion_setting.diffusion_task
+                        != DiffusionTask.edit_image.value
+                    ):
                         self._update_lcm_scheduler_params()
 
             if use_lora:
@@ -544,7 +609,8 @@ class LCMTextToImage:
             # the last layer", so "CLIP Skip == 1" means "no skipping"
             pipeline_extra_args["clip_skip"] = lcm_diffusion_setting.clip_skip - 1
 
-        self.pipeline.safety_checker = None
+        if hasattr(self, "pipeline") and self.pipeline is not None:
+            self.pipeline.safety_checker = None
         if (
             lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value
             and not is_openvino_pipe
@@ -574,6 +640,14 @@ class LCMTextToImage:
                         height=lcm_diffusion_setting.image_height,
                         num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                     ).images
+                elif self._is_flux_klein_model():
+                    result_images = self.pipeline(
+                        prompt=lcm_diffusion_setting.prompt,
+                        num_inference_steps=lcm_diffusion_setting.inference_steps,
+                        guidance_scale=guidance_scale,
+                        width=lcm_diffusion_setting.image_width,
+                        height=lcm_diffusion_setting.image_height,
+                    ).images
                 else:
                     result_images = self.pipeline(
                         prompt=lcm_diffusion_setting.prompt,
@@ -594,6 +668,14 @@ class LCMTextToImage:
                     prompt=lcm_diffusion_setting.prompt,
                     negative_prompt=lcm_diffusion_setting.negative_prompt,
                     num_inference_steps=img_to_img_inference_steps * 3,
+                    guidance_scale=guidance_scale,
+                    num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                ).images
+            if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
+                result_images = self.pipeline(
+                    image=[lcm_diffusion_setting.init_image],
+                    prompt=lcm_diffusion_setting.prompt,
+                    num_inference_steps=lcm_diffusion_setting.inference_steps,
                     guidance_scale=guidance_scale,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                 ).images
