@@ -36,6 +36,7 @@ The following interfaces are available :
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Installation](#installation)
+- [Image Edting support](#image-edit)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -302,6 +303,22 @@ You can directly use these models in FastSD CPU.
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
+
+<a id="image-edit"></a>
+
+## Image Editing Support
+
+FastSDCPU now supports image editing via FLUX.2-klein-4B OpenVINO model
+
+To use image editing use OpenVINO mode and use [rupeshs/flux2-klein-4b-int4-ov](https://huggingface.co/rupeshs/flux2-klein-4b-int4-ov)
+
+FastSD comes with following image editing prompt presets:
+
+- Restore old photo
+- Restore old photo and colorize
+- Colorize photo
+- Enhance photo
+
 
 <a id="real-time-text-to-image"></a>
 
