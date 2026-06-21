@@ -1,15 +1,21 @@
-from typing import Any
-import gradio as gr
-from backend.models.lcmdiffusion_setting import DiffusionTask
-from models.interface_types import InterfaceType
-from frontend.utils import is_reshape_required
-from constants import DEVICE
-from state import get_settings, get_context, get_edit_image_prompts
 from concurrent.futures import ThreadPoolExecutor
+from typing import Any
+
+import gradio as gr
+
+from backend.models.lcmdiffusion_setting import DiffusionTask
+from constants import DEVICE
+from frontend.utils import is_reshape_required
 from frontend.webui.errors import show_error
+from models.interface_types import InterfaceType
+from state import get_context, get_edit_image_prompts, get_settings
 
 app_settings = get_settings()
 image_edit_prompts = get_edit_image_prompts()
+display_to_key = {
+    prompt_config["display_name"]: prompt_key
+    for prompt_key, prompt_config in image_edit_prompts.items()
+}
 
 previous_width = 0
 previous_height = 0
@@ -76,32 +82,26 @@ def edit_image(
     return images
 
 
-display_to_key = {
-    prompt_config["display_name"]: prompt_key
-    for prompt_key, prompt_config in image_edit_prompts.items()
-}
-
-
 def update_prompt(selected_prompt):
     prompt = image_edit_prompts.get(display_to_key[selected_prompt]).get("prompt", "")
     return prompt
 
 
 def get_edit_prompts_presets():
-    display_to_key = [value["display_name"] for _, value in image_edit_prompts.items()]
-    return display_to_key
+    preset_names = [value["display_name"] for _, value in image_edit_prompts.items()]
+    return preset_names
 
 
 def get_edit_image_ui() -> None:
     with gr.Blocks():
         with gr.Row():
             with gr.Column():
-                input_image = gr.Image(label="Init image", type="pil")
+                input_image = gr.Image(label="Image", type="pil")
                 with gr.Row():
                     prompt = gr.Textbox(
                         show_label=False,
                         lines=3,
-                        placeholder="A fantasy landscape",
+                        placeholder="Describe the edits you want to make to the image",
                         container=False,
                     )
 
@@ -111,7 +111,7 @@ def get_edit_image_ui() -> None:
                         scale=0,
                     )
                 default_prompt = gr.Dropdown(
-                    label="Select prompt ",
+                    label="Select edit prompt preset",
                     choices=get_edit_prompts_presets(),
                     value="None",
                     interactive=True,

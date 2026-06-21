@@ -4,6 +4,7 @@ from paths import get_configs_path
 
 
 default_edit_prompts = {
+    "none": {"display_name": "None", "prompt": ""},
     "restore_old_photo": {
         "display_name": "Restore old photo",
         "prompt": "Full professional restoration of this vintage photograph. Remove all damage including tears, fading, scratches, and discoloration,keep same color tone as original photo",
@@ -16,7 +17,6 @@ default_edit_prompts = {
         "display_name": "Enhance photo",
         "prompt": "Enhance image quality while preserving details.",
     },
-    "none": {"display_name": "None", "prompt": ""},
 }
 
 
