@@ -18,7 +18,7 @@ The following interfaces are available :
 
 ## 📰 News
 
-- **2026-06-21** - FLUX.2-klein-4B support(OpenVINO), image editing support, photo restoration
+- **2026-06-21** - Added FLUX.2-klein-4B support(OpenVINO), image editing support, photo restoration, colorization (2 to 4 steps)
 - **2026-05-01** - Docker support, HF demo 
 - **2025-12-22** - FastSD engine integrated into [Intel's OpenVINO™ AI Plugins for GIMP](https://github.com/intel/openvino-ai-plugins-gimp)
 - **2025-05-17** - Added SANA Sprint(OpenVINO) support,Tiny AutoEncoder 1.3(Mocha Croissant) support
@@ -150,6 +150,8 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add [TAEF1 (Tiny autoencoder for FLUX.1) openvino](https://huggingface.co/rupeshs/taef1-openvino) support
 - Add Image to Image and Image Variations Qt GUI support,thanks [monstruosoft](https://github.com/monstruosoft)
 - Add single file SDXL safetensor file support,thanks [monstruosoft](https://github.com/monstruosoft)
+- Add FLUX.2-klein-4B OpenVINO support
+- Add image editing support
 
 
 <a id="fast-inference-benchmarks"></a>

@@ -184,6 +184,13 @@ class LCMTextToImage:
             lcm_diffusion_setting.use_lcm_lora,
         ]
         self._validate_mode(modes)
+
+        if self._is_flux_klein_model() and lcm_diffusion_setting.use_openvino:
+            if lcm_diffusion_setting.negative_prompt:
+                raise ValueError(
+                    "Negative prompt is not supported for Flux2 Klein model in OpenVINO mode."
+                )
+
         if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
             if (
                 not lcm_diffusion_setting.use_openvino
