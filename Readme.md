@@ -80,6 +80,7 @@ Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
 | --------------------- | ------------- |
 | LCM                   | 2 GB          |
 | LCM-LoRA              | 4 GB          |
+| OpenVINO(Flux2)       | 8 GB          |
 | OpenVINO              | 11 GB         |
 
 If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example in OpenVINO mode memory usage will become 9GB.

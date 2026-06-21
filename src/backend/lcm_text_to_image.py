@@ -190,6 +190,10 @@ class LCMTextToImage:
                 raise ValueError(
                     "Negative prompt is not supported for Flux2 Klein model in OpenVINO mode."
                 )
+            if lcm_diffusion_setting.use_tiny_auto_encoder:
+                raise ValueError(
+                    "Tiny AutoEncoder is not supported for Flux2 Klein model in OpenVINO mode."
+                )
 
         if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
             if (
