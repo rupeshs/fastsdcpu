@@ -5,7 +5,7 @@
 </div>
 
 FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) and
-[Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/).
+[Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/) and distilled models.
 
 ![FastSD CPU screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-webui.png)
 The following interfaces are available :
@@ -17,6 +17,7 @@ The following interfaces are available :
 🚀 Using **OpenVINO(SDXS-512-0.9)**, it took **0.82 seconds** (**820 milliseconds**) to create a single 512x512 image on a **Core i7-12700**.
 
 ## 📰 News
+- **2026-10-18** - Add Iris 3B Turbo OpenVINO support for pixel-space image generation (No VAE)
 - **2026-07-05** - Add bonsai image (1 bit) GGUF support, Flux2 Klein GGUF support
 - **2026-06-21** - Added FLUX.2-klein-4B support(OpenVINO), image editing support, photo restoration, colorization (2 to 4 steps)
 - **2026-05-01** - Docker support, HF demo 
@@ -36,6 +37,7 @@ The following interfaces are available :
 - [Architecture](#architecture)
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
+- [Iris 3B OpenVINO (pixel-space)](#iris-openvino)
 - [Installation](#installation)
 - [Image Editing support](#image-edit)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
@@ -83,7 +85,7 @@ Model (LCM-LoRA): Dreamshaper v8, 3 step, 512 x 512
 | LCM                   | 2 GB          |
 | LCM-LoRA              | 4 GB          |
 | OpenVINO(Flux2)       | 8 GB          |
-| OpenVINO              | 11 GB         |
+| OpenVINO(Iris 3B)(1024 x 1024)     | 8.4 GB        |
 
 If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example in OpenVINO mode memory usage will become 9GB.
 
@@ -156,6 +158,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add FLUX.2-klein-4B OpenVINO support
 - Add image editing support
 - Add bonsai image (1 bit) GGUF support, Flux 2 Klein GGUF model support
+- Add Iris 3B Turbo OpenVINO support for pixel-space image generation (VAE-free)
 
 ## Architecture
 
@@ -313,6 +316,36 @@ We have converted SD/SDXL Turbo models to OpenVINO for fast inference on CPU. Th
 - *TAESDXL OpenVINO* - [rupeshs/taesdxl-openvino](https://huggingface.co/rupeshs/taesdxl-openvino)
 
 You can directly use these models in FastSD CPU.
+
+<a id="iris-openvino"></a>
+
+### Iris 3B Turbo OpenVINO support (pixel-space generation)
+
+FastSD CPU supports [Iris-3B](https://huggingface.co/speridlabs/iris-3b) Turbo in OpenVINO mode. Iris is a pixel-space diffusion transformer: it generates the image pixels directly, with no VAE and no latents, so there is no VAE decode step.
+
+- *Iris 3B Turbo OpenVINO int8* - [rupeshs/iris-3b-int8-ov](https://huggingface.co/rupeshs/iris-3b-int8-ov)
+
+The model is compressed to int8 (weight compression, NNCF `INT8_ASYM`), giving a **6.9 GB** download (transformer and Qwen3-VL text encoder).
+
+| Item            | Value                                |
+| --------------- | ------------------------------------ |
+| Model size      | 6.9 GB (int8)                        |
+| Peak system RAM | ~8.4 GB                              |
+| Image size      | 1024 x 1024 only                     |
+| Steps           | 4 (1 to 3 also run, with rougher images) |
+| Latency         | ~90 s per image, 4 steps, Core i7-12700 |
+
+To use it, select OpenVINO mode, choose `rupeshs/iris-3b-int8-ov` and use these settings:
+
+- Image size 1024 x 1024
+- Inference steps 4
+- Negative prompt empty, Tiny AutoEncoder off
+
+:exclamation: Please note the following points with the Iris workflow:
+
+- Only text to image generation is supported
+- Guidance scale, LoRA and ControlNet have no effect
+- Tested on CPU; GPU and NPU are untested
 
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
