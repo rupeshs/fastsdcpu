@@ -22,6 +22,7 @@ from backend.openvino.pipelines import (
     ov_load_tiny_autoencoder,
     get_ov_diffusion_pipeline,
     get_flux_klein_pipeline,
+    get_iris_pipeline,
 )
 from backend.pipelines.lcm import (
     get_image_to_image_pipeline,
@@ -174,6 +175,9 @@ class LCMTextToImage:
     def _is_sana_model(self) -> bool:
         return "sana" in self.ov_model_id.lower()
 
+    def _is_iris_model(self) -> bool:
+        return "iris" in self.ov_model_id.lower()
+
     def _is_flux_klein_model(self) -> bool:
         return "flux2-klein" in self.ov_model_id.lower()
 
@@ -185,6 +189,15 @@ class LCMTextToImage:
         ]
         self._validate_mode(modes)
 
+        if self._is_iris_model() and lcm_diffusion_setting.use_openvino:
+            if lcm_diffusion_setting.negative_prompt:
+                raise ValueError(
+                    "Negative prompt is not supported for Iris model in OpenVINO mode."
+                )
+            if lcm_diffusion_setting.use_tiny_auto_encoder:
+                raise ValueError(
+                    "Tiny AutoEncoder is not supported for Iris model in OpenVINO mode."
+                )
         if self._is_flux_klein_model() and lcm_diffusion_setting.use_openvino:
             if lcm_diffusion_setting.negative_prompt:
                 raise ValueError(
@@ -336,6 +349,12 @@ class LCMTextToImage:
                             self.pipeline = get_ov_diffusion_pipeline(self.ov_model_id)
                     elif self._is_hetero_pipeline():
                         self._load_ov_hetero_pipeline()
+                    elif self._is_iris_model():
+                        print("Loading Iris model pipeline(No VAE)")
+                        self.pipeline = get_iris_pipeline(
+                            self.ov_model_id,
+                            use_local_model,
+                        )
                     else:
                         self.pipeline = get_ov_text_to_image_pipeline(
                             self.ov_model_id,
@@ -588,7 +607,7 @@ class LCMTextToImage:
 
         is_openvino_pipe = lcm_diffusion_setting.use_openvino and is_openvino_device()
         if is_openvino_pipe and not self._is_hetero_pipeline():
-            print("Using OpenVINO")
+            print("Using OpenVINO generating image...")
             if self.is_openvino_init and self._is_sana_model():
                 self._compile_ov_pipeline(lcm_diffusion_setting)
 
@@ -647,6 +666,15 @@ class LCMTextToImage:
                         guidance_scale=guidance_scale,
                         width=lcm_diffusion_setting.image_width,
                         height=lcm_diffusion_setting.image_height,
+                    ).images
+                elif self._is_iris_model():
+                    result_images = self.pipeline(
+                        prompt=lcm_diffusion_setting.prompt,
+                        num_inference_steps=lcm_diffusion_setting.inference_steps,
+                        width=lcm_diffusion_setting.image_width,
+                        height=lcm_diffusion_setting.image_height,
+                        num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                        generator=seeds,
                     ).images
                 else:
                     result_images = self.pipeline(

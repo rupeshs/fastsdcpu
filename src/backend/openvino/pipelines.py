@@ -13,6 +13,7 @@ from backend.tiny_autoencoder import get_tiny_autoencoder_repo_id
 from constants import DEVICE, LCM_DEFAULT_MODEL_OPENVINO
 from paths import get_base_folder_name
 from backend.openvino.ov_flux2klein_pipeline import OVFlux2KleinPipeline
+from backend.openvino.ov_iris_turbo_pipeline import OVIrisTurboPipeline
 
 if is_openvino_device():
     from huggingface_hub import snapshot_download
@@ -111,6 +112,19 @@ def get_flux_klein_pipeline(
     use_local_model: bool = False,
 ) -> OVFlux2KleinPipeline:
     pipeline = OVFlux2KleinPipeline.from_pretrained(
+        model_id,
+        local_files_only=use_local_model,
+        ov_config={"CACHE_DIR": ""},
+        device=DEVICE.upper(),
+    )
+    return pipeline
+
+
+def get_iris_pipeline(
+    model_id: str,
+    use_local_model: bool = False,
+) -> OVIrisTurboPipeline:
+    pipeline = OVIrisTurboPipeline.from_pretrained(
         model_id,
         local_files_only=use_local_model,
         ov_config={"CACHE_DIR": ""},
