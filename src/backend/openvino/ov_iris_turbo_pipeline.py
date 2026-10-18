@@ -1,16 +1,4 @@
-"""OpenVINO pipeline for Iris-3B Turbo (pixel-space DiT: 4 steps, no CFG, no VAE).
-
-Loads the directory written by convert_iris_turbo_ov.py, either a local folder
-or a Hugging Face Hub repo, and is called like a diffusers / optimum-intel pipeline:
-
-    pipe = OVIrisTurboPipeline.from_pretrained("rupeshs/iris-3b-int8-ov", device="CPU")
-    # or a local folder
-    pipe = OVIrisTurboPipeline.from_pretrained("ov_model/iris-3b-turbo-int8", device="CPU")
-    image = pipe("a red fox sleeping in fresh snow", generator=0).images[0]
-
-Needs only openvino, numpy, pillow and tokenizers (plus huggingface_hub when
-the model is given as a Hub repo id instead of a local directory).
-"""
+"""OpenVINO pipeline for Iris-3B Turbo (pixel-space DiT: 4 steps, no CFG, no VAE)."""
 
 import json
 import time
@@ -170,7 +158,9 @@ class OVIrisTurboPipeline:
     ) -> "OVIrisTurboPipeline":
         """Check the requested size. The IRs are static (the position tables are
         baked in at export), so there is nothing to reshape."""
-        self._check_size(height if height > 0 else self.height, width if width > 0 else self.width)
+        self._check_size(
+            height if height > 0 else self.height, width if width > 0 else self.width
+        )
         return self
 
     def compile(self) -> None:
@@ -198,11 +188,15 @@ class OVIrisTurboPipeline:
             properties["CACHE_DIR"] = str(self.model_dir / "cache")
         properties.update(self.ov_config)
         start = time.perf_counter()
-        compiled = self.core.compile_model(self.model_dir / f"{name}.xml", device, properties)
+        compiled = self.core.compile_model(
+            self.model_dir / f"{name}.xml", device, properties
+        )
         print(f"compiled {name} on {device} in {time.perf_counter() - start:.1f}s")
         return compiled
 
-    def _get_sigmas(self, num_inference_steps: Optional[int], sigmas: Optional[List[float]]) -> List[float]:
+    def _get_sigmas(
+        self, num_inference_steps: Optional[int], sigmas: Optional[List[float]]
+    ) -> List[float]:
         schedule = self.config["sigmas"]
         if sigmas is not None:
             sigmas = [float(s) for s in sigmas]
@@ -212,7 +206,9 @@ class OVIrisTurboPipeline:
                 or sigmas[-1] <= 0
                 or any(a <= b for a, b in zip(sigmas, sigmas[1:]))
             ):
-                raise ValueError("sigmas must start at 1.0 (pure noise) and strictly decrease, staying above 0")
+                raise ValueError(
+                    "sigmas must start at 1.0 (pure noise) and strictly decrease, staying above 0"
+                )
             return sigmas
         if num_inference_steps is None or num_inference_steps == len(schedule):
             return schedule
@@ -222,7 +218,9 @@ class OVIrisTurboPipeline:
                 f"Iris Turbo is distilled to {len(schedule)} steps, got {num_inference_steps}."
             )
         # fewer steps: keep the first and last noise levels and spread the rest evenly
-        keep = np.linspace(0, len(schedule) - 1, num_inference_steps).round().astype(int)
+        keep = (
+            np.linspace(0, len(schedule) - 1, num_inference_steps).round().astype(int)
+        )
         return [schedule[i] for i in keep]
 
     def encode_prompt(self, prompt: str) -> Tuple[np.ndarray, np.ndarray]:
@@ -246,10 +244,14 @@ class OVIrisTurboPipeline:
 
         if self.text_encoder is None:
             self.text_encoder = self._compile("text_encoder", self.text_encoder_device)
-        states = self.text_encoder({"input_ids": input_ids, "attention_mask": attention_mask})[0]
+        states = self.text_encoder(
+            {"input_ids": input_ids, "attention_mask": attention_mask}
+        )[0]
         return states, attention_mask[:, len(prefix) :]
 
-    def _encode_prompts(self, prompts: List[str]) -> List[Tuple[np.ndarray, np.ndarray]]:
+    def _encode_prompts(
+        self, prompts: List[str]
+    ) -> List[Tuple[np.ndarray, np.ndarray]]:
         # same prompts as the last call (e.g. a new seed): the text encoder is not needed
         if self._prompt_cache is not None and self._prompt_cache[0] == prompts:
             return self._prompt_cache[1]
@@ -262,7 +264,11 @@ class OVIrisTurboPipeline:
         return encodings
 
     def _sample(
-        self, states: np.ndarray, mask: np.ndarray, rng: np.random.Generator, sigmas: List[float]
+        self,
+        states: np.ndarray,
+        mask: np.ndarray,
+        rng: np.random.Generator,
+        sigmas: List[float],
     ) -> np.ndarray:
         """Deterministic few-step flow sampler (``iris3b.sampling.generate_few_step``).
 
@@ -275,16 +281,22 @@ class OVIrisTurboPipeline:
         for i, sigma in enumerate(sigmas):
             start = time.perf_counter()
             t_freq = timestep_features(
-                sigma * cfg["num_train_timesteps"], cfg["timestep_freq_dim"], cfg["timestep_max_period"]
+                sigma * cfg["num_train_timesteps"],
+                cfg["timestep_freq_dim"],
+                cfg["timestep_max_period"],
             )
-            out = self.transformer({"x": x, "t_freq": t_freq, "y": states, "y_mask": mask})[0]
+            out = self.transformer(
+                {"x": x, "t_freq": t_freq, "y": states, "y_mask": mask}
+            )[0]
             clean = out if cfg["prediction"] == "x" else x - sigma * out
             if i + 1 < len(sigmas):
                 # move the clean prediction to the next noise level, reusing the implied noise
                 implied_noise = (x - (1 - sigma) * clean) / sigma
                 nxt = sigmas[i + 1]
                 x = ((1 - nxt) * clean + nxt * implied_noise).astype(np.float32)
-            print(f"step {i + 1}/{len(sigmas)} (sigma {sigma:.3f}) {time.perf_counter() - start:.1f}s")
+            print(
+                f"step {i + 1}/{len(sigmas)} (sigma {sigma:.3f}) {time.perf_counter() - start:.1f}s"
+            )
         return clean
 
     def __call__(
@@ -333,10 +345,15 @@ class OVIrisTurboPipeline:
         for i, rng in enumerate(generators):
             states, mask = encodings[i // num_images_per_prompt]
             clean = self._sample(states, mask, rng, sigmas)
-            images.append((np.clip(clean[0], -1, 1) + 1).transpose(1, 2, 0))  # HWC in [0, 2]
+            images.append(
+                (np.clip(clean[0], -1, 1) + 1).transpose(1, 2, 0)
+            )  # HWC in [0, 2]
 
         if output_type == "np":
             return OVIrisTurboPipelineOutput(images=np.stack(images) / 2)
         return OVIrisTurboPipelineOutput(
-            images=[Image.fromarray((image * 127.5).round().astype(np.uint8)) for image in images]
+            images=[
+                Image.fromarray((image * 127.5).round().astype(np.uint8))
+                for image in images
+            ]
         )

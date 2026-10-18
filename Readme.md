@@ -345,7 +345,7 @@ To use it, select OpenVINO mode, choose `rupeshs/iris-3b-int8-ov` and use these 
 
 - Only text to image generation is supported
 - Guidance scale, LoRA and ControlNet have no effect
-- Tested on CPU; GPU and NPU are untested
+- Tested on CPU and iGPU
 
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
