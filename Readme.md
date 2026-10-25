@@ -2,11 +2,10 @@
 
 <div align="center">
   <a href="https://trendshift.io/repositories/3957" target="_blank"><img src="https://trendshift.io/api/badge/repositories/3957" alt="rupeshs%2Ffastsdcpu | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
-</div>
+</div> 
 
 FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) and
-[Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/).
-
+[Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/) and distilled few steps models.
 ![FastSD CPU screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-webui.png)
 The following interfaces are available :
 
@@ -17,6 +16,7 @@ The following interfaces are available :
 🚀 Using **OpenVINO(SDXS-512-0.9)**, it took **0.82 seconds** (**820 milliseconds**) to create a single 512x512 image on a **Core i7-12700**.
 
 ## 📰 News
+- **2026-10-25** - Added FLUX.3 Image Klein support (OpenVINO, INT4), text-to-image and image editing (2 to 4 steps)
 - **2026-10-18** - Add Iris 3B Turbo OpenVINO support for pixel-space image generation (No VAE)
 - **2026-07-05** - Add bonsai image (1 bit) GGUF support, Flux2 Klein GGUF support
 - **2026-06-21** - Added FLUX.2-klein-4B support(OpenVINO), image editing support, photo restoration, colorization (2 to 4 steps)
@@ -38,6 +38,7 @@ The following interfaces are available :
 - [Benchmarks](#fast-inference-benchmarks)
 - [OpenVINO Support](#openvino)
 - [Iris 3B OpenVINO (pixel-space)](#iris-openvino)
+- [FLUX.3 Image Klein OpenVINO](#flux3-openvino)
 - [Installation](#installation)
 - [Image Editing support](#image-edit)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
@@ -159,6 +160,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add image editing support
 - Add bonsai image (1 bit) GGUF support, Flux 2 Klein GGUF model support
 - Add Iris 3B Turbo OpenVINO support for pixel-space image generation (VAE-free)
+- Add FLUX.3 image kelin(OpenVINO) support, text to image and image editing(2 to 4 steps)
 
 ## Architecture
 
@@ -341,11 +343,38 @@ To use it, select OpenVINO mode, choose `rupeshs/iris-3b-int8-ov` and use these 
 - Inference steps 4
 - Negative prompt empty, Tiny AutoEncoder off
 
+
 :exclamation: Please note the following points with the Iris workflow:
 
 - Only text to image generation is supported
 - Guidance scale, LoRA and ControlNet have no effect
 - Tested on CPU and iGPU
+
+<a id="flux3-openvino"></a>
+
+### FLUX.3 Image Klein OpenVINO support
+
+FastSD CPU supports [FLUX.3 Image Klein](https://huggingface.co/black-forest-labs/flux-3-image-klein-base) in OpenVINO mode, for both text to image and image editing. The model is the 5.6B Klein base with a [4-step distillation LoRA](https://huggingface.co/Muinez/flux3-klein-distil-4step) merged into the DiT, so it needs only 2 to 4 steps.
+
+- *FLUX.3 Image Klein OpenVINO int4* - [rupeshs/flux3-image-klein-int4-ov](https://huggingface.co/rupeshs/flux3-image-klein-int4-ov)
+
+The DiT and the Qwen3-VL text encoder are compressed to int4 (NNCF weight compression), and the VAE stays FP16. This brings the 20.5 GB original download down to **5.6 GB**.
+- 512x512 image generation needs around 8 to 9 GB system RAM
+
+| Item            | Value                                         |
+| --------------- | --------------------------------------------- |
+| Model size      | 5.6 GB (int4)                                 |
+| Image size      | Width and height must be multiples of 16      |
+| Steps           | 4 (2 steps gives good results at 1024 x 1024) |
+| Latency         | ~36 s, text to image, 512 x 512, 4 steps,Intel Core i7-12700 |
+| Latency (edit)  | ~72 s, 1 reference image, 512 x 512, 4 steps,Intel Core i7-12700 |
+
+To use it, select OpenVINO mode and choose `rupeshs/flux3-image-klein-int4-ov`. 
+
+:exclamation: Please note the following points with the FLUX.3 workflow:
+ - Use long, descriptive prompts. FLUX.3 is trained on detailed scene captions, so describe the subject, setting, lighting, style and composition. There is no 77 token CLIP limit: the Qwen3-VL text encoder accepts prompts up to 4096 tokens
+- Guidance scale and negative prompt have no effect (the few-step model runs without CFG)
+- The weights are under the FLUX Kommunity License, and the text encoder is under Apache-2.0
 
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
@@ -355,7 +384,7 @@ We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and the
 
 ## Image Editing Support
 
-FastSDCPU now supports image editing via FLUX.2-klein-4B OpenVINO model
+FastSDCPU now supports image editing via FLUX.2-klein-4B and Flux 3 OpenVINO model
 
 To use image editing use OpenVINO mode and use [rupeshs/flux2-klein-4b-int4-ov](https://huggingface.co/rupeshs/flux2-klein-4b-int4-ov)
 

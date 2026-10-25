@@ -14,6 +14,7 @@ from constants import DEVICE, LCM_DEFAULT_MODEL_OPENVINO
 from paths import get_base_folder_name
 from backend.openvino.ov_flux2klein_pipeline import OVFlux2KleinPipeline
 from backend.openvino.ov_iris_turbo_pipeline import OVIrisTurboPipeline
+from backend.openvino.ov_flux3_image_klein_pipeline import OVFlux3KleinPipeline
 
 if is_openvino_device():
     from huggingface_hub import snapshot_download
@@ -125,6 +126,19 @@ def get_iris_pipeline(
     use_local_model: bool = False,
 ) -> OVIrisTurboPipeline:
     pipeline = OVIrisTurboPipeline.from_pretrained(
+        model_id,
+        local_files_only=use_local_model,
+        ov_config={"CACHE_DIR": ""},
+        device=DEVICE.upper(),
+    )
+    return pipeline
+
+
+def get_flux3_image_klein_pipeline(
+    model_id: str,
+    use_local_model: bool = False,
+) -> OVFlux3KleinPipeline:
+    pipeline = OVFlux3KleinPipeline.from_pretrained(
         model_id,
         local_files_only=use_local_model,
         ov_config={"CACHE_DIR": ""},

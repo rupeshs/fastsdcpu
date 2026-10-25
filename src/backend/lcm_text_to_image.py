@@ -17,6 +17,7 @@ from backend.models.lcmdiffusion_setting import (
     LCMLora,
 )
 from backend.openvino.pipelines import (
+    get_flux3_image_klein_pipeline,
     get_ov_image_to_image_pipeline,
     get_ov_text_to_image_pipeline,
     ov_load_tiny_autoencoder,
@@ -181,6 +182,9 @@ class LCMTextToImage:
     def _is_flux_klein_model(self) -> bool:
         return "flux2-klein" in self.ov_model_id.lower()
 
+    def _is_flux3_klein_model(self) -> bool:
+        return "flux3" in self.ov_model_id.lower()
+
     def _do_validations(self, lcm_diffusion_setting: LCMDiffusionSetting) -> None:
         modes = [
             lcm_diffusion_setting.use_gguf_model,
@@ -198,20 +202,23 @@ class LCMTextToImage:
                 raise ValueError(
                     "Tiny AutoEncoder is not supported for Iris model in OpenVINO mode."
                 )
-        if self._is_flux_klein_model() and lcm_diffusion_setting.use_openvino:
+        if (
+            self._is_flux_klein_model()
+            or self._is_flux3_klein_model()
+            and lcm_diffusion_setting.use_openvino
+        ):
             if lcm_diffusion_setting.negative_prompt:
                 raise ValueError(
-                    "Negative prompt is not supported for Flux2 Klein model in OpenVINO mode."
+                    "Negative prompt is not supported for Flux Klein model in OpenVINO mode."
                 )
             if lcm_diffusion_setting.use_tiny_auto_encoder:
                 raise ValueError(
-                    "Tiny AutoEncoder is not supported for Flux2 Klein model in OpenVINO mode."
+                    "Tiny AutoEncoder is not supported for Flux Klein model in OpenVINO mode."
                 )
 
         if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
-            if (
-                not lcm_diffusion_setting.use_openvino
-                or not self._is_flux_klein_model()
+            if not lcm_diffusion_setting.use_openvino or not (
+                self._is_flux_klein_model() or self._is_flux3_klein_model()
             ):
                 raise ValueError(
                     "Image editing only supported with Flux2 Klein model in OpenVINO mode"
@@ -224,7 +231,7 @@ class LCMTextToImage:
         if (
             lcm_diffusion_setting.diffusion_task == DiffusionTask.image_to_image.value
             and lcm_diffusion_setting.use_openvino
-            and self._is_flux_klein_model()
+            and (self._is_flux_klein_model() or self._is_flux3_klein_model())
         ):
             raise ValueError(
                 "Image to image generation is not supported with Flux2 Klein model in OpenVINO mode."
@@ -334,13 +341,24 @@ class LCMTextToImage:
                     print(
                         f"***** Init Text to image (OpenVINO) - {self.ov_model_id} *****"
                     )
-                    if "flux" in self.ov_model_id.lower() or self._is_sana_model():
-                        if self._is_flux_klein_model():
-                            print("Loading OpenVINO Flux Klein pipeline")
-                            self.pipeline = get_flux_klein_pipeline(
-                                self.ov_model_id,
-                                use_local_model,
-                            )
+                    if (
+                        self._is_flux_klein_model()
+                        or self._is_flux3_klein_model()
+                        or self._is_sana_model()
+                    ):
+                        if self._is_flux_klein_model() or self._is_flux3_klein_model():
+                            if "flux3" in self.ov_model_id.lower():
+                                print("Loading OpenVINO Flux3 image Klein pipeline")
+                                self.pipeline = get_flux3_image_klein_pipeline(
+                                    self.ov_model_id,
+                                    use_local_model,
+                                )
+                            else:
+                                print("Loading OpenVINO Flux2 Klein pipeline")
+                                self.pipeline = get_flux_klein_pipeline(
+                                    self.ov_model_id,
+                                    use_local_model,
+                                )
                         else:
                             if self._is_sana_model():
                                 print("Loading OpenVINO SANA Sprint pipeline")
@@ -667,6 +685,15 @@ class LCMTextToImage:
                         width=lcm_diffusion_setting.image_width,
                         height=lcm_diffusion_setting.image_height,
                     ).images
+                elif self._is_flux3_klein_model():
+                    result_images = self.pipeline(
+                        prompt=lcm_diffusion_setting.prompt,
+                        num_inference_steps=lcm_diffusion_setting.inference_steps,
+                        width=lcm_diffusion_setting.image_width,
+                        height=lcm_diffusion_setting.image_height,
+                        num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                        generator=seeds,
+                    ).images
                 elif self._is_iris_model():
                     result_images = self.pipeline(
                         prompt=lcm_diffusion_setting.prompt,
@@ -700,12 +727,14 @@ class LCMTextToImage:
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                 ).images
             if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
+                edit_args = {"generator": seeds} if self._is_flux3_klein_model() else {}
                 result_images = self.pipeline(
                     image=[lcm_diffusion_setting.init_image],
                     prompt=lcm_diffusion_setting.prompt,
                     num_inference_steps=lcm_diffusion_setting.inference_steps,
                     guidance_scale=guidance_scale,
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
+                    **edit_args,
                 ).images
 
         else:
