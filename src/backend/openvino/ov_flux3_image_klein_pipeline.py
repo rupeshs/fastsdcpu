@@ -306,11 +306,18 @@ class OVFlux3KleinPipeline:
         """Compile the models for ``device``; done on first use when loaded with ``compile=False`` or after ``to``."""
         if self.transformer is not None:
             return
-        compile = lambda name: self.core.compile_model(
-            self.model_dir / name, self._device, self.ov_config
+        # GPU runs in FP16 and the transformer's activations overflow (garbage images); scaling them down keeps FP16
+        # speed, while INFERENCE_PRECISION_HINT=f32 also works but is ~14x slower per step on an iGPU
+        scaled = (
+            {"ACTIVATIONS_SCALE_FACTOR": 8.0, **self.ov_config}
+            if self._device != "CPU"
+            else self.ov_config
+        )
+        compile = lambda name, config=self.ov_config: self.core.compile_model(
+            self.model_dir / name, self._device, config
         ).create_infer_request()
-        self.text_encoder = compile(TEXT_ENCODER)
-        self.transformer = compile(TRANSFORMER)
+        self.text_encoder = compile(TEXT_ENCODER, scaled)
+        self.transformer = compile(TRANSFORMER, scaled)
         self.vae_decoder = compile(VAE_DECODER)
         self.vae_encoder = (
             compile(VAE_ENCODER) if (self.model_dir / VAE_ENCODER).exists() else None
