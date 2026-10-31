@@ -11,3 +11,4 @@ rupeshs/sana-sprint-0.6b-openvino-int4
 rupeshs/flux2-klein-4b-int4-ov
 rupeshs/iris-3b-int8-ov
 rupeshs/flux3-image-klein-int4-ov
+rupeshs/fibo2-edit-turbo-int4-ov

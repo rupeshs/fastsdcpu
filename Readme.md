@@ -4,7 +4,7 @@
   <a href="https://trendshift.io/repositories/3957" target="_blank"><img src="https://trendshift.io/api/badge/repositories/3957" alt="rupeshs%2Ffastsdcpu | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
 </div> 
 
-FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) and
+FastSD CPU is a faster version of Stable Diffusion on CPU. Based on [Latent Consistency Models](https://github.com/luosiallen/latent-consistency-model) ,
 [Adversarial Diffusion Distillation](https://nolowiz.com/fast-stable-diffusion-on-cpu-using-fastsd-cpu-and-openvino/) and distilled few steps models.
 ![FastSD CPU screenshot](https://raw.githubusercontent.com/rupeshs/fastsdcpu/main/docs/images/fastsdcpu-webui.png)
 The following interfaces are available :
@@ -16,6 +16,7 @@ The following interfaces are available :
 🚀 Using **OpenVINO(SDXS-512-0.9)**, it took **0.82 seconds** (**820 milliseconds**) to create a single 512x512 image on a **Core i7-12700**.
 
 ## 📰 News
+- **2026-10-31** - Added Fibo 2.0 Edit Turbo support (OpenVINO, INT4), instruction based image editing (4 steps)
 - **2026-10-25** - Added FLUX.3 Image Klein support (OpenVINO, INT4), text-to-image and image editing (2 to 4 steps)
 - **2026-10-18** - Add Iris 3B Turbo OpenVINO support for pixel-space image generation (No VAE)
 - **2026-07-05** - Add bonsai image (1 bit) GGUF support, Flux2 Klein GGUF support
@@ -39,8 +40,9 @@ The following interfaces are available :
 - [OpenVINO Support](#openvino)
 - [Iris 3B OpenVINO (pixel-space)](#iris-openvino)
 - [FLUX.3 Image Klein OpenVINO](#flux3-openvino)
-- [Installation](#installation)
+- [Fibo 2.0 Edit Turbo OpenVINO](#fibo2-openvino)
 - [Image Editing support](#image-edit)
+- [Installation](#installation)
 - [Real-time text to image (EXPERIMENTAL)](#real-time-text-to-image)
 - [Models](#models)
 - [How to use Lora models](#useloramodels)
@@ -161,6 +163,7 @@ If we enable Tiny decoder(TAESD) we can save some memory(2GB approx) for example
 - Add bonsai image (1 bit) GGUF support, Flux 2 Klein GGUF model support
 - Add Iris 3B Turbo OpenVINO support for pixel-space image generation (VAE-free)
 - Add FLUX.3 image kelin(OpenVINO) support, text to image and image editing(2 to 4 steps)
+- Add Fibo 2.0 Edit Turbo (OpenVINO) support, instruction based image editing(4 steps)
 
 ## Architecture
 
@@ -376,6 +379,31 @@ To use it, select OpenVINO mode and choose `rupeshs/flux3-image-klein-int4-ov`.
 - Guidance scale and negative prompt have no effect (the few-step model runs without CFG)
 - The weights are under the FLUX Kommunity License, and the text encoder is under Apache-2.0
 
+<a id="fibo2-openvino"></a>
+
+### Fibo 2.0 Edit Turbo OpenVINO support
+
+FastSD CPU supports [Fibo 2.0 Edit Turbo](https://huggingface.co/briaai/Fibo-2.0-edit-turbo) by Bria AI in OpenVINO mode, for image editing. It is an 8B flow-matching DiT distilled for 4-step editing without classifier-free guidance, with a Qwen3-VL-4B text encoder that sees the image to edit and the FLUX.2 VAE.
+
+- *Fibo 2.0 Edit Turbo OpenVINO int4* - [rupeshs/fibo2-edit-turbo-int4-ov](https://huggingface.co/rupeshs/fibo2-edit-turbo-int4-ov)
+
+The DiT is compressed to int4 and the Qwen3-VL language model to int8 (NNCF weight compression), the Qwen3-VL vision encoder and the VAE stay FP16.
+
+| Item            | Value                                                                       |
+| --------------- | --------------------------------------------------------------------------- |
+| Task            | Image editing only (no text to image, use Fibo 2.0 Dev for that)             |
+| Steps           | 4                                                                           |
+| Image size      | The aspect ratio of the input image, at about the area of the width x height setting |
+| Model size      | 8.8 GB (int4 DiT, int8 text encoder)                                        |
+| Latency (edit)  | ~146 s, 560 x 448 (about 512 x 512), 4 steps, Intel Core i7-12700           |
+
+To use it, select OpenVINO mode, choose `rupeshs/fibo2-edit-turbo-int4-ov` and use the Edit Image tab.
+
+:exclamation: Please note the following points with the Fibo 2.0 workflow:
+- Fibo 2.0 is trained on structured JSON captions (VGL). A plain edit instruction works, you can also pass a JSON caption of the result with an `edit_instruction` key, as [bria-vgl](https://github.com/Bria-AI/vgl) writes it
+- Guidance scale and negative prompt have no effect (the turbo model runs without CFG)
+- The weights are under the CC BY-NC 4.0 license, for **non-commercial use only**; commercial use needs an agreement with [Bria AI](https://platform.bria.ai/licensing/pricing?model=fibo-2)
+
 ### Convert SD 1.5 models to OpenVINO LCM-LoRA fused models
 
 We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and then converts it into OpenVINO model. For more details check [LCM OpenVINO Converter](https://github.com/rupeshs/lcm-openvino-converter), you can use this tools to convert any StableDiffusion 1.5 fine tuned models to OpenVINO.
@@ -384,9 +412,15 @@ We first creates LCM-LoRA baked in model,replaces the scheduler with LCM and the
 
 ## Image Editing Support
 
-FastSDCPU now supports image editing via FLUX.2-klein-4B and Flux 3 OpenVINO model
+FastSD CPU supports image editing in OpenVINO mode with the following models:
 
-To use image editing use OpenVINO mode and use [rupeshs/flux2-klein-4b-int4-ov](https://huggingface.co/rupeshs/flux2-klein-4b-int4-ov)
+| Model               | OpenVINO model                                                                                        | Steps  | Text to image | Details                                   |
+| ------------------- | ----------------------------------------------------------------------------------------------------- | ------ | ------------- | ----------------------------------------- |
+| FLUX.2-klein-4B     | [rupeshs/flux2-klein-4b-int4-ov](https://huggingface.co/rupeshs/flux2-klein-4b-int4-ov)               | 3 to 4 | Yes           | -                                         |
+| FLUX.3 Image Klein  | [rupeshs/flux3-image-klein-int4-ov](https://huggingface.co/rupeshs/flux3-image-klein-int4-ov)         | 2 to 4 | Yes           | [Notes](#flux3-openvino)                  |
+| Fibo 2.0 Edit Turbo | [rupeshs/fibo2-edit-turbo-int4-ov](https://huggingface.co/rupeshs/fibo2-edit-turbo-int4-ov)           | 4      | No, edit only | [Notes](#fibo2-openvino) (non-commercial) |
+
+To edit an image, select OpenVINO mode, choose one of these models and use the Edit Image tab in the Web UI.
 
 FastSD comes with following image editing prompt presets:
 
@@ -394,6 +428,7 @@ FastSD comes with following image editing prompt presets:
 - Restore old photo and colorize
 - Colorize photo
 - Enhance photo
+- Professional headshot
 
 ![Restore old photo](https://raw.githubusercontent.com/rupeshs/fastsdcpu/refs/heads/main/docs/images/fastsd-image-restoration.png)
 *Restore an old photo using FastSDCPU image edit prompt preset*

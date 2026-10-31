@@ -17,6 +17,7 @@ from backend.models.lcmdiffusion_setting import (
     LCMLora,
 )
 from backend.openvino.pipelines import (
+    get_fibo2_edit_pipeline,
     get_flux3_image_klein_pipeline,
     get_ov_image_to_image_pipeline,
     get_ov_text_to_image_pipeline,
@@ -185,6 +186,9 @@ class LCMTextToImage:
     def _is_flux3_klein_model(self) -> bool:
         return "flux3" in self.ov_model_id.lower()
 
+    def _is_fibo2_model(self) -> bool:
+        return "fibo2" in self.ov_model_id.lower()
+
     def _do_validations(self, lcm_diffusion_setting: LCMDiffusionSetting) -> None:
         modes = [
             lcm_diffusion_setting.use_gguf_model,
@@ -216,12 +220,24 @@ class LCMTextToImage:
                     "Tiny AutoEncoder is not supported for Flux Klein model in OpenVINO mode."
                 )
 
+        if self._is_fibo2_model() and lcm_diffusion_setting.use_openvino:
+            if lcm_diffusion_setting.diffusion_task != DiffusionTask.edit_image.value:
+                raise ValueError(
+                    "Fibo 2.0 Edit Turbo model supports only image editing in OpenVINO mode."
+                )
+            if lcm_diffusion_setting.use_tiny_auto_encoder:
+                raise ValueError(
+                    "Tiny AutoEncoder is not supported for Fibo 2.0 model in OpenVINO mode."
+                )
+
         if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
             if not lcm_diffusion_setting.use_openvino or not (
-                self._is_flux_klein_model() or self._is_flux3_klein_model()
+                self._is_flux_klein_model()
+                or self._is_flux3_klein_model()
+                or self._is_fibo2_model()
             ):
                 raise ValueError(
-                    "Image editing only supported with Flux2 Klein model in OpenVINO mode"
+                    "Image editing only supported with Flux Klein or Fibo 2.0 models in OpenVINO mode"
                 )
             if lcm_diffusion_setting.negative_prompt:
                 raise ValueError(
@@ -261,7 +277,11 @@ class LCMTextToImage:
                 lcm_diffusion_setting.image_width,
                 lcm_diffusion_setting.image_height,
             )
-        if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
+        if (
+            lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value
+            and not self._is_fibo2_model()
+        ):
+            # Fibo 2.0 crops the original image to the size it was trained at itself
             max_size = max(
                 lcm_diffusion_setting.image_width, lcm_diffusion_setting.image_height
             )
@@ -341,7 +361,13 @@ class LCMTextToImage:
                     print(
                         f"***** Init Text to image (OpenVINO) - {self.ov_model_id} *****"
                     )
-                    if (
+                    if self._is_fibo2_model():
+                        print("Loading OpenVINO Fibo 2.0 Edit pipeline")
+                        self.pipeline = get_fibo2_edit_pipeline(
+                            self.ov_model_id,
+                            use_local_model,
+                        )
+                    elif (
                         self._is_flux_klein_model()
                         or self._is_flux3_klein_model()
                         or self._is_sana_model()
@@ -727,7 +753,16 @@ class LCMTextToImage:
                     num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                 ).images
             if lcm_diffusion_setting.diffusion_task == DiffusionTask.edit_image.value:
-                edit_args = {"generator": seeds} if self._is_flux3_klein_model() else {}
+                edit_args = {}
+                if self._is_flux3_klein_model():
+                    edit_args = {"generator": seeds}
+                elif self._is_fibo2_model():
+                    # The output keeps the image's aspect ratio, at about the area of the image size setting
+                    edit_args = {
+                        "generator": seeds,
+                        "area": lcm_diffusion_setting.image_width
+                        * lcm_diffusion_setting.image_height,
+                    }
                 result_images = self.pipeline(
                     image=[lcm_diffusion_setting.init_image],
                     prompt=lcm_diffusion_setting.prompt,

@@ -18,5 +18,65 @@
     "enhance_photo": {
         "display_name": "Enhance photo",
         "prompt": "Enhance image quality while preserving details."
+    },
+    "professional_headshot": {
+        "display_name": "Professional headshot",
+        "prompt": "Turn this photo into a professional headshot. Dress the person in formal business attire, use a clean neutral studio background and soft, even studio lighting. Keep the person's face, identity and hairstyle unchanged."
+    },
+    "sharpen_denoise": {
+        "display_name": "Sharpen and reduce noise",
+        "prompt": "Remove noise and blur from this photo and make it sharp and clear. Keep the colors, composition and all details unchanged."
+    },
+    "white_background": {
+        "display_name": "White studio background",
+        "prompt": "Replace the background with a clean white studio backdrop. Keep the subject, its edges and its proportions unchanged."
+    },
+    "remove_background_people": {
+        "display_name": "Remove people in background",
+        "prompt": "Remove the people in the background. Fill the areas so they match the surrounding scene. Keep the main subject and everything else unchanged."
+    },
+    "product_photo": {
+        "display_name": "Product photo",
+        "prompt": "Turn this into a professional product photo. Place the product on a clean surface with soft studio lighting and a natural shadow. Keep the product, its shape and its label unchanged."
+    },
+    "golden_hour": {
+        "display_name": "Golden hour",
+        "prompt": "Change the time of day to golden hour, with warm low sunlight and long soft shadows. Keep the composition and all objects unchanged."
+    },
+    "cartoon_to_photo": {
+        "display_name": "Cartoon to realistic photo",
+        "prompt": "Convert this cartoon into a realistic photograph. Use natural textures, realistic proportions and soft natural lighting. Keep the same clothing colors, background and composition."
+    },
+    "photo_to_cartoon": {
+        "display_name": "Photo to cartoon",
+        "prompt": "Convert this photo into a colorful cartoon illustration with clean outlines and flat shading. Keep the subject recognizable and the composition unchanged."
+    },
+    "photo_to_modern_3d_cartoon": {
+        "display_name": "Photo to modern 3D cartoon",
+        "prompt": "Convert this photo into a modern 3D animated film style. Use smooth stylized shapes, expressive features, soft cinematic lighting and rich, vibrant colors. Keep the subject recognizable, with the same pose, clothing and composition."
+    },
+    "photo_to_modern_2d_cartoon": {
+        "display_name": "Photo to modern 2D cartoon",
+        "prompt": "Convert this photo into a modern 2D cartoon illustration, like a contemporary animated series. Use bold clean outlines, simple cel shading and a bright, vibrant color palette. Keep the subject recognizable, with the same pose, clothing and composition."
+    },
+    "pencil_sketch": {
+        "display_name": "Pencil sketch",
+        "prompt": "Convert this photo into a clean pencil sketch with fine shading on white paper. Keep the composition unchanged."
+    },
+    "crayon_style": {
+        "display_name": "Crayon style",
+        "prompt": "Please turn the whole image into a crayon-style drawing. Simplify the details so it looks like something a 10-year-old would draw. Don’t use the original colors from the photo. Make it look like it’s drawn on white paper, with a very cute and playful feel. You can add adorable elements like flowers, candy, stars, clouds, etc., to make it look more childlike and innocent."
+    },
+    "impressionist_painting": {
+        "display_name": "Impressionist painting",
+        "prompt": "Turn this photo into an impressionist painting with visible brush strokes. Keep the composition and main subject recognizable."
+    },
+    "acrylic_painting": {
+        "display_name": "Acrylic painting",
+        "prompt": "Transform image into a flattened, vibrant acrylic painting. Strip object to solid color with simplified forms. No shading, no shadows, no gradients. Add hand-painted texture with imperfect outlines and wobbly edges. Minimal details."
+    },
+    "coloring_page": {
+        "display_name": "Coloring Page",
+        "prompt": "A black and white line drawing coloring illustration.The overall illustration style is fresh and simple, using clear and smooth black outline lines, without shadows, grayscale, or color filling, with a pure white background for easy coloring."
     }
 }
