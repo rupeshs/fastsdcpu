@@ -18,5 +18,9 @@
     "enhance_photo": {
         "display_name": "Enhance photo",
         "prompt": "Enhance image quality while preserving details."
+    },
+    "professional_headshot": {
+        "display_name": "Professional headshot",
+        "prompt": "Turn this photo into a professional headshot. Dress the person in formal business attire, use a clean neutral studio background and soft, even studio lighting. Keep the person's face, identity and hairstyle unchanged."
     }
 }

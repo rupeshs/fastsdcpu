@@ -15,6 +15,7 @@ from paths import get_base_folder_name
 from backend.openvino.ov_flux2klein_pipeline import OVFlux2KleinPipeline
 from backend.openvino.ov_iris_turbo_pipeline import OVIrisTurboPipeline
 from backend.openvino.ov_flux3_image_klein_pipeline import OVFlux3KleinPipeline
+from backend.openvino.ov_fibo2_edit_pipeline import OVFibo2EditPipeline
 
 if is_openvino_device():
     from huggingface_hub import snapshot_download
@@ -139,6 +140,19 @@ def get_flux3_image_klein_pipeline(
     use_local_model: bool = False,
 ) -> OVFlux3KleinPipeline:
     pipeline = OVFlux3KleinPipeline.from_pretrained(
+        model_id,
+        local_files_only=use_local_model,
+        ov_config={"CACHE_DIR": ""},
+        device=DEVICE.upper(),
+    )
+    return pipeline
+
+
+def get_fibo2_edit_pipeline(
+    model_id: str,
+    use_local_model: bool = False,
+) -> OVFibo2EditPipeline:
+    pipeline = OVFibo2EditPipeline.from_pretrained(
         model_id,
         local_files_only=use_local_model,
         ov_config={"CACHE_DIR": ""},
