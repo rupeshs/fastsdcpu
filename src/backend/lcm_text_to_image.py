@@ -370,9 +370,7 @@ class LCMTextToImage:
                             use_local_model,
                         )
                     elif (
-                        self._is_flux_klein_model()
-                        or self._is_flux3_klein_model()
-                        or self._is_sana_model()
+                        "flux" in self.ov_model_id.lower() or self._is_sana_model()
                     ):
                         if self._is_flux_klein_model() or self._is_flux3_klein_model():
                             if "flux3" in self.ov_model_id.lower():
