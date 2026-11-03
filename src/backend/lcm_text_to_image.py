@@ -207,10 +207,8 @@ class LCMTextToImage:
                     "Tiny AutoEncoder is not supported for Iris model in OpenVINO mode."
                 )
         if (
-            self._is_flux_klein_model()
-            or self._is_flux3_klein_model()
-            and lcm_diffusion_setting.use_openvino
-        ):
+            self._is_flux_klein_model() or self._is_flux3_klein_model()
+        ) and lcm_diffusion_setting.use_openvino:
             if lcm_diffusion_setting.negative_prompt:
                 raise ValueError(
                     "Negative prompt is not supported for Flux Klein model in OpenVINO mode."
@@ -259,7 +257,11 @@ class LCMTextToImage:
         lcm_diffusion_setting: LCMDiffusionSetting = LCMDiffusionSetting(),
     ) -> None:
         # Mode validation either LCM LoRA or OpenVINO or GGUF
-        self.ov_model_id = lcm_diffusion_setting.openvino_lcm_model_id
+        self.ov_model_id = (
+            lcm_diffusion_setting.openvino_lcm_model_id
+            if lcm_diffusion_setting.use_openvino
+            else ""
+        )
         self._do_validations(lcm_diffusion_setting)
 
         self.device = device
@@ -368,9 +370,7 @@ class LCMTextToImage:
                             use_local_model,
                         )
                     elif (
-                        self._is_flux_klein_model()
-                        or self._is_flux3_klein_model()
-                        or self._is_sana_model()
+                        "flux" in self.ov_model_id.lower() or self._is_sana_model()
                     ):
                         if self._is_flux_klein_model() or self._is_flux3_klein_model():
                             if "flux3" in self.ov_model_id.lower():
