@@ -369,9 +369,7 @@ class LCMTextToImage:
                             self.ov_model_id,
                             use_local_model,
                         )
-                    elif (
-                        "flux" in self.ov_model_id.lower() or self._is_sana_model()
-                    ):
+                    elif "flux" in self.ov_model_id.lower() or self._is_sana_model():
                         if self._is_flux_klein_model() or self._is_flux3_klein_model():
                             if "flux3" in self.ov_model_id.lower():
                                 print("Loading OpenVINO Flux3 image Klein pipeline")
@@ -710,6 +708,7 @@ class LCMTextToImage:
                         guidance_scale=guidance_scale,
                         width=lcm_diffusion_setting.image_width,
                         height=lcm_diffusion_setting.image_height,
+                        num_images_per_prompt=lcm_diffusion_setting.number_of_images,
                     ).images
                 elif self._is_flux3_klein_model():
                     result_images = self.pipeline(
